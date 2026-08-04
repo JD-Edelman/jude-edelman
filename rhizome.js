@@ -402,14 +402,66 @@
     return PAD_X + t * (W - 2 * PAD_X);
   }
 
-  function plotY(ideology) {
+  var tracingLayout = null;
+
+  function computeTracingLayout() {
+    var depth = {};
+    nodes.forEach(function (n) { depth[n.key] = 0; });
+
+    var changed = true;
+    while (changed) {
+      changed = false;
+      edges.forEach(function (e) {
+        if (e.rel === 'lineage' && depth[e.a] + 1 > depth[e.b]) {
+          depth[e.b] = depth[e.a] + 1;
+          changed = true;
+        }
+      });
+    }
+
+    var maxDepth = 0;
+    nodes.forEach(function (n) { if (depth[n.key] > maxDepth) maxDepth = depth[n.key]; });
+
+    var groups = [];
+    for (var d = 0; d <= maxDepth; d++) groups[d] = [];
+    nodes.forEach(function (n) { groups[depth[n.key]].push(n); });
+
+    var rank = {};
+
+    groups[0].sort(function (a, b) { return a.year - b.year; });
+    groups[0].forEach(function (n, i) {
+      rank[n.key] = groups[0].length > 1 ? i / (groups[0].length - 1) : 0.5;
+    });
+
+    for (var d2 = 1; d2 <= maxDepth; d2++) {
+      groups[d2].forEach(function (n) {
+        var parents = edges
+          .filter(function (e) { return e.rel === 'lineage' && e.b === n.key && rank[e.a] !== undefined; })
+          .map(function (e) { return rank[e.a]; });
+        n._prank = parents.length
+          ? parents.reduce(function (s, r) { return s + r; }, 0) / parents.length
+          : 0.5;
+      });
+      groups[d2].sort(function (a, b) {
+        return a._prank !== b._prank ? a._prank - b._prank : a.year - b.year;
+      });
+      groups[d2].forEach(function (n, i) {
+        rank[n.key] = groups[d2].length > 1 ? i / (groups[d2].length - 1) : 0.5;
+      });
+    }
+
     var top = PAD_Y + TOP_PAD;
     var bottom = H - PAD_Y - BOTTOM_PAD;
-    return bottom - (ideology / 100) * (bottom - top);
+    var result = {};
+    nodes.forEach(function (n) {
+      result[n.key] = { x: plotX(n.year), y: top + rank[n.key] * (bottom - top) };
+    });
+    return result;
   }
 
   function tracingTarget(n) {
-    return { x: plotX(n.year), y: plotY(n.ideology) };
+    if (!tracingLayout) tracingLayout = computeTracingLayout();
+    return tracingLayout[n.key];
   }
 
   /* Point-feature labelling: try positions around the dot in order of
@@ -507,14 +559,9 @@
     }
 
     add('line', { x1: PAD_X, y1: bottom, x2: W - PAD_X, y2: bottom, class: 'rz-axis' });
-    add('line', { x1: PAD_X, y1: plotY(50), x2: W - PAD_X, y2: plotY(50), class: 'rz-grid' });
 
     add('text', { x: W - PAD_X, y: bottom + 50, class: 'rz-axis-title', 'text-anchor': 'end' },
       'Year of the work cited');
-    add('text', { x: PAD_X, y: plotY(100) - 26, class: 'rz-axis-title' },
-      'Discursive construction');
-    add('text', { x: PAD_X, y: plotY(0) + 34, class: 'rz-axis-title' },
-      'Material determination');
   }
 
   function tidy() {
@@ -864,8 +911,8 @@
     if (!hint) return;
     if (mode === 'tracing') {
       hint.textContent = isCompact()
-        ? 'Tap a point to stand there. Position is fixed by date and reading.'
-        : 'Hover or tab through the points. Position here is fixed by date and reading, so the points cannot be moved.';
+        ? 'Tap a point to stand there. Position is fixed by date and lineage.'
+        : 'Hover or tab through the points. Position is fixed by date and intellectual lineage. Points cannot be moved.';
     } else {
       hint.textContent = isCompact()
         ? 'Tap a point to stand there. Drag to remake the map.'
@@ -933,7 +980,7 @@
       tidy();
       paint();
       say(mode === 'tracing'
-        ? 'The same thirty-two, traced onto a grid: date across, reading up. Every descent is now an arrow.'
+        ? 'The same thirty-six, arranged by lineage: date across, intellectual descent down. Every lineage line is now an arrow.'
         : 'Back to the map. No axes, no order, and every point is somewhere in the middle.');
     }
 
