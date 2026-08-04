@@ -28,9 +28,9 @@
      downwards instead of being squeezed sideways. */
   function preferredHeight() {
     var w = window.innerWidth || 1024;
-    if (isCompact()) return 940;
-    if (w < 900) return 800;
-    return 660;
+    if (isCompact()) return 1400;
+    if (w < 900) return 1150;
+    return 1000;
   }
 
   /* Fifteen names cannot all be legible at once on a phone. Below this width
@@ -152,6 +152,10 @@
        harder than two points sitting one above the other. Keeps labels from
        colliding without a separate de-collision pass. */
     var SQUASH = 1.9;
+    /* Every point pushes every other, so the total shove on any one of them
+       grows with the size of the map. Scaling by the count keeps a crowded
+       map from flattening itself against the edges. */
+    var rep = 54000 * (15 / nodes.length);
 
     for (i = 0; i < nodes.length; i++) {
       for (j = i + 1; j < nodes.length; j++) {
@@ -159,7 +163,7 @@
         dx = b.x - a.x; dy = b.y - a.y;
         var sy = dy * SQUASH;
         d = Math.sqrt(dx * dx + sy * sy) || 0.01;
-        f = Math.min(72000 / (d * d), 3.2);
+        f = Math.min(rep / (d * d), 3.2);
         dx = dx / d * f; dy = sy / d * f;
         a.vx -= dx; a.vy -= dy;
         b.vx += dx; b.vy += dy;
@@ -177,9 +181,20 @@
       q.vx -= ex; q.vy -= ey;
     });
 
+    /* A soft verge inside the hard edge. Without it a crowded map presses its
+       outermost points flat against the boundary in straight lines, which
+       reads as a box rather than a spread. */
+    var VERGE = 80;
+
     nodes.forEach(function (n) {
       n.vx += (W / 2 - n.x) * 0.0011;
       n.vy += (H / 2 - n.y) * 0.0016;
+
+      if (n.x < PAD_X + VERGE) n.vx += (PAD_X + VERGE - n.x) * 0.018;
+      if (n.x > W - PAD_X - VERGE) n.vx -= (n.x - (W - PAD_X - VERGE)) * 0.018;
+      if (n.y < PAD_Y + VERGE) n.vy += (PAD_Y + VERGE - n.y) * 0.018;
+      if (n.y > H - PAD_Y - VERGE) n.vy -= (n.y - (H - PAD_Y - VERGE)) * 0.018;
+
       if (n.fixed) { n.vx = n.vy = 0; return; }
       n.vx *= 0.86; n.vy *= 0.86;
       n.x += Math.max(-14, Math.min(14, n.vx));
@@ -238,6 +253,8 @@
   nodes.forEach(buildNode);
 
   function draw() {
+    var compact = isCompact();
+
     edges.forEach(function (e) {
       var el = edgeEls[e.id];
       if (!el) return;
@@ -254,9 +271,12 @@
       var left = n.x > W * 0.56;
       el.text.setAttribute('x', left ? -12 : 12);
       el.text.setAttribute('text-anchor', left ? 'end' : 'start');
+      if (!compact) el.text.setAttribute('dy', '0.35em');
       el.g.setAttribute('aria-label', n.name + ', ' +
         edgesFor(n.key).filter(function (e) { return !e.cut; }).length + ' connections');
     });
+
+    if (compact) stackVisibleLabels();
   }
 
   /* ---- keeping names off each other ----------------------------------- */
@@ -277,10 +297,45 @@
     };
   }
 
+  var fontUnits = 15;
+
   function measureLabels() {
     nodes.forEach(function (n) {
       var t = nodeEls[n.key].text;
       n.labelWidth = t.getComputedTextLength ? t.getComputedTextLength() : n.name.length * 7;
+    });
+    if (nodes.length && window.getComputedStyle) {
+      var size = parseFloat(window.getComputedStyle(nodeEls[nodes[0].key].text).fontSize);
+      if (size) fontUnits = size;
+    }
+  }
+
+  /* In compact mode the nodes stay put and only a handful of names are shown,
+     so collisions are settled by moving the words rather than the points. */
+  function stackVisibleLabels() {
+    var vis = [];
+    nodes.forEach(function (n) {
+      var cl = nodeEls[n.key].g.classList;
+      if (cl.contains('is-live') || cl.contains('is-near')) vis.push(n);
+    });
+    vis.sort(function (a, b) { return a.y - b.y; });
+
+    var lineHeight = fontUnits * 1.25;
+    var placed = [];
+
+    vis.forEach(function (n) {
+      var w = n.labelWidth || 0;
+      var left = n.x > W * 0.56;
+      var x0 = left ? n.x - 12 - w : n.x - 8;
+      var x1 = left ? n.x + 8 : n.x + 12 + w;
+      var off = 0;
+      placed.forEach(function (p) {
+        if (x0 >= p.x1 || p.x0 >= x1) return;
+        var mine = n.y + off;
+        if (Math.abs(mine - p.y) < lineHeight) off += (p.y + lineHeight) - mine;
+      });
+      placed.push({ x0: x0, x1: x1, y: n.y + off });
+      nodeEls[n.key].text.setAttribute('dy', (fontUnits * 0.35 + off).toFixed(1));
     });
   }
 
@@ -354,6 +409,8 @@
       if (!el) return;
       el.classList.toggle('is-live', !!key && !e.cut && (e.a === key || e.b === key));
     });
+
+    if (isCompact()) stackVisibleLabels();
   }
 
   function say(msg) {
