@@ -407,9 +407,22 @@
   var YEAR_MIN = 1800, YEAR_MAX = 2015;
   var TOP_PAD = 66, BOTTOM_PAD = 74;
 
+  /* The axis uses a piecewise scale: the isolated early section (pre-1860,
+     where only Hegel lives) is compressed into a small left band so it does
+     not pull the rest of the chart apart.  Everything from 1860 onwards is
+     linear at a higher density. */
+  var YEAR_BREAK = 1860;
+  var BREAK_FRAC = 0.06;   /* fraction of usable width given to pre-1860 */
+
   function plotX(year) {
-    var t = (year - YEAR_MIN) / (YEAR_MAX - YEAR_MIN);
-    return PAD_X + t * (W - 2 * PAD_X);
+    var span = W - 2 * PAD_X;
+    if (year <= YEAR_BREAK) {
+      var t = (year - YEAR_MIN) / (YEAR_BREAK - YEAR_MIN);
+      return PAD_X + t * span * BREAK_FRAC;
+    } else {
+      var t = (year - YEAR_BREAK) / (YEAR_MAX - YEAR_BREAK);
+      return PAD_X + span * BREAK_FRAC + t * span * (1 - BREAK_FRAC);
+    }
   }
 
   var tracingLayout = null;
@@ -583,11 +596,21 @@
     var top = PAD_Y + TOP_PAD - 26;
     var bottom = H - PAD_Y - BOTTOM_PAD + 26;
 
-    for (var y = YEAR_MIN + 25; y < YEAR_MAX; y += 25) {
+    /* Normal 25-year gridlines from 1875 onwards (the uniform section). */
+    for (var y = 1875; y < YEAR_MAX; y += 25) {
       var x = plotX(y);
       add('line', { x1: x, y1: top, x2: x, y2: bottom, class: 'rz-grid' });
       add('text', { x: x, y: bottom + 26, class: 'rz-tick', 'text-anchor': 'middle' }, String(y));
     }
+
+    /* Label Hegel's actual year at his compressed position. */
+    add('text', { x: plotX(1807), y: bottom + 26, class: 'rz-tick', 'text-anchor': 'middle' }, '1807');
+
+    /* Axis-break marks (two diagonal slashes) at the scale transition. */
+    var bx = plotX(YEAR_BREAK);
+    var bh = 9, bw = 4;
+    add('line', { x1: bx - bw, y1: bottom - bh, x2: bx + bw, y2: bottom + bh, class: 'rz-axis' });
+    add('line', { x1: bx + 2, y1: bottom - bh, x2: bx + 2 + bw * 2, y2: bottom + bh, class: 'rz-axis' });
 
     add('line', { x1: PAD_X, y1: bottom, x2: W - PAD_X, y2: bottom, class: 'rz-axis' });
 
