@@ -10,20 +10,6 @@
   --rz-ghost: #e4e8e6;
 }
 
-/* The intro runs into the map with no rule between them. */
-.rz-page main {
-  padding-bottom: 0;
-}
-
-.rz-page main:last-of-type {
-  padding-bottom: 80px;
-}
-
-#rhizome-intro {
-  padding-top: 64px;
-  padding-bottom: 36px;
-}
-
 .rz-lede {
   font-size: 1rem;
   max-width: 580px;
@@ -49,10 +35,41 @@
 }
 
 /* MAP — breaks the 680px column the rest of the site is written in. */
+/* The map is wider than the column the rest of the site is written in, so it
+   steps out of it and re-centres on the viewport. */
 .rz-stage {
-  max-width: 1240px;
-  margin: 0 auto;
-  padding: 0 40px;
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(1240px, calc(100vw - 32px));
+  padding: 0 20px;
+  margin: 34px 0 4px;
+}
+
+/* THE TEXT, FOLDED AWAY — still the source the map is drawn from, and still
+   the whole section for anyone without JavaScript. */
+.rz-more {
+  margin-top: 44px;
+  border-top: 1px solid var(--border);
+  padding-top: 22px;
+}
+
+.rz-more > summary {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--rz-muted);
+  cursor: pointer;
+}
+
+.rz-more > summary:hover {
+  color: var(--text);
+}
+
+.rz-more[open] > summary {
+  margin-bottom: 30px;
 }
 
 /* VIEW TOGGLE */
@@ -251,10 +268,6 @@
 }
 
 /* PLATEAU — the panel for whichever point you are currently standing on. */
-#rz-plateau-section {
-  padding-top: 40px;
-}
-
 .rz-plateau {
   border-top: 1px solid var(--border);
   padding-top: 28px;
@@ -442,11 +455,6 @@
 }
 
 @media (max-width: 620px) {
-  .rz-stage {
-    padding-left: 16px;
-    padding-right: 16px;
-  }
-
   .rz-node text {
     font-size: 38px;
   }

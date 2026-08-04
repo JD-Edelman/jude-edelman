@@ -1,8 +1,9 @@
 /* Rhizome map of theoretical influences.
  *
- * Reads the plain list in #rz-index and draws it as a map: no root, no ordering,
- * every point connectable to every other. Nothing here needs editing to change
- * the content — edit the list in rhizome.html instead.
+ * Draws the Influences section of index.html twice over: as a map, with no root
+ * and no ordering, and as a tracing, on a grid of date against reading. Both are
+ * built from the plain list inside the section, which is the only thing that
+ * needs editing to change the content.
  *
  * No dependencies, no build step, to match the rest of the site.
  */
@@ -270,7 +271,7 @@
     nodes.forEach(function (n) {
       var el = nodeEls[n.key];
       el.g.setAttribute('transform', 'translate(' + n.x + ',' + n.y + ')');
-      if (mode === 'tracing') {
+      if (mode === 'tracing' && n.labelDX !== undefined) {
         /* Positions are data here, so only the words are free to move. */
         el.text.setAttribute('x', n.labelDX);
         el.text.setAttribute('dy', n.labelDY);
@@ -451,10 +452,12 @@
         var x0 = c.anchor === 'end' ? n.x + c.dx - w
                : c.anchor === 'middle' ? n.x - w / 2
                : n.x + c.dx;
+        /* Generous around the baseline: the rendered box carries ascenders,
+           descenders and the white halo the labels are drawn with. */
         var box = {
-          x0: x0 - 3, x1: x0 + w + 3,
-          y0: n.y + c.dy - lineHeight * 0.8,
-          y1: n.y + c.dy + lineHeight * 0.35
+          x0: x0 - 5, x1: x0 + w + 5,
+          y0: n.y + c.dy - lineHeight * 0.88,
+          y1: n.y + c.dy + lineHeight * 0.44
         };
         if (box.x0 < PAD_X - 40 || box.x1 > W - PAD_X + 40) continue;
 
@@ -472,14 +475,13 @@
         if (!clash) { chosen = c; placed.push(box); }
       }
 
-      if (chosen) {
-        n.labelDX = chosen.dx;
-        n.labelDY = chosen.dy.toFixed(1);
-        n.labelAnchor = chosen.anchor;
-        n.labelHidden = false;
-      } else {
-        n.labelHidden = true;
-      }
+      /* A name that fits nowhere is still given a position — it is hidden, not
+         unplaced, so that lighting it up on hover puts it somewhere sensible. */
+      var use = chosen || candidates[0];
+      n.labelDX = use.dx;
+      n.labelDY = use.dy.toFixed(1);
+      n.labelAnchor = use.anchor;
+      n.labelHidden = !chosen;
     });
   }
 
@@ -900,6 +902,13 @@
         n.fixed = true;
         targets[n.key] = tracingTarget(n);
       });
+      /* Work out where the names will sit before the points set off, so the
+         first frame of the flight already has somewhere to put them. */
+      var held = nodes.map(function (n) { return { n: n, x: n.x, y: n.y }; });
+      nodes.forEach(function (n) { n.x = targets[n.key].x; n.y = targets[n.key].y; });
+      measureLabels();
+      placeTracingLabels();
+      held.forEach(function (h) { h.n.x = h.x; h.n.y = h.y; });
     } else {
       nodes.forEach(function (n) { n.fixed = false; });
       var keep = nodes.map(function (n) { return { key: n.key, x: n.x, y: n.y }; });
