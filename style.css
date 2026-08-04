@@ -5,10 +5,11 @@
 }
 
 :root {
-  --bg: #ffffff;
+  --bg: #faf8f5;
   --text: #111111;
-  --muted: #555555;
-  --border: #cccccc;
+  --muted: #666666;
+  --border: #d8d4ce;
+  --accent: #7a3b2e;
 }
 
 html {
@@ -22,6 +23,14 @@ body {
   font-size: 17px;
   line-height: 1.75;
   -webkit-font-smoothing: antialiased;
+}
+
+/* top accent stripe */
+body::before {
+  content: '';
+  display: block;
+  height: 4px;
+  background: var(--accent);
 }
 
 /* NAV */
@@ -61,7 +70,7 @@ nav {
 }
 
 .nav-links a:hover {
-  color: var(--text);
+  color: var(--accent);
 }
 
 /* LAYOUT */
@@ -116,7 +125,7 @@ h2 {
   font-weight: 500;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: var(--accent);
   margin-bottom: 28px;
 }
 
@@ -163,6 +172,13 @@ h2 {
 .paper-status {
   font-size: 0.88rem;
   color: var(--muted);
+}
+
+/* PAPER NOTE (equal authorship footnote) */
+.paper-note {
+  font-size: 0.82rem;
+  color: var(--muted);
+  margin-top: 8px;
 }
 
 /* CV */
