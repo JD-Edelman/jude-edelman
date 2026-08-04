@@ -31,9 +31,12 @@
     <section id="rhizome-intro">
       <h2>Theoretical Inspirations</h2>
       <p class="rz-lede">
-        This page is a map rather than a lineage. It has no root and no first entry &mdash; each
-        visit opens somewhere different, in the middle of things. Follow a line to see what it
-        connects; cut one to see what grows in its place.
+        The same thirty-two thinkers, drawn twice. <strong>The map</strong> has no root and no
+        first entry &mdash; each visit opens somewhere different, in the middle of things; follow
+        a line to see what it connects, or cut one to see what grows in its place.
+        <strong>The tracing</strong> puts them on a grid instead: date across the bottom,
+        materialist to discursive up the side, every descent turned into an arrow. Neither is the
+        true picture. The difference between them is the argument.
       </p>
       <p class="rz-epigraph">
         &ldquo;Any point of a rhizome can be connected to anything other, and must be.&rdquo;
@@ -43,11 +46,22 @@
 
   </main>
 
-  <!-- The map is drawn by rhizome.js from the plain-text list further down the page. -->
+  <!-- Both views are drawn by rhizome.js from the plain-text list further down the page. -->
   <div class="rz-stage" id="rz-stage">
+    <div class="rz-views" id="rz-views" hidden role="group" aria-label="How to draw the influences">
+      <button type="button" class="rz-view" id="rz-view-map" aria-pressed="true">The Map</button>
+      <button type="button" class="rz-view" id="rz-view-tracing" aria-pressed="false">The Tracing</button>
+    </div>
     <div class="rz-canvas" id="rz-canvas" hidden>
       <svg id="rz-svg" viewBox="0 0 1000 660" role="application"
            aria-label="Interactive map of theoretical influences. Each thinker is a point; each line is a relation.">
+        <defs>
+          <marker id="rz-arrow" viewBox="0 0 8 8" refX="7" refY="4"
+                  markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 1 L 7 4 L 0 7 z" class="rz-arrowhead" />
+          </marker>
+        </defs>
+        <g id="rz-axes" aria-hidden="true"></g>
         <g id="rz-edges"></g>
         <g id="rz-nodes"></g>
       </svg>
@@ -86,7 +100,7 @@
 
       <ul class="rz-source">
 
-        <li id="rz-nietzsche" data-links="foucault|lineage, deleuze|lineage, derrida|lineage, jung|lineage">
+        <li id="rz-nietzsche" data-year="1887" data-ideology="72" data-links="foucault|lineage, deleuze|lineage, derrida|lineage, jung|lineage">
           <h3>Friedrich Nietzsche</h3>
           <p class="rz-work"><em>On the Genealogy of Morality</em> (1887)</p>
           <p class="rz-gloss">
@@ -96,7 +110,7 @@
           </p>
         </li>
 
-        <li id="rz-hegel" data-links="marx|lineage, beauvoir|lineage, fanon|lineage">
+        <li id="rz-hegel" data-year="1807" data-ideology="88" data-links="marx|lineage, beauvoir|lineage, fanon|lineage">
           <h3>G. W. F. Hegel</h3>
           <p class="rz-work"><em>Phenomenology of Spirit</em> (1807)</p>
           <p class="rz-gloss">
@@ -106,7 +120,7 @@
           </p>
         </li>
 
-        <li id="rz-marx" data-links="gramsci|lineage, lefebvre|lineage, burawoy|lineage, wright|lineage, bhaskar|lineage, dubois|lineage, weber|tension">
+        <li id="rz-marx" data-year="1867" data-ideology="5" data-links="gramsci|lineage, lefebvre|lineage, burawoy|lineage, wright|lineage, bhaskar|lineage, dubois|lineage, weber|tension">
           <h3>Karl Marx</h3>
           <p class="rz-work"><em>Capital</em> (1867)</p>
           <p class="rz-gloss">
@@ -116,7 +130,7 @@
           </p>
         </li>
 
-        <li id="rz-weber" data-links="bourdieu|lineage, tilly|shared">
+        <li id="rz-weber" data-year="1922" data-ideology="48" data-links="bourdieu|lineage, tilly|shared">
           <h3>Max Weber</h3>
           <p class="rz-work"><em>Economy and Society</em> (1922)</p>
           <p class="rz-gloss">
@@ -126,7 +140,7 @@
           </p>
         </li>
 
-        <li id="rz-bachelard" data-links="bourdieu|lineage, bhaskar|shared">
+        <li id="rz-bachelard" data-year="1938" data-ideology="62" data-links="bourdieu|lineage, bhaskar|shared">
           <h3>Gaston Bachelard</h3>
           <p class="rz-work"><em>The Formation of the Scientific Mind</em> (1938)</p>
           <p class="rz-gloss">
@@ -135,7 +149,7 @@
           </p>
         </li>
 
-        <li id="rz-bourdieu" data-links="wacquant|lineage, foucault|tension">
+        <li id="rz-bourdieu" data-year="1968" data-ideology="42" data-links="wacquant|lineage, foucault|tension">
           <h3>Pierre Bourdieu</h3>
           <p class="rz-work"><em>The Craft of Sociology</em> (1968); <em>Distinction</em> (1979)</p>
           <p class="rz-gloss">
@@ -145,7 +159,7 @@
           </p>
         </li>
 
-        <li id="rz-foucault" data-links="wacquant|lineage, deleuze|alliance, derrida|tension, roberts|shared, gilmore|tension">
+        <li id="rz-foucault" data-year="1975" data-ideology="65" data-links="wacquant|lineage, deleuze|alliance, derrida|tension, roberts|shared, gilmore|tension">
           <h3>Michel Foucault</h3>
           <p class="rz-work"><em>Discipline and Punish</em> (1975)</p>
           <p class="rz-gloss">
@@ -155,7 +169,7 @@
           </p>
         </li>
 
-        <li id="rz-wacquant" data-links="roberts|shared">
+        <li id="rz-wacquant" data-year="2008" data-ideology="25" data-links="roberts|shared">
           <h3>Lo&iuml;c Wacquant</h3>
           <p class="rz-work"><em>Urban Outcasts</em> (2008); <em>Punishing the Poor</em> (2009)</p>
           <p class="rz-gloss">
@@ -165,7 +179,7 @@
           </p>
         </li>
 
-        <li id="rz-deleuze" data-links="guattari|alliance, derrida|tension, lefebvre|tension, beauvoir|shared">
+        <li id="rz-deleuze" data-year="1962" data-ideology="78" data-links="guattari|alliance, derrida|tension, lefebvre|tension, beauvoir|shared">
           <h3>Gilles Deleuze</h3>
           <p class="rz-work"><em>Nietzsche and Philosophy</em> (1962); <em>Difference and Repetition</em> (1968)</p>
           <p class="rz-gloss">
@@ -175,7 +189,7 @@
           </p>
         </li>
 
-        <li id="rz-guattari" data-links="jung|tension">
+        <li id="rz-guattari" data-year="1989" data-ideology="75" data-links="jung|tension">
           <h3>F&eacute;lix Guattari</h3>
           <p class="rz-work"><em>The Three Ecologies</em> (1989); <em>Chaosmosis</em> (1992)</p>
           <p class="rz-gloss">
@@ -185,7 +199,7 @@
           </p>
         </li>
 
-        <li id="rz-derrida" data-links="">
+        <li id="rz-derrida" data-year="1967" data-ideology="92" data-links="">
           <h3>Jacques Derrida</h3>
           <p class="rz-work"><em>Of Grammatology</em> (1967); &ldquo;Cogito and the History of Madness&rdquo; (1963)</p>
           <p class="rz-gloss">
@@ -195,7 +209,7 @@
           </p>
         </li>
 
-        <li id="rz-lyotard" data-links="derrida|alliance, deleuze|alliance, marx|tension, hartman|shared">
+        <li id="rz-lyotard" data-year="1979" data-ideology="85" data-links="derrida|alliance, deleuze|alliance, marx|tension, hartman|shared">
           <h3>Jean-Fran&ccedil;ois Lyotard</h3>
           <p class="rz-work"><em>The Postmodern Condition</em> (1979); <em>The Differend</em> (1983)</p>
           <p class="rz-gloss">
@@ -205,7 +219,7 @@
           </p>
         </li>
 
-        <li id="rz-beauvoir" data-links="collins|lineage, fanon|shared">
+        <li id="rz-beauvoir" data-year="1949" data-ideology="58" data-links="collins|lineage, fanon|shared">
           <h3>Simone de Beauvoir</h3>
           <p class="rz-work"><em>The Second Sex</em> (1949)</p>
           <p class="rz-gloss">
@@ -215,7 +229,7 @@
           </p>
         </li>
 
-        <li id="rz-jung" data-links="von-franz|lineage">
+        <li id="rz-jung" data-year="1921" data-ideology="90" data-links="von-franz|lineage">
           <h3>Carl Jung</h3>
           <p class="rz-work"><em>Psychological Types</em> (1921); <em>The Archetypes and the Collective Unconscious</em> (1959)</p>
           <p class="rz-gloss">
@@ -225,7 +239,7 @@
           </p>
         </li>
 
-        <li id="rz-von-franz" data-links="">
+        <li id="rz-von-franz" data-year="1970" data-ideology="90" data-links="">
           <h3>Marie-Louise von Franz</h3>
           <p class="rz-work"><em>The Interpretation of Fairy Tales</em> (1970)</p>
           <p class="rz-gloss">
@@ -235,7 +249,7 @@
           </p>
         </li>
 
-        <li id="rz-gramsci" data-links="fanon|lineage, hall|lineage, burawoy|lineage">
+        <li id="rz-gramsci" data-year="1929" data-ideology="38" data-links="fanon|lineage, hall|lineage, burawoy|lineage">
           <h3>Antonio Gramsci</h3>
           <p class="rz-work"><em>Prison Notebooks</em> (1929&ndash;1935)</p>
           <p class="rz-gloss">
@@ -245,7 +259,7 @@
           </p>
         </li>
 
-        <li id="rz-fanon" data-links="hall|lineage, hartman|lineage">
+        <li id="rz-fanon" data-year="1952" data-ideology="55" data-links="hall|lineage, hartman|lineage">
           <h3>Frantz Fanon</h3>
           <p class="rz-work"><em>Black Skin, White Masks</em> (1952); <em>The Wretched of the Earth</em> (1961)</p>
           <p class="rz-gloss">
@@ -255,7 +269,7 @@
           </p>
         </li>
 
-        <li id="rz-hall" data-links="">
+        <li id="rz-hall" data-year="1973" data-ideology="68" data-links="">
           <h3>Stuart Hall</h3>
           <p class="rz-work">&ldquo;Encoding/Decoding&rdquo; (1973); <em>Policing the Crisis</em> (1978)</p>
           <p class="rz-gloss">
@@ -265,7 +279,7 @@
           </p>
         </li>
 
-        <li id="rz-burawoy" data-links="wright|alliance">
+        <li id="rz-burawoy" data-year="1979" data-ideology="15" data-links="wright|alliance">
           <h3>Michael Burawoy</h3>
           <p class="rz-work"><em>Manufacturing Consent</em> (1979); &ldquo;For Public Sociology&rdquo; (2005)</p>
           <p class="rz-gloss">
@@ -274,7 +288,7 @@
           </p>
         </li>
 
-        <li id="rz-lefebvre" data-links="wacquant|shared, gilmore|lineage">
+        <li id="rz-lefebvre" data-year="1974" data-ideology="30" data-links="wacquant|shared, gilmore|lineage">
           <h3>Henri Lefebvre</h3>
           <p class="rz-work"><em>The Production of Space</em> (1974)</p>
           <p class="rz-gloss">
@@ -284,7 +298,7 @@
           </p>
         </li>
 
-        <li id="rz-wright" data-links="tilly|shared">
+        <li id="rz-wright" data-year="1985" data-ideology="10" data-links="tilly|shared">
           <h3>Erik Olin Wright</h3>
           <p class="rz-work"><em>Classes</em> (1985); <em>Envisioning Real Utopias</em> (2010)</p>
           <p class="rz-gloss">
@@ -294,7 +308,7 @@
           </p>
         </li>
 
-        <li id="rz-tilly" data-links="roberts|shared">
+        <li id="rz-tilly" data-year="1998" data-ideology="12" data-links="roberts|shared">
           <h3>Charles Tilly</h3>
           <p class="rz-work"><em>Durable Inequality</em> (1998)</p>
           <p class="rz-gloss">
@@ -304,7 +318,7 @@
           </p>
         </li>
 
-        <li id="rz-dubois" data-links="collins|lineage, bell|lineage, gilmore|lineage, weber|shared">
+        <li id="rz-dubois" data-year="1899" data-ideology="35" data-links="collins|lineage, bell|lineage, gilmore|lineage, weber|shared">
           <h3>W. E. B. Du Bois</h3>
           <p class="rz-work"><em>The Philadelphia Negro</em> (1899); <em>Black Reconstruction</em> (1935)</p>
           <p class="rz-gloss">
@@ -314,7 +328,7 @@
           </p>
         </li>
 
-        <li id="rz-bell" data-links="crenshaw|lineage, harris|lineage, roberts|lineage">
+        <li id="rz-bell" data-year="1980" data-ideology="40" data-links="crenshaw|lineage, harris|lineage, roberts|lineage">
           <h3>Derrick Bell</h3>
           <p class="rz-work">&ldquo;Brown v. Board and the Interest-Convergence Dilemma&rdquo; (1980)</p>
           <p class="rz-gloss">
@@ -324,7 +338,7 @@
           </p>
         </li>
 
-        <li id="rz-crenshaw" data-links="collins|alliance, harris|alliance">
+        <li id="rz-crenshaw" data-year="1989" data-ideology="55" data-links="collins|alliance, harris|alliance">
           <h3>Kimberl&eacute; Crenshaw</h3>
           <p class="rz-work">&ldquo;Demarginalizing the Intersection&rdquo; (1989)</p>
           <p class="rz-gloss">
@@ -333,7 +347,7 @@
           </p>
         </li>
 
-        <li id="rz-harris" data-links="">
+        <li id="rz-harris" data-year="1993" data-ideology="38" data-links="">
           <h3>Cheryl Harris</h3>
           <p class="rz-work">&ldquo;Whiteness as Property&rdquo; (1993)</p>
           <p class="rz-gloss">
@@ -343,7 +357,7 @@
           </p>
         </li>
 
-        <li id="rz-collins" data-links="hall|shared">
+        <li id="rz-collins" data-year="1990" data-ideology="62" data-links="hall|shared">
           <h3>Patricia Hill Collins</h3>
           <p class="rz-work"><em>Black Feminist Thought</em> (1990)</p>
           <p class="rz-gloss">
@@ -352,7 +366,7 @@
           </p>
         </li>
 
-        <li id="rz-hartman" data-links="roberts|shared, collins|alliance">
+        <li id="rz-hartman" data-year="1997" data-ideology="80" data-links="roberts|shared, collins|alliance">
           <h3>Saidiya Hartman</h3>
           <p class="rz-work"><em>Scenes of Subjection</em> (1997); <em>Lose Your Mother</em> (2007)</p>
           <p class="rz-gloss">
@@ -362,7 +376,7 @@
           </p>
         </li>
 
-        <li id="rz-roberts" data-links="">
+        <li id="rz-roberts" data-year="2002" data-ideology="33" data-links="">
           <h3>Dorothy Roberts</h3>
           <p class="rz-work"><em>Shattered Bonds</em> (2002); <em>Torn Apart</em> (2022)</p>
           <p class="rz-gloss">
@@ -372,7 +386,7 @@
           </p>
         </li>
 
-        <li id="rz-gilmore" data-links="roberts|alliance, wacquant|tension">
+        <li id="rz-gilmore" data-year="2007" data-ideology="20" data-links="roberts|alliance, wacquant|tension">
           <h3>Ruth Wilson Gilmore</h3>
           <p class="rz-work"><em>Golden Gulag</em> (2007)</p>
           <p class="rz-gloss">
@@ -382,7 +396,7 @@
           </p>
         </li>
 
-        <li id="rz-bhaskar" data-links="archer|lineage">
+        <li id="rz-bhaskar" data-year="1975" data-ideology="22" data-links="archer|lineage">
           <h3>Roy Bhaskar</h3>
           <p class="rz-work"><em>A Realist Theory of Science</em> (1975); <em>The Possibility of Naturalism</em> (1979)</p>
           <p class="rz-gloss">
@@ -392,7 +406,7 @@
           </p>
         </li>
 
-        <li id="rz-archer" data-links="bourdieu|tension">
+        <li id="rz-archer" data-year="1995" data-ideology="32" data-links="bourdieu|tension">
           <h3>Margaret Archer</h3>
           <p class="rz-work"><em>Realist Social Theory</em> (1995); <em>Structure, Agency and the Internal Conversation</em> (2003)</p>
           <p class="rz-gloss">

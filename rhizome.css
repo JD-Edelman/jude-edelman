@@ -55,6 +55,84 @@
   padding: 0 40px;
 }
 
+/* VIEW TOGGLE */
+.rz-views {
+  display: flex;
+  gap: 26px;
+  justify-content: center;
+  margin-bottom: 18px;
+}
+
+.rz-view {
+  background: none;
+  border: none;
+  border-bottom: 1px solid transparent;
+  padding: 0 0 3px;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--rz-muted);
+  cursor: pointer;
+}
+
+.rz-view:hover {
+  color: var(--text);
+}
+
+.rz-view[aria-pressed="true"] {
+  color: var(--rz-accent);
+  border-bottom-color: var(--rz-accent);
+}
+
+/* GRID — only the tracing has one, and it stays a shade off the page. */
+.rz-grid {
+  stroke: #e6eae8;
+  stroke-width: 1;
+}
+
+.rz-axis {
+  stroke: var(--rz-line);
+  stroke-width: 1;
+}
+
+.rz-tick {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  fill: var(--rz-muted);
+}
+
+.rz-axis-title {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  fill: var(--rz-muted);
+}
+
+.rz-arrowhead {
+  fill: var(--rz-line);
+  fill: context-stroke; /* so a lit line lights its arrowhead too */
+}
+
+/* A name with nowhere to sit is dropped rather than allowed to overlap;
+   the point keeps its place and the list below still carries the text. */
+.rz-node.rz-unlabelled text {
+  visibility: hidden;
+}
+
+.rz-node.rz-unlabelled.is-live text,
+.rz-node.rz-unlabelled.is-near text {
+  visibility: visible;
+}
+
+.rz-tracing .rz-node {
+  cursor: pointer;
+}
+
 .rz-canvas svg {
   display: block;
   width: 100%;

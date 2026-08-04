@@ -73,6 +73,8 @@
       work: work ? work.innerHTML : '',
       gloss: gloss ? gloss.textContent.trim() : '',
       raw: li.getAttribute('data-links') || '',
+      year: parseInt(li.getAttribute('data-year'), 10),
+      ideology: parseFloat(li.getAttribute('data-ideology')),
       x: 0, y: 0, vx: 0, vy: 0, fixed: false
     };
     nodes.push(node);
@@ -268,10 +270,19 @@
     nodes.forEach(function (n) {
       var el = nodeEls[n.key];
       el.g.setAttribute('transform', 'translate(' + n.x + ',' + n.y + ')');
-      var left = n.x > W * 0.56;
-      el.text.setAttribute('x', left ? -12 : 12);
-      el.text.setAttribute('text-anchor', left ? 'end' : 'start');
-      if (!compact) el.text.setAttribute('dy', '0.35em');
+      if (mode === 'tracing') {
+        /* Positions are data here, so only the words are free to move. */
+        el.text.setAttribute('x', n.labelDX);
+        el.text.setAttribute('dy', n.labelDY);
+        el.text.setAttribute('text-anchor', n.labelAnchor);
+        el.g.classList.toggle('rz-unlabelled', !!n.labelHidden);
+      } else {
+        var left = n.x > W * 0.56;
+        el.text.setAttribute('x', left ? -12 : 12);
+        el.text.setAttribute('text-anchor', left ? 'end' : 'start');
+        if (!compact) el.text.setAttribute('dy', '0.35em');
+        el.g.classList.remove('rz-unlabelled');
+      }
       el.g.setAttribute('aria-label', n.name + ', ' +
         edgesFor(n.key).filter(function (e) { return !e.cut; }).length + ' connections');
     });
@@ -372,9 +383,142 @@
     }
   }
 
+  /* ---- the tracing --------------------------------------------------- */
+
+  /* "What distinguishes the map from the tracing is that it is entirely
+     oriented toward an experimentation in contact with the real." The tracing
+     is the same material reproduced onto a grid: dated, ranked, and directed.
+     Nothing here is a better picture than the map — it is the other picture. */
+
+  var mode = 'map';
+  var axesLayer = document.getElementById('rz-axes');
+
+  var YEAR_MIN = 1800, YEAR_MAX = 2015;
+  var TOP_PAD = 66, BOTTOM_PAD = 74;
+
+  function plotX(year) {
+    var t = (year - YEAR_MIN) / (YEAR_MAX - YEAR_MIN);
+    return PAD_X + t * (W - 2 * PAD_X);
+  }
+
+  function plotY(ideology) {
+    var top = PAD_Y + TOP_PAD;
+    var bottom = H - PAD_Y - BOTTOM_PAD;
+    return bottom - (ideology / 100) * (bottom - top);
+  }
+
+  function tracingTarget(n) {
+    return { x: plotX(n.year), y: plotY(n.ideology) };
+  }
+
+  /* Point-feature labelling: try positions around the dot in order of
+     preference and take the first that collides with nothing already placed.
+     A name that fits nowhere is dropped rather than allowed to overlap — the
+     list below the chart still carries it. */
+  function placeTracingLabels() {
+    var lineHeight = fontUnits * 1.2;
+    var placed = [];
+
+    var order = nodes.slice().sort(function (a, b) {
+      return edgesFor(b.key).length - edgesFor(a.key).length;
+    });
+
+    order.forEach(function (n) {
+      var w = n.labelWidth || 0;
+      var candidates = [
+        { dx: 12, dy: fontUnits * 0.35, anchor: 'start' },
+        { dx: -12, dy: fontUnits * 0.35, anchor: 'end' },
+        { dx: 0, dy: -13, anchor: 'middle' },
+        { dx: 0, dy: fontUnits + 8, anchor: 'middle' },
+        { dx: 12, dy: -13, anchor: 'start' },
+        { dx: -12, dy: -13, anchor: 'end' },
+        { dx: 12, dy: fontUnits + 8, anchor: 'start' },
+        { dx: -12, dy: fontUnits + 8, anchor: 'end' },
+        /* A second, wider ring for the crowded decades. */
+        { dx: 28, dy: fontUnits * 0.35, anchor: 'start' },
+        { dx: -28, dy: fontUnits * 0.35, anchor: 'end' },
+        { dx: 0, dy: -30, anchor: 'middle' },
+        { dx: 0, dy: fontUnits + 26, anchor: 'middle' },
+        { dx: 28, dy: -24, anchor: 'start' },
+        { dx: -28, dy: -24, anchor: 'end' },
+        { dx: 28, dy: fontUnits + 22, anchor: 'start' },
+        { dx: -28, dy: fontUnits + 22, anchor: 'end' }
+      ];
+
+      var chosen = null;
+      for (var i = 0; i < candidates.length && !chosen; i++) {
+        var c = candidates[i];
+        var x0 = c.anchor === 'end' ? n.x + c.dx - w
+               : c.anchor === 'middle' ? n.x - w / 2
+               : n.x + c.dx;
+        var box = {
+          x0: x0 - 3, x1: x0 + w + 3,
+          y0: n.y + c.dy - lineHeight * 0.8,
+          y1: n.y + c.dy + lineHeight * 0.35
+        };
+        if (box.x0 < PAD_X - 40 || box.x1 > W - PAD_X + 40) continue;
+
+        var clash = false;
+        for (var k = 0; k < placed.length && !clash; k++) {
+          var p = placed[k];
+          if (box.x0 < p.x1 && p.x0 < box.x1 && box.y0 < p.y1 && p.y0 < box.y1) clash = true;
+        }
+        /* A name must not sit on top of somebody else's point either. */
+        for (var m = 0; m < nodes.length && !clash; m++) {
+          var o = nodes[m];
+          if (o === n) continue;
+          if (box.x0 < o.x + 7 && o.x - 7 < box.x1 && box.y0 < o.y + 7 && o.y - 7 < box.y1) clash = true;
+        }
+        if (!clash) { chosen = c; placed.push(box); }
+      }
+
+      if (chosen) {
+        n.labelDX = chosen.dx;
+        n.labelDY = chosen.dy.toFixed(1);
+        n.labelAnchor = chosen.anchor;
+        n.labelHidden = false;
+      } else {
+        n.labelHidden = true;
+      }
+    });
+  }
+
+  function drawAxes() {
+    while (axesLayer.firstChild) axesLayer.removeChild(axesLayer.firstChild);
+    if (mode !== 'tracing') return;
+
+    function add(tag, attrs, text) {
+      var el = document.createElementNS(SVG_NS, tag);
+      Object.keys(attrs).forEach(function (k) { el.setAttribute(k, attrs[k]); });
+      if (text !== undefined) el.textContent = text;
+      axesLayer.appendChild(el);
+      return el;
+    }
+
+    var top = PAD_Y + TOP_PAD - 26;
+    var bottom = H - PAD_Y - BOTTOM_PAD + 26;
+
+    for (var y = YEAR_MIN + 25; y < YEAR_MAX; y += 25) {
+      var x = plotX(y);
+      add('line', { x1: x, y1: top, x2: x, y2: bottom, class: 'rz-grid' });
+      add('text', { x: x, y: bottom + 26, class: 'rz-tick', 'text-anchor': 'middle' }, String(y));
+    }
+
+    add('line', { x1: PAD_X, y1: bottom, x2: W - PAD_X, y2: bottom, class: 'rz-axis' });
+    add('line', { x1: PAD_X, y1: plotY(50), x2: W - PAD_X, y2: plotY(50), class: 'rz-grid' });
+
+    add('text', { x: W - PAD_X, y: bottom + 50, class: 'rz-axis-title', 'text-anchor': 'end' },
+      'Year of the work cited');
+    add('text', { x: PAD_X, y: plotY(100) - 26, class: 'rz-axis-title' },
+      'Discursive construction');
+    add('text', { x: PAD_X, y: plotY(0) + 34, class: 'rz-axis-title' },
+      'Material determination');
+  }
+
   function tidy() {
     measureLabels();
-    relaxLabels(40);
+    if (mode === 'tracing') placeTracingLabels();
+    else relaxLabels(40);
     draw();
   }
 
@@ -521,6 +665,7 @@
   function sever(e) {
     e.cut = true;
     var grown = sprout(e);
+    markLineageDirection();
     say(grown
       ? 'A line was cut between ' + byKey[e.a].name + ' and ' + byKey[e.b].name +
         '. Another has grown between ' + byKey[grown.a].name + ' and ' + byKey[grown.b].name + '.'
@@ -533,6 +678,7 @@
 
   function restore(e) {
     e.cut = false;
+    markLineageDirection();
     say('The line between ' + byKey[e.a].name + ' and ' + byKey[e.b].name + ' is back.');
     renderPlateau();
     paint();
@@ -552,11 +698,21 @@
       e.cut = false;
       return true;
     });
-    nodes.forEach(function (n) { n.fixed = false; });
-    seedPositions();
-    settle(700);
+    if (mode === 'tracing') {
+      nodes.forEach(function (n) {
+        var t = tracingTarget(n);
+        n.x = t.x; n.y = t.y; n.fixed = true;
+      });
+    } else {
+      nodes.forEach(function (n) { n.fixed = false; });
+      seedPositions();
+      settle(700);
+    }
+    markLineageDirection();
     tidy();
-    say('The map is back to where it started.');
+    say(mode === 'tracing'
+      ? 'The tracing is back to where it started.'
+      : 'The map is back to where it started.');
     renderPlateau();
     paint();
   }
@@ -579,6 +735,8 @@
   }
 
   function reheat() {
+    /* On the grid the points are pinned by their data; there is nothing to settle. */
+    if (mode === 'tracing') { draw(); return; }
     if (reduce) { settle(120); draw(); return; }
     frames = 90;
     if (!running) { running = true; requestAnimationFrame(loop); }
@@ -606,13 +764,15 @@
     el.g.addEventListener('pointerdown', function (evt) {
       evt.preventDefault();
       var p = svgPoint(evt);
-      drag = { dx: n.x - p.x, dy: n.y - p.y, moved: false };
-      el.g.classList.add('is-dragging');
+      /* A point on the grid says where its work falls in time and in reading.
+         Dragging it would make the chart lie, so it only accepts a press. */
+      drag = { dx: n.x - p.x, dy: n.y - p.y, moved: false, locked: mode === 'tracing' };
+      if (!drag.locked) el.g.classList.add('is-dragging');
       el.g.setPointerCapture(evt.pointerId);
     });
 
     el.g.addEventListener('pointermove', function (evt) {
-      if (!drag) return;
+      if (!drag || drag.locked) return;
       var p = svgPoint(evt);
       var nx = p.x + drag.dx, ny = p.y + drag.dy;
       if (Math.abs(nx - n.x) + Math.abs(ny - n.y) > 3) drag.moved = true;
@@ -631,7 +791,10 @@
         el.g.releasePointerCapture(evt.pointerId);
       }
       /* A press that did not move is a choice of where to stand. */
-      if (!drag.moved) { n.fixed = false; select(n.key); }
+      if (!drag.moved) {
+        if (mode !== 'tracing') n.fixed = false;
+        select(n.key);
+      }
       drag = null;
     }
 
@@ -658,14 +821,21 @@
     H = preferredHeight();
     svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
     canvas.classList.toggle('rz-compact', isCompact());
-    if (hint) {
-      hint.textContent = isCompact()
-        ? 'Tap a point to stand there. Drag to remake the map.'
-        : 'Hover or tab through the points. Drag to remake the map. Cut a line from the panel below.';
+    setHint();
+
+    if (mode === 'tracing') {
+      /* The grid is measured off the canvas, so a new canvas means new
+         coordinates for the same dates and readings. */
+      nodes.forEach(function (n) {
+        var t = tracingTarget(n);
+        n.x = t.x; n.y = t.y; n.fixed = true;
+      });
+      drawAxes();
+    } else {
+      nodes.forEach(function (n) { n.fixed = false; });
+      seedPositions();
+      settle(700);
     }
-    nodes.forEach(function (n) { n.fixed = false; });
-    seedPositions();
-    settle(700);
     tidy();
     paint();
   }
@@ -682,6 +852,112 @@
   }
 
   /* Rotating a phone changes which shape the map should be. */
+  /* ---- switching between the two pictures ------------------------------ */
+
+  var mapBtn = document.getElementById('rz-view-map');
+  var tracingBtn = document.getElementById('rz-view-tracing');
+  var views = document.getElementById('rz-views');
+
+  function setHint() {
+    if (!hint) return;
+    if (mode === 'tracing') {
+      hint.textContent = isCompact()
+        ? 'Tap a point to stand there. Position is fixed by date and reading.'
+        : 'Hover or tab through the points. Position here is fixed by date and reading, so the points cannot be moved.';
+    } else {
+      hint.textContent = isCompact()
+        ? 'Tap a point to stand there. Drag to remake the map.'
+        : 'Hover or tab through the points. Drag to remake the map. Cut a line from the panel below.';
+    }
+  }
+
+  function markLineageDirection() {
+    edges.forEach(function (e) {
+      var el = edgeEls[e.id];
+      if (!el) return;
+      /* The tracing turns every descent into an arrow — that is what makes it
+         a tree. The map leaves the same lines undirected. */
+      if (mode === 'tracing' && e.rel === 'lineage' && !e.cut) {
+        el.setAttribute('marker-end', 'url(#rz-arrow)');
+      } else {
+        el.removeAttribute('marker-end');
+      }
+    });
+  }
+
+  function setMode(next) {
+    if (next === mode) return;
+    mode = next;
+
+    canvas.classList.toggle('rz-tracing', mode === 'tracing');
+    if (mapBtn) mapBtn.setAttribute('aria-pressed', String(mode === 'map'));
+    if (tracingBtn) tracingBtn.setAttribute('aria-pressed', String(mode === 'tracing'));
+    setHint();
+
+    var targets = {};
+    if (mode === 'tracing') {
+      nodes.forEach(function (n) {
+        n.fixed = true;
+        targets[n.key] = tracingTarget(n);
+      });
+    } else {
+      nodes.forEach(function (n) { n.fixed = false; });
+      var keep = nodes.map(function (n) { return { key: n.key, x: n.x, y: n.y }; });
+      seedPositions();
+      settle(700);
+      measureLabels();
+      relaxLabels(40);
+      nodes.forEach(function (n) { targets[n.key] = { x: n.x, y: n.y }; });
+      keep.forEach(function (k) { byKey[k.key].x = k.x; byKey[k.key].y = k.y; });
+    }
+
+    var from = nodes.map(function (n) { return { n: n, x: n.x, y: n.y }; });
+
+    function land() {
+      nodes.forEach(function (n) {
+        n.x = targets[n.key].x;
+        n.y = targets[n.key].y;
+        n.vx = n.vy = 0;
+      });
+      drawAxes();
+      markLineageDirection();
+      tidy();
+      paint();
+      say(mode === 'tracing'
+        ? 'The same thirty-two, traced onto a grid: date across, reading up. Every descent is now an arrow.'
+        : 'Back to the map. No axes, no order, and every point is somewhere in the middle.');
+    }
+
+    if (reduce) { land(); return; }
+
+    /* Redraw the axes only once the points have arrived, so the grid does not
+       appear to drag them into place. */
+    if (mode === 'map') { drawAxes(); markLineageDirection(); }
+
+    var start = null;
+    var DURATION = 850;
+    running = true;
+    frames = 0;
+
+    function step(ts) {
+      if (start === null) start = ts;
+      var t = Math.min(1, (ts - start) / DURATION);
+      var e = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+      from.forEach(function (f) {
+        f.n.x = f.x + (targets[f.n.key].x - f.x) * e;
+        f.n.y = f.y + (targets[f.n.key].y - f.y) * e;
+      });
+      draw();
+      if (t < 1) requestAnimationFrame(step);
+      else { running = false; land(); }
+    }
+    requestAnimationFrame(step);
+  }
+
+  if (mapBtn) mapBtn.addEventListener('click', function () { setMode('map'); });
+  if (tracingBtn) tracingBtn.addEventListener('click', function () { setMode('tracing'); });
+  if (views) views.hidden = false;
+
   var resizeTimer = null;
   var lastH = H;
   window.addEventListener('resize', function () {
