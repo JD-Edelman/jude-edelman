@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Influences &mdash; Jude D. Edelman</title>
+  <meta name="description" content="A rhizomatic map of the theoretical inspirations behind Jude D. Edelman's research on institutions, classification, and durable inequality." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="rhizome.css" />
+</head>
+<body class="rz-page">
+
+  <nav>
+    <div class="nav-inner">
+      <a class="nav-name" href="index.html#home">Jude D. Edelman</a>
+      <ul class="nav-links">
+        <li><a href="index.html#about">About</a></li>
+        <li><a href="rhizome.html" aria-current="page">Influences</a></li>
+        <li><a href="index.html#research">Research</a></li>
+        <li><a href="index.html#cv">CV</a></li>
+        <li><a href="index.html#contact">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main>
+
+    <section id="rhizome-intro">
+      <h2>Theoretical Inspirations</h2>
+      <p class="rz-lede">
+        This page is a map rather than a lineage. It has no root and no first entry &mdash; each
+        visit opens somewhere different, in the middle of things. Follow a line to see what it
+        connects; cut one to see what grows in its place.
+      </p>
+      <p class="rz-epigraph">
+        &ldquo;Any point of a rhizome can be connected to anything other, and must be.&rdquo;
+        <span class="rz-attrib">&mdash; Deleuze &amp; Guattari, <em>A Thousand Plateaus</em></span>
+      </p>
+    </section>
+
+  </main>
+
+  <!-- The map is drawn by rhizome.js from the plain-text list further down the page. -->
+  <div class="rz-stage" id="rz-stage">
+    <div class="rz-canvas" id="rz-canvas" hidden>
+      <svg id="rz-svg" viewBox="0 0 1000 660" role="application"
+           aria-label="Interactive map of theoretical influences. Each thinker is a point; each line is a relation.">
+        <g id="rz-edges"></g>
+        <g id="rz-nodes"></g>
+      </svg>
+      <p class="rz-hint">
+        Hover or tab through the points. Drag to remake the map. Cut a line from the panel below.
+      </p>
+    </div>
+  </div>
+
+  <main>
+
+    <section id="rz-plateau-section">
+      <div class="rz-plateau" id="rz-plateau" hidden></div>
+      <p class="rz-status" id="rz-status" role="status"></p>
+      <p class="rz-controls" hidden id="rz-controls">
+        <button type="button" class="rz-btn" id="rz-regrow">Regrow the map</button>
+        <button type="button" class="rz-btn" id="rz-shuffle">Enter somewhere else</button>
+      </p>
+    </section>
+
+    <section id="rz-index">
+      <h2>The Plateaus</h2>
+
+      <!--
+        This list is the source of truth for the map above: rhizome.js reads it and draws
+        from it. To change the map, edit only this list — nothing in the JavaScript.
+
+        Each entry needs an id of the form "rz-<key>" and a data-links attribute listing the
+        other keys it connects to, as "key|relation", separated by commas. Declare each
+        connection once, on either end; the map treats every line as running both ways.
+        Relations: alliance (they work the same seam), tension (they pull against each other),
+        shared (they meet on a common object), and lineage — the one relation with a direction,
+        so declare it on the earlier thinker: "descendant|lineage".
+      -->
+
+      <ul class="rz-source">
+
+        <li id="rz-deleuze-guattari" data-links="foucault|alliance, bourdieu|tension, lefebvre|tension">
+          <h3>Gilles Deleuze &amp; F&eacute;lix Guattari</h3>
+          <p class="rz-work"><em>A Thousand Plateaus</em> (1980)</p>
+          <p class="rz-gloss">
+            The rhizome against the tree: knowledge organized as a burrow with many entrances
+            rather than a trunk with branches. Their distinction between the map and the tracing
+            &mdash; between something you make and something you copy &mdash; is the form of this page.
+          </p>
+        </li>
+
+        <li id="rz-foucault" data-links="hacking|lineage, wacquant|lineage, gilmore|tension">
+          <h3>Michel Foucault</h3>
+          <p class="rz-work"><em>Discipline and Punish</em> (1975); <em>Society Must Be Defended</em> (1976)</p>
+          <p class="rz-gloss">
+            Power as productive rather than merely prohibitive: it makes categories, records, and
+            kinds of people rather than only forbidding things. The claim that institutions produce
+            the populations they claim to merely sort begins here.
+          </p>
+        </li>
+
+        <li id="rz-bourdieu" data-links="wacquant|lineage, tilly|shared, collins|tension">
+          <h3>Pierre Bourdieu</h3>
+          <p class="rz-work"><em>Distinction</em> (1979); &ldquo;The Forms of Capital&rdquo; (1986)</p>
+          <p class="rz-gloss">
+            Capital in its economic, social, and cultural forms, converting into one another as it
+            passes through institutions. Symbolic violence names the moment a contingent sorting
+            comes to feel like a description of what people simply are.
+          </p>
+        </li>
+
+        <li id="rz-tilly" data-links="bowker-star|shared, roberts|shared">
+          <h3>Charles Tilly</h3>
+          <p class="rz-work"><em>Durable Inequality</em> (1998)</p>
+          <p class="rz-gloss">
+            Inequality durable because it is installed in categories &mdash; paired and unequal
+            &mdash; rather than carried in individuals. Exploitation and opportunity hoarding are
+            organizational mechanisms, which means they are built and can be built otherwise.
+          </p>
+        </li>
+
+        <li id="rz-bowker-star" data-links="hacking|alliance">
+          <h3>Geoffrey Bowker &amp; Susan Leigh Star</h3>
+          <p class="rz-work"><em>Sorting Things Out</em> (1999)</p>
+          <p class="rz-gloss">
+            Classification systems as infrastructure: powerful precisely because they become
+            invisible, and consequential for anyone who does not fit a box. What a case file can
+            record is what an institution can see.
+          </p>
+        </li>
+
+        <li id="rz-hacking" data-links="collins|tension">
+          <h3>Ian Hacking</h3>
+          <p class="rz-work">&ldquo;Making Up People&rdquo; (1986)</p>
+          <p class="rz-gloss">
+            Looping effects: a classification changes the people classified, who then change the
+            classification. Administrative categories are not descriptions applied after the fact
+            but forces in the lives they name.
+          </p>
+        </li>
+
+        <li id="rz-dubois" data-links="collins|lineage, bell|lineage, gilmore|lineage">
+          <h3>W. E. B. Du Bois</h3>
+          <p class="rz-work"><em>The Philadelphia Negro</em> (1899); <em>Black Reconstruction</em> (1935)</p>
+          <p class="rz-gloss">
+            Empirical sociology in the service of an argument about structure, decades before the
+            discipline claimed it. The insistence that racial disparity is produced by arrangements
+            and not by the populations measured.
+          </p>
+        </li>
+
+        <li id="rz-bell" data-links="crenshaw|lineage, roberts|lineage">
+          <h3>Derrick Bell</h3>
+          <p class="rz-work">&ldquo;Brown v. Board and the Interest-Convergence Dilemma&rdquo; (1980)</p>
+          <p class="rz-gloss">
+            Interest convergence: reform arrives when the interests of the powerful happen to align
+            with the interests of the harmed, and recedes when they part. A way of reading agreement
+            between opposed camps without mistaking it for a shared aim.
+          </p>
+        </li>
+
+        <li id="rz-crenshaw" data-links="collins|alliance, roberts|alliance">
+          <h3>Kimberl&eacute; Crenshaw</h3>
+          <p class="rz-work">&ldquo;Demarginalizing the Intersection&rdquo; (1989)</p>
+          <p class="rz-gloss">
+            Intersectionality as an account of how single-axis categories fail the people who sit
+            between them &mdash; a problem of institutional record-keeping as much as of theory.
+          </p>
+        </li>
+
+        <li id="rz-roberts" data-links="gilmore|alliance, foucault|shared">
+          <h3>Dorothy Roberts</h3>
+          <p class="rz-work"><em>Shattered Bonds</em> (2002); <em>Torn Apart</em> (2022)</p>
+          <p class="rz-gloss">
+            The child welfare system read as a family policing system, continuous with other
+            carceral institutions rather than exceptional to them. The nearest theoretical
+            neighbor to work on foster care and privatization.
+          </p>
+        </li>
+
+        <li id="rz-gilmore" data-links="massey|shared">
+          <h3>Ruth Wilson Gilmore</h3>
+          <p class="rz-work"><em>Golden Gulag</em> (2007)</p>
+          <p class="rz-gloss">
+            Organized abandonment, and racism as the production of vulnerability to premature
+            death. The sharpest available answer to how an institution comes to treat an outcome
+            as an acceptable loss rather than a design failure.
+          </p>
+        </li>
+
+        <li id="rz-wacquant" data-links="gilmore|tension">
+          <h3>Lo&iuml;c Wacquant</h3>
+          <p class="rz-work"><em>Punishing the Poor</em> (2009)</p>
+          <p class="rz-gloss">
+            The welfare and penal arms of the state as a single apparatus for managing poverty,
+            one hand supervising what the other withdraws. Where Bourdieu's field theory meets
+            the administration of the poor.
+          </p>
+        </li>
+
+        <li id="rz-collins" data-links="">
+          <h3>Patricia Hill Collins</h3>
+          <p class="rz-work"><em>Black Feminist Thought</em> (1990)</p>
+          <p class="rz-gloss">
+            The matrix of domination, and the epistemic claim beneath it: those moved through a
+            system know things about it that its administrators cannot see from where they stand.
+          </p>
+        </li>
+
+        <li id="rz-lefebvre" data-links="massey|lineage, gilmore|lineage">
+          <h3>Henri Lefebvre</h3>
+          <p class="rz-work"><em>The Production of Space</em> (1974)</p>
+          <p class="rz-gloss">
+            Space as produced rather than given &mdash; a container that policy fills unevenly.
+            Why a single national policy can land as several different policies depending on where
+            a child happens to live.
+          </p>
+        </li>
+
+        <li id="rz-massey" data-links="tilly|shared">
+          <h3>Doreen Massey</h3>
+          <p class="rz-work"><em>Space, Place and Gender</em> (1994)</p>
+          <p class="rz-gloss">
+            Power-geometry: the same process places people differently, and mobility for some is
+            built from immobility for others. The spatial companion to categorical inequality.
+          </p>
+        </li>
+
+      </ul>
+    </section>
+
+  </main>
+
+  <footer>
+    &copy; 2026 Jude D. Edelman
+  </footer>
+
+  <script src="rhizome.js"></script>
+</body>
+</html>

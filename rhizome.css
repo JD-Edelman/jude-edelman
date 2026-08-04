@@ -1,0 +1,394 @@
+/* Rhizome page — extends style.css, does not override it.
+   The site commits to a single light ground; these tokens stay inside that world,
+   adding one accent (a deep verdigris) for a live connection. */
+
+:root {
+  --rz-accent: #2f5d54;
+  --rz-accent-soft: #dfe8e4;
+  --rz-muted: #55605c;
+  --rz-line: #b7c0bc;
+  --rz-ghost: #e4e8e6;
+}
+
+/* The intro runs into the map with no rule between them. */
+.rz-page main {
+  padding-bottom: 0;
+}
+
+.rz-page main:last-of-type {
+  padding-bottom: 80px;
+}
+
+#rhizome-intro {
+  padding-top: 64px;
+  padding-bottom: 36px;
+}
+
+.rz-lede {
+  font-size: 1rem;
+  max-width: 580px;
+  line-height: 1.8;
+  margin-bottom: 24px;
+}
+
+.rz-epigraph {
+  font-size: 0.95rem;
+  font-style: italic;
+  color: var(--rz-muted);
+  max-width: 520px;
+  padding-left: 18px;
+  border-left: 1px solid var(--border);
+  line-height: 1.7;
+}
+
+.rz-attrib {
+  display: block;
+  font-style: normal;
+  font-size: 0.82rem;
+  margin-top: 6px;
+}
+
+/* MAP — breaks the 680px column the rest of the site is written in. */
+.rz-stage {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 40px;
+}
+
+.rz-canvas svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  touch-action: none;
+}
+
+.rz-hint {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.68rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--rz-muted);
+  text-align: center;
+  margin-top: 8px;
+}
+
+/* EDGES */
+.rz-edge {
+  stroke: var(--rz-line);
+  stroke-width: 1;
+  fill: none;
+  transition: stroke 160ms ease, stroke-width 160ms ease, opacity 160ms ease;
+}
+
+.rz-edge[data-rel="tension"] {
+  stroke-dasharray: 2 4;
+}
+
+.rz-edge[data-rel="new"] {
+  stroke: var(--rz-accent);
+  stroke-dasharray: 6 4;
+  opacity: 0.75;
+}
+
+.rz-edge.is-cut {
+  stroke: var(--rz-ghost);
+  stroke-dasharray: 1 6;
+  opacity: 0.7;
+}
+
+.rz-edge.is-live {
+  stroke: var(--rz-accent);
+  stroke-width: 1.6;
+}
+
+/* NODES */
+.rz-node {
+  cursor: grab;
+}
+
+.rz-node.is-dragging {
+  cursor: grabbing;
+}
+
+.rz-node .rz-hit {
+  fill: transparent;
+  stroke: none;
+}
+
+.rz-node .rz-dot {
+  fill: var(--bg);
+  stroke: var(--text);
+  stroke-width: 1;
+  r: 4.5;
+  transition: fill 160ms ease, stroke 160ms ease, r 160ms ease;
+}
+
+.rz-node text {
+  font-family: 'EB Garamond', Georgia, serif;
+  font-size: 15px;
+  fill: var(--text);
+  paint-order: stroke fill;
+  stroke: var(--bg);
+  stroke-width: 4px;
+  stroke-linejoin: round;
+  transition: fill 160ms ease;
+}
+
+.rz-node.is-live .rz-dot {
+  fill: var(--rz-accent);
+  stroke: var(--rz-accent);
+  r: 6;
+}
+
+.rz-node.is-live text {
+  fill: var(--rz-accent);
+}
+
+/* Dimming everything that is not on the live line. */
+.rz-svg-dimmed .rz-edge:not(.is-live) {
+  opacity: 0.25;
+}
+
+.rz-svg-dimmed .rz-node:not(.is-live):not(.is-near) text {
+  fill: #9aa3a0;
+}
+
+.rz-svg-dimmed .rz-node:not(.is-live):not(.is-near) .rz-dot {
+  stroke: #b6bdba;
+}
+
+.rz-node.is-near .rz-dot {
+  stroke: var(--rz-accent);
+}
+
+.rz-node:focus {
+  outline: none;
+}
+
+.rz-node:focus-visible .rz-dot {
+  stroke: var(--rz-accent);
+  stroke-width: 2;
+  r: 7;
+}
+
+/* PLATEAU — the panel for whichever point you are currently standing on. */
+#rz-plateau-section {
+  padding-top: 40px;
+}
+
+.rz-plateau {
+  border-top: 1px solid var(--border);
+  padding-top: 28px;
+}
+
+.rz-plateau h3 {
+  font-size: 1.15rem;
+  font-weight: 400;
+  line-height: 1.3;
+  margin-bottom: 4px;
+}
+
+.rz-plateau .rz-work {
+  font-size: 0.88rem;
+  color: var(--rz-muted);
+  margin-bottom: 14px;
+}
+
+.rz-plateau .rz-gloss {
+  font-size: 1rem;
+  line-height: 1.8;
+  max-width: 580px;
+  margin-bottom: 22px;
+}
+
+.rz-conn-label {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--rz-muted);
+  margin-bottom: 12px;
+}
+
+.rz-conns {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rz-conns li {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 0.95rem;
+}
+
+.rz-conns .rz-rel {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--rz-muted);
+}
+
+.rz-conns .rz-goto {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: var(--text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.rz-conns .rz-goto:hover {
+  color: var(--rz-accent);
+}
+
+.rz-conns .rz-sever {
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--rz-muted);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.rz-conns .rz-sever:hover {
+  color: var(--text);
+}
+
+.rz-conns li.is-severed .rz-goto {
+  color: #9aa3a0;
+  text-decoration-style: dotted;
+}
+
+.rz-status {
+  font-size: 0.88rem;
+  font-style: italic;
+  color: var(--rz-muted);
+  margin-top: 22px;
+  min-height: 1.6em;
+  max-width: 580px;
+}
+
+.rz-controls {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.rz-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--rz-muted);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.rz-btn:hover {
+  color: var(--text);
+}
+
+/* THE LIST — source of truth for the map, and the whole page without JavaScript. */
+.rz-source {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 34px;
+}
+
+.rz-source h3 {
+  font-size: 1.05rem;
+  font-weight: 400;
+  line-height: 1.3;
+  margin-bottom: 3px;
+}
+
+.rz-source .rz-work {
+  font-size: 0.85rem;
+  color: var(--rz-muted);
+  margin-bottom: 10px;
+}
+
+.rz-source .rz-gloss {
+  font-size: 0.97rem;
+  line-height: 1.75;
+  max-width: 580px;
+}
+
+.rz-source li:target h3 {
+  color: var(--rz-accent);
+}
+
+@media (max-width: 820px) {
+  .rz-node text {
+    font-size: 17px;
+  }
+}
+
+/* Compact map: points keep their places, names appear only where you stand. */
+.rz-compact .rz-node text {
+  visibility: hidden;
+}
+
+.rz-compact .rz-node.is-live text,
+.rz-compact .rz-node.is-near text {
+  visibility: visible;
+}
+
+.rz-compact .rz-node .rz-dot {
+  r: 6;
+}
+
+.rz-compact .rz-node.is-live .rz-dot {
+  r: 9;
+}
+
+@media (max-width: 620px) {
+  .rz-stage {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .rz-node text {
+    font-size: 38px;
+  }
+
+  .rz-source {
+    gap: 28px;
+  }
+}
+
+@media (max-width: 600px) {
+  .rz-lede,
+  .rz-plateau .rz-gloss {
+    font-size: 0.97rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rz-edge,
+  .rz-node .rz-dot,
+  .rz-node text {
+    transition: none;
+  }
+}
