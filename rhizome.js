@@ -217,12 +217,12 @@
   var nodeEls = {};
 
   function buildEdge(e) {
-    var line = document.createElementNS(SVG_NS, 'line');
-    line.setAttribute('class', 'rz-edge');
-    line.setAttribute('data-rel', e.rel);
-    line.setAttribute('data-id', e.id);
-    edgeLayer.appendChild(line);
-    edgeEls[e.id] = line;
+    var el = document.createElementNS(SVG_NS, 'path');
+    el.setAttribute('class', 'rz-edge');
+    el.setAttribute('data-rel', e.rel);
+    el.setAttribute('data-id', e.id);
+    edgeLayer.appendChild(el);
+    edgeEls[e.id] = el;
   }
 
   function buildNode(n) {
@@ -262,8 +262,18 @@
       var el = edgeEls[e.id];
       if (!el) return;
       var p = byKey[e.a], q = byKey[e.b];
-      el.setAttribute('x1', p.x); el.setAttribute('y1', p.y);
-      el.setAttribute('x2', q.x); el.setAttribute('y2', q.y);
+      var d;
+      if (mode === 'tracing' && e.rel === 'lineage' && !e.cut) {
+        var mx = ((p.x + q.x) / 2).toFixed(1);
+        d = 'M' + p.x.toFixed(1) + ',' + p.y.toFixed(1) +
+            ' C' + mx + ',' + p.y.toFixed(1) +
+            ' ' + mx + ',' + q.y.toFixed(1) +
+            ' ' + q.x.toFixed(1) + ',' + q.y.toFixed(1);
+      } else {
+        d = 'M' + p.x.toFixed(1) + ',' + p.y.toFixed(1) +
+            ' L' + q.x.toFixed(1) + ',' + q.y.toFixed(1);
+      }
+      el.setAttribute('d', d);
       el.setAttribute('data-rel', e.rel);
       el.classList.toggle('is-cut', e.cut);
     });
@@ -405,56 +415,77 @@
   var tracingLayout = null;
 
   function computeTracingLayout() {
+    /* Compute each node's longest-lineage-path depth. */
     var depth = {};
     nodes.forEach(function (n) { depth[n.key] = 0; });
-
-    var changed = true;
-    while (changed) {
-      changed = false;
+    var ch = true;
+    while (ch) {
+      ch = false;
       edges.forEach(function (e) {
         if (e.rel === 'lineage' && depth[e.a] + 1 > depth[e.b]) {
           depth[e.b] = depth[e.a] + 1;
-          changed = true;
+          ch = true;
         }
       });
     }
 
-    var maxDepth = 0;
-    nodes.forEach(function (n) { if (depth[n.key] > maxDepth) maxDepth = depth[n.key]; });
+    /* Build a spanning tree: each node keeps only its deepest lineage parent
+       (ties broken by preferring the more recent parent). */
+    var spanChildren = {};
+    nodes.forEach(function (n) { spanChildren[n.key] = []; });
 
-    var groups = [];
-    for (var d = 0; d <= maxDepth; d++) groups[d] = [];
-    nodes.forEach(function (n) { groups[depth[n.key]].push(n); });
-
-    var rank = {};
-
-    groups[0].sort(function (a, b) { return a.year - b.year; });
-    groups[0].forEach(function (n, i) {
-      rank[n.key] = groups[0].length > 1 ? i / (groups[0].length - 1) : 0.5;
+    nodes.forEach(function (n) {
+      var best = null;
+      edges.forEach(function (e) {
+        if (e.rel !== 'lineage' || e.b !== n.key) return;
+        if (!best ||
+            depth[e.a] > depth[best.a] ||
+            (depth[e.a] === depth[best.a] && byKey[e.a].year > byKey[best.a].year)) {
+          best = e;
+        }
+      });
+      if (best) spanChildren[best.a].push(n.key);
     });
 
-    for (var d2 = 1; d2 <= maxDepth; d2++) {
-      groups[d2].forEach(function (n) {
-        var parents = edges
-          .filter(function (e) { return e.rel === 'lineage' && e.b === n.key && rank[e.a] !== undefined; })
-          .map(function (e) { return rank[e.a]; });
-        n._prank = parents.length
-          ? parents.reduce(function (s, r) { return s + r; }, 0) / parents.length
-          : 0.5;
-      });
-      groups[d2].sort(function (a, b) {
-        return a._prank !== b._prank ? a._prank - b._prank : a.year - b.year;
-      });
-      groups[d2].forEach(function (n, i) {
-        rank[n.key] = groups[d2].length > 1 ? i / (groups[d2].length - 1) : 0.5;
-      });
+    /* Roots are nodes with no lineage parents. */
+    var hasLineageParent = {};
+    edges.forEach(function (e) { if (e.rel === 'lineage') hasLineageParent[e.b] = true; });
+    var roots = nodes
+      .filter(function (n) { return !hasLineageParent[n.key]; })
+      .sort(function (a, b) { return a.year - b.year; });
+
+    /* Reingold-Tilford post-order pass: leaves get sequential integer slots;
+       internal nodes sit at the midpoint of their children's slot range. */
+    var leafCount = [0];
+    var ySlot = {};
+
+    function placeSubtree(key) {
+      var children = spanChildren[key]
+        .slice()
+        .sort(function (a, b) { return byKey[a].year - byKey[b].year; });
+      if (children.length === 0) {
+        ySlot[key] = leafCount[0]++;
+        return;
+      }
+      children.forEach(placeSubtree);
+      ySlot[key] = (ySlot[children[0]] + ySlot[children[children.length - 1]]) / 2;
     }
 
+    roots.forEach(function (n) { placeSubtree(n.key); });
+    nodes.forEach(function (n) {
+      if (ySlot[n.key] === undefined) ySlot[n.key] = leafCount[0]++;
+    });
+
+    var totalLeaves = leafCount[0];
     var top = PAD_Y + TOP_PAD;
     var bottom = H - PAD_Y - BOTTOM_PAD;
+
     var result = {};
     nodes.forEach(function (n) {
-      result[n.key] = { x: plotX(n.year), y: top + rank[n.key] * (bottom - top) };
+      result[n.key] = {
+        x: plotX(n.year),
+        y: top + (ySlot[n.key] / Math.max(totalLeaves - 1, 1)) * (bottom - top)
+      };
     });
     return result;
   }
@@ -867,6 +898,7 @@
   var hint = document.querySelector('.rz-hint');
 
   function relayout() {
+    tracingLayout = null;
     H = preferredHeight();
     svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
     canvas.classList.toggle('rz-compact', isCompact());

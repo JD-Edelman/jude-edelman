@@ -197,6 +197,17 @@
   stroke-width: 1.6;
 }
 
+/* In tracing mode, lineage curves are the primary visual element. */
+.rz-tracing .rz-edge[data-rel="lineage"]:not(.is-cut) {
+  stroke-width: 1.8;
+}
+
+/* Non-lineage edges recede so the tree structure reads cleanly. */
+.rz-tracing .rz-edge:not([data-rel="lineage"]) {
+  opacity: 0.22;
+  stroke-dasharray: none;
+}
+
 /* NODES */
 .rz-node {
   cursor: grab;
