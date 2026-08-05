@@ -1,0 +1,224 @@
+/* ============================================================
+   CODE LIBRARY PAGE  —  code-library.css
+   Extends style.css; do not duplicate base rules here.
+   ============================================================ */
+
+/* Page header */
+.cl-hero {
+  padding-top: 64px;
+  padding-bottom: 48px;
+  border-bottom: 1px solid var(--border);
+}
+
+.cl-hero h1 {
+  font-size: 1.7rem;
+  margin-bottom: 8px;
+}
+
+.cl-hero p {
+  font-size: 0.95rem;
+  color: var(--muted);
+  max-width: 560px;
+  line-height: 1.7;
+}
+
+/* Dataset box */
+.cl-dataset {
+  padding-top: 40px;
+  padding-bottom: 40px;
+  border-bottom: 1px solid var(--border);
+}
+
+.cl-dataset-inner {
+  background: #f2ede7;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 24px 28px;
+}
+
+.cl-dataset-inner p {
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: var(--text);
+  margin-bottom: 10px;
+}
+
+.cl-dataset-inner p:last-child {
+  margin-bottom: 0;
+}
+
+.cl-dataset-inner a {
+  color: var(--accent);
+  text-underline-offset: 3px;
+}
+
+.cl-cite {
+  font-style: italic;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+/* Module list */
+.cl-modules {
+  padding-top: 40px;
+  padding-bottom: 56px;
+}
+
+.cl-modules-label {
+  font-size: 0.72rem;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 28px;
+}
+
+/* Individual module accordion */
+.cl-module {
+  border-top: 1px solid var(--border);
+}
+
+.cl-module:last-child {
+  border-bottom: 1px solid var(--border);
+}
+
+.cl-module summary {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  padding: 18px 0;
+  user-select: none;
+}
+
+.cl-module summary::-webkit-details-marker { display: none; }
+
+.cl-module summary:hover .cl-mod-name {
+  color: var(--accent);
+}
+
+.cl-mod-num {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+  width: 24px;
+  flex-shrink: 0;
+}
+
+.cl-mod-name {
+  font-size: 1rem;
+  color: var(--text);
+  flex: 1;
+  transition: color 0.15s;
+}
+
+.cl-mod-toggle {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.75rem;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.cl-module[open] .cl-mod-toggle::before { content: '−'; }
+.cl-module:not([open]) .cl-mod-toggle::before { content: '+'; }
+
+/* Module body */
+.cl-mod-body {
+  padding: 0 0 28px 40px;
+}
+
+.cl-mod-desc {
+  font-size: 0.9rem;
+  color: var(--muted);
+  line-height: 1.65;
+  margin-bottom: 20px;
+  max-width: 520px;
+}
+
+/* File rows */
+.cl-files {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cl-file-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.cl-file-label {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  width: 52px;
+  flex-shrink: 0;
+}
+
+/* File badges */
+.cl-badge {
+  display: inline-block;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 3px 10px;
+  border-radius: 3px;
+  text-decoration: none;
+  letter-spacing: 0.03em;
+  transition: opacity 0.15s;
+}
+
+.cl-badge:hover { opacity: 0.75; }
+
+.cl-badge-stata {
+  background: #e8e0f5;
+  color: #4a2a8a;
+}
+
+.cl-badge-r {
+  background: #daeef5;
+  color: #1a5e72;
+}
+
+.cl-badge-python {
+  background: #e5f0e0;
+  color: #2a5e2a;
+}
+
+.cl-badge-intuition {
+  background: #f5ede0;
+  color: #7a4a1e;
+}
+
+.cl-badge-math {
+  background: #f0e0e8;
+  color: #7a1e42;
+}
+
+/* Back link */
+.cl-back {
+  display: inline-block;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.8rem;
+  color: var(--muted);
+  text-decoration: none;
+  margin-top: 8px;
+  padding-top: 4px;
+}
+
+.cl-back:hover { color: var(--accent); }
+
+/* Responsive */
+@media (max-width: 600px) {
+  .cl-mod-body { padding-left: 0; }
+  .cl-file-label { width: auto; }
+}

@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Code Library &mdash; Jude D. Edelman</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="code-library.css" />
+</head>
+<body>
+
+  <nav>
+    <div class="nav-inner">
+      <a class="nav-name" href="index.html">Jude D. Edelman</a>
+      <ul class="nav-links">
+        <li><a href="index.html#about">About</a></li>
+        <li><a href="index.html#influences">Influences</a></li>
+        <li><a href="index.html#research">Research</a></li>
+        <li><a href="index.html#cv">CV</a></li>
+        <li><a href="code-library.html" style="color: var(--accent);">Code Library</a></li>
+        <li><a href="index.html#contact">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main>
+
+    <div class="cl-hero">
+      <h1>Code Library</h1>
+      <p>
+        Annotated, general-use templates in Stata, R, and Python. Every module uses
+        the same dataset so you can download it once and run any template. Each module
+        also includes a plain-language intuition file and a full mathematical derivation.
+      </p>
+    </div>
+
+    <div class="cl-dataset">
+      <div class="cl-dataset-inner">
+        <p>
+          <strong>Dataset &mdash; CES 2020 Common Content</strong><br />
+          Download the CSV (~188&thinsp;MB) from Harvard Dataverse and save it as
+          <code>CES20_Common_Content_validated.csv</code> in your working directory.
+          Run Module 01 first; it cleans and saves <code>CES2020_clean.parquet</code>,
+          which all other modules read.
+        </p>
+        <p>
+          <a href="https://doi.org/10.7910/DVN/E9N6PH" target="_blank" rel="noopener">
+            doi.org/10.7910/DVN/E9N6PH
+          </a>
+          &nbsp;&middot;&nbsp;
+          <a href="https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/E9N6PH" target="_blank" rel="noopener">
+            Codebook
+          </a>
+        </p>
+        <p class="cl-cite">
+          Schaffner, B., Ansolabehere, S., &amp; Luks, S. (2021).
+          Cooperative Election Study Common Content, 2020.
+          <em>Harvard Dataverse.</em>
+        </p>
+      </div>
+    </div>
+
+    <div class="cl-modules">
+      <p class="cl-modules-label">15 Modules</p>
+
+      <!-- 01 -->
+      <details class="cl-module">
+        <summary>
+          <span class="cl-mod-num">01</span>
+          <span class="cl-mod-name">Recode, Rename &amp; Generate</span>
+          <span class="cl-mod-toggle"></span>
+        </summary>
+        <div class="cl-mod-body">
+          <p class="cl-mod-desc">
+            Import the raw CSV, rename variables to readable names, recode missing
+            value codes (8/9, 98/99) to system missing, and generate derived variables
+            using loops and variable dictionaries.
+          </p>
+          <div class="cl-files">
+            <div class="cl-file-group">
+              <span class="cl-file-label">Code</span>
+              <a class="cl-badge cl-badge-stata" href="code-library/01-recode-rename-generate/recode-rename-generate.do">Stata</a>
+              <a class="cl-badge cl-badge-r"     href="code-library/01-recode-rename-generate/recode-rename-generate.R">R</a>
+              <a class="cl-badge cl-badge-python" href="code-library/01-recode-rename-generate/recode-rename-generate.py">Python</a>
+            </div>
+            <div class="cl-file-group">
+              <span class="cl-file-label">Docs</span>
+              <a class="cl-badge cl-badge-intuition" href="code-library/01-recode-rename-generate/recode-rename-generate-intuition.md">Intuition</a>
+              <a class="cl-badge cl-badge-math"      href="code-library/01-recode-rename-generate/recode-rename-generate-math.md">Math</a>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <!-- 02 -->
+      <details class="cl-module">
+        <summary>
+          <span class="cl-mod-num">02</span>
+          <span class="cl-mod-name">Descriptive Statistics</span>
+          <span class="cl-mod-toggle"></span>
+        </summary>
+        <div class="cl-mod-body">
+          <p class="cl-mod-desc">
+            Means, standard deviations, frequencies, cross-tabulations, t-tests,
+            and weighted descriptives using survey weights.
+          </p>
+          <div class="cl-files">
+            <div class="cl-file-group">
+              <span class="cl-file-label">Code</span>
+              <a class="cl-badge cl-badge-stata"  href="code-library/02-descriptive-stats/descriptive-stats.do">Stata</a>
+              <a class="cl-badge cl-badge-r"      href="code-library/02-descriptive-stats/descriptive-stats.R">R</a>
+              <a class="cl-badge cl-badge-python" href="code-library/02-descriptive-stats/descriptive-stats.py">Python</a>
+            </div>
+            <div class="cl-file-group">
+              <span class="cl-file-label">Docs</span>
+              <a class="cl-badge cl-badge-intuition" href="code-library/02-descriptive-stats/descriptive-stats-intuition.md">Intuition</a>
+              <a class="cl-badge cl-badge-math"      href="code-library/02-descriptive-stats/descriptive-stats-math.md">Math</a>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <!-- 03 -->
+      <details class="cl-module">
+        <summary>
+          <span class="cl-mod-num">03</span>
+          <span class="cl-mod-name">OLS Regression</span>
+          <span class="cl-mod-toggle"></span>
+        </summary>
+        <div class="cl-mod-body">
+          <p class="cl-mod-desc">
+            OLS with robust and clustered standard errors, nested model comparison,
+            standardized coefficients, and marginal effects plots.
+          </p>
+          <div class="cl-files">
+            <div class="cl-file-group">
+              <span class="cl-file-label">Code</span>
+              <a class="cl-badge cl-badge-stata"  href="code-library/03-ols-regression/ols-regression.do">Stata</a>
+              <a class="cl-badge cl-badge-r"      href="code-library/03-ols-regression/ols-regression.R">R</a>
+              <a class="cl-badge cl-badge-python" href="code-library/03-ols-regression/ols-regression.py">Python</a>
+            </div>
+            <div class="cl-file-group">
+              <span class="cl-file-label">Docs</span>
+              <a class="cl-badge cl-badge-intuition" href="code-library/03-ols-regression/ols-regression-intuition.md">Intuition</a>
+              <a class="cl-badge cl-badge-math"      href="code-library/03-ols-regression/ols-regression-math.md">Math</a>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <!-- 04 -->
+      <details class="cl-module">
+        <summary>
+          <span class="cl-mod-num">04</span>
+          <span class="cl-mod-name">Logistic Regression</span>
+          <span class="cl-mod-toggle"></span>
+        </summary>
+        <div class="cl-mod-body">
+          <p class="cl-mod-desc">
+            Logit with odds ratios, average marginal effects, ROC curve and AUC,
+            goodness-of-fit tests, and probit comparison.
+          </p>
+          <div class="cl-files">
+            <div class="cl-file-group">
+              <span class="cl-file-label">Code</span>
+              <a class="cl-badge cl-badge-stata"  href="code-library/04-logistic-regression/logistic-regression.do">Stata</a>
+              <a class="cl-badge cl-badge-r"      href="code-library/04-logistic-regression/logistic-regression.R">R</a>
+              <a class="cl-badge cl-badge-python" href="code-library/04-logistic-regression/logistic-regression.py">Python</a>
+            </div>
+            <div class="cl-file-group">
+              <span class="cl-file-label">Docs</span>
+              <a class="cl-badge cl-badge-intuition" href="code-library/04-logistic-regression/logistic-regression-intuition.md">Intuition</a>
+              <a class="cl-badge cl-badge-math"      href="code-library/04-logistic-regression/logistic-regression-math.md">Math</a>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <!-- 05 -->
+      <details class="cl-module">
+        <summary>
+          <span class="cl-mod-num">05</span>
+          <span class="cl-mod-name">Survey Weights</span>
+          <span class="cl-mod-toggle"></span>
+        </summary>
+        <div class="cl-mod-body">
+          <p class="cl-mod-desc">
+            Survey design declaration, weighted means and proportions, weighted
+            cross-tabulations, weighted regression, and correct subpopulation estimation.
+          </p>
+          <div class="cl-files">
+            <div class="cl-file-group">
+              <span class="cl-file-label">Code</span>
+              <a class="cl-badge cl-badge-stata"  href="code-library/05-survey-weights/survey-weights.do">Stata</a>
+              <a class="cl-badge cl-badge-r"      href="code-library/05-survey-weights/survey-weights.R">R</a>
+              <a class="cl-badge cl-badge-python" href="code-library/05-survey-weights/survey-weights.py">Python</a>
+            </div>
+            <div class="cl-file-group">
+              <span class="cl-file-label">Docs</span>
+              <a class="cl-badge cl-badge-intuition" href="code-library/05-survey-weights/survey-weights-intuition.md">Intuition</a>
+              <a class="cl-badge cl-badge-math"      href="code-library/05-survey-weights/survey-weights-math.md">Math</a>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <!-- 06 -->
+      <details class="cl-module">
+        <summary>
+          <span class="cl-mod-num">06</span>
+          <span class="cl-mod-name">Visualization</span>
+          <span class="cl-mod-toggle"></span>
+        </summary>
+        <div class="cl-mod-body">
+          <p class="cl-mod-desc">
+            Histograms, bar charts, box plots, scatter plots, coefficient plots,
+            predicted probability plots, and faceted displays.
+          </p>
+          <div class="cl-files">
+            <div class="cl-file-group">
+              <span class="cl-file-label">Code</span>
+              <a class="cl-badge cl-badge-stata"  href="code-library/06-visualization/visualization.do">Stata</a>
+              <a class="cl-badge cl-badge-r"      href="code-library/06-visualization/visualization.R">R</a>
+              <a class="cl-badge cl-badge-python" href="code-library/06-visualization/visualization.py">Python</a>
+            </div>
+            <div class="cl-file-group">
+              <span class="cl-file-label">Docs</span>
+              <a class="cl-badge cl-badge-intuition" href="code-library/06-visualization/visualization-intuition.md">Intuition</a>
+              <a class="cl-badge cl-badge-math"      href="code-library/06-visualization/visualization-math.md">Math</a>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <!-- 07 -->
+      <details class="cl-module">
+        <summary>
+          <span class="cl-mod-num">07</span>
+          <span class="cl-mod-name">Merge &amp; Append</span>
+          <span class="cl-mod-toggle"></span>
+        </summary>
+        <div class="cl-mod-body">
+          <p class="cl-mod-desc">
+            1:1 and m:1 merges, merge diagnostics, anti-join mismatch detection,
+            append, and multi-file stacking.
+          </p>
+          <div class="cl-files">
+            <div class="cl-file-group">
+              <span class="cl-file-label">Code</span>
+              <a class="cl-badge cl-badge-stata"  href="code-library/07-merge-append/merge-append.do">Stata</a>
+              <a class="cl-badge cl-badge-r"      href="code-library/07-merge-append/merge-append.R">R</a>
+              <a class="cl-badge cl-badge-python" href="code-library/07-merge-append/merge-append.py">Python</a>
+            </div>
+            <div class="cl-file-group">
+              <span class="cl-file-label">Docs</span>
+              <a class="cl-badge cl-badge-intuition" href="code-library/07-merge-append/merge-append-intuition.md">Intuition</a>
+              <a class="cl-badge cl-badge-math"      href="code-library/07-merge-append/merge-append-math.md">Math</a>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <!-- 08 -->
+      <details class="cl-module">
+        <summary>
+          <span class="cl-mod-num">08</span>
+          <span class="cl-mod-name">Export Tables</span>
+          <span class="cl-mod-toggle"></span>
+        </summary>
+        <div class="cl-mod-body">
+          <p class="cl-mod-desc">
+            Publication-ready regression tables exported to CSV, Excel, Word, and
+            LaTeX. Includes descriptive tables and odds-ratio tables.
+          </p>
+          <div class="cl-files">
+            <div class="cl-file-group">
+              <span class="cl-file-label">Code</span>
+              <a class="cl-badge cl-badge-stata"  href="code-library/08-export-tables/export-tables.do">Stata</a>
+              <a class="cl-badge cl-badge-r"      href="code-library/08-export-tables/export-tables.R">R</a>
+              <a class="cl-badge cl-badge-python" href="code-library/08-export-tables/export-tables.py">Python</a>
+            </div>
+            <div class="cl-file-group">
+              <span class="cl-file-label">Docs</span>
+              <a class="cl-badge cl-badge-intuition" href="code-library/08-export-tables/export-tables-intuition.md">Intuition</a>
+              <a class="cl-badge cl-badge-math"      href="code-library/08-export-tables/export-tables-math.md">Math</a>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <!-- 09 -->
+      <details class="cl-module">
+        <summary>
+          <span class="cl-mod-num">09</span>
+          <span class="cl-mod-name">Data Cleaning</span>
+          <span class="cl-mod-toggle"></span>
+        </summary>
+        <div class="cl-mod-body">
+          <p class="cl-mod-desc">
+            Missing data audit, logical consistency checks, duplicate detection,
+            outlier detection with z-score and IQR methods, recodes, and validation asserts.
+          </p>
+          <div class="cl-files">
+            <div class="cl-file-group">
+              <span class="cl-file-label">Code</span>
+              <a class="cl-badge cl-badge-stata"  href="code-library/09-data-cleaning/data-cleaning.do">Stata</a>
+              <a class="cl-badge cl-badge-r"      href="code-library/09-data-cleaning/data-cleaning.R">R</a>
+              <a class="cl-badge cl-badge-python" href="code-library/09-data-cleaning/data-cleaning.py">Python</a>
+            </div>
+            <div class="cl-file-group">
+              <span class="cl-file-label">Docs</span>
+              <a class="cl-badge cl-badge-intuition" href="code-library/09-data-cleaning/data-cleaning-intuition.md">Intuition</a>
+              <a class="cl-badge cl-badge-math"      href="code-library/09-data-cleaning/data-cleaning-math.md">Math</a>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <!-- 10 -->
+      <details class="cl-module">
+        <summary>
+          <span class="cl-mod-num">10</span>
+          <span class="cl-mod-name">Multiple Imputation</span>
+          <span class="cl-mod-toggle"></span>
+        </summary>
+        <div class="cl-mod-body">
+          <p class="cl-mod-desc">
+            MICE imputation, Rubin&rsquo;s rules pooling, fraction of missing information,
+            and convergence diagnostics.
+          </p>
+          <div class="cl-files">
+            <div class="cl-file-group">
+              <span class="cl-file-label">Code</span>
+              <a class="cl-badge cl-badge-stata"  href="code-library/10-multiple-imputation/multiple-imputation.do">Stata</a>
+              <a class="cl-badge cl-badge-r"      href="code-library/10-multiple-imputation/multiple-imputation.R">R</a>
+              <a class="cl-badge cl-badge-python" href="code-library/10-multiple-imputation/multiple-imputation.py">Python</a>
+            </div>
+            <div class="cl-file-group">
+              <span class="cl-file-label">Docs</span>
+              <a class="cl-badge cl-badge-intuition" href="code-library/10-multiple-imputation/multiple-imputation-intuition.md">Intuition</a>
+              <a class="cl-badge cl-badge-math"      href="code-library/10-multiple-imputation/multiple-imputation-math.md">Math</a>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <!-- 11 -->
+      <details class="cl-module">
+        <summary>
+          <span class="cl-mod-num">11</span>
+          <span class="cl-mod-name">Scale Construction</span>
+          <span class="cl-mod-toggle"></span>
+        </summary>
+        <div class="cl-mod-body">
+          <p class="cl-mod-desc">
+            Cronbach&rsquo;s alpha, item-total correlations, exploratory factor analysis,
+            PCA, confirmatory factor analysis, and scale inter-correlations.
+          </p>
+          <div class="cl-files">
+            <div class="cl-file-group">
+              <span class="cl-file-label">Code</span>
+              <a class="cl-badge cl-badge-stata"  href="code-library/11-scale-construction/scale-construction.do">Stata</a>
+              <a class="cl-badge cl-badge-r"      href="code-library/11-scale-construction/scale-construction.R">R</a>
+              <a class="cl-badge cl-badge-python" href="code-library/11-scale-construction/scale-construction.py">Python</a>
+            </div>
+            <div class="cl-file-group">
+              <span class="cl-file-label">Docs</span>
+              <a class="cl-badge cl-badge-intuition" href="code-library/11-scale-construction/scale-construction-intuition.md">Intuition</a>
+              <a class="cl-badge cl-badge-math"      href="code-library/11-scale-construction/scale-construction-math.md">Math</a>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <!-- 12 -->
+      <details class="cl-module">
+        <summary>
+          <span class="cl-mod-num">12</span>
+          <span class="cl-mod-name">Panel Data</span>
+          <span class="cl-mod-toggle"></span>
+        </summary>
+        <div class="cl-mod-body">
+          <p class="cl-mod-desc">
+            Fixed effects, random effects, Hausman test, first differences,
+            difference-in-differences, and parallel trends diagnostic plots.
+          </p>
+          <div class="cl-files">
+            <div class="cl-file-group">
+              <span class="cl-file-label">Code</span>
+              <a class="cl-badge cl-badge-stata"  href="code-library/12-panel-data/panel-data.do">Stata</a>
+              <a class="cl-badge cl-badge-r"      href="code-library/12-panel-data/panel-data.R">R</a>
+              <a class="cl-badge cl-badge-python" href="code-library/12-panel-data/panel-data.py">Python</a>
+            </div>
+            <div class="cl-file-group">
+              <span class="cl-file-label">Docs</span>
+              <a class="cl-badge cl-badge-intuition" href="code-library/12-panel-data/panel-data-intuition.md">Intuition</a>
+              <a class="cl-badge cl-badge-math"      href="code-library/12-panel-data/panel-data-math.md">Math</a>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <!-- 13 -->
+      <details class="cl-module">
+        <summary>
+          <span class="cl-mod-num">13</span>
+          <span class="cl-mod-name">String Manipulation</span>
+          <span class="cl-mod-toggle"></span>
+        </summary>
+        <div class="cl-mod-body">
+          <p class="cl-mod-desc">
+            Case conversion, trimming, substrings, regex detection and extraction,
+            splitting and joining, and merge-key standardization.
+          </p>
+          <div class="cl-files">
+            <div class="cl-file-group">
+              <span class="cl-file-label">Code</span>
+              <a class="cl-badge cl-badge-stata"  href="code-library/13-string-manipulation/string-manipulation.do">Stata</a>
+              <a class="cl-badge cl-badge-r"      href="code-library/13-string-manipulation/string-manipulation.R">R</a>
+              <a class="cl-badge cl-badge-python" href="code-library/13-string-manipulation/string-manipulation.py">Python</a>
+            </div>
+            <div class="cl-file-group">
+              <span class="cl-file-label">Docs</span>
+              <a class="cl-badge cl-badge-intuition" href="code-library/13-string-manipulation/string-manipulation-intuition.md">Intuition</a>
+              <a class="cl-badge cl-badge-math"      href="code-library/13-string-manipulation/string-manipulation-math.md">Math</a>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <!-- 14 -->
+      <details class="cl-module">
+        <summary>
+          <span class="cl-mod-num">14</span>
+          <span class="cl-mod-name">Multilevel Models</span>
+          <span class="cl-mod-toggle"></span>
+        </summary>
+        <div class="cl-mod-body">
+          <p class="cl-mod-desc">
+            Random intercepts, random slopes, intraclass correlation, cross-level
+            interactions, shrinkage estimation, and REML vs. full ML.
+          </p>
+          <div class="cl-files">
+            <div class="cl-file-group">
+              <span class="cl-file-label">Code</span>
+              <a class="cl-badge cl-badge-stata"  href="code-library/14-multilevel-models/multilevel-models.do">Stata</a>
+              <a class="cl-badge cl-badge-r"      href="code-library/14-multilevel-models/multilevel-models.R">R</a>
+              <a class="cl-badge cl-badge-python" href="code-library/14-multilevel-models/multilevel-models.py">Python</a>
+            </div>
+            <div class="cl-file-group">
+              <span class="cl-file-label">Docs</span>
+              <a class="cl-badge cl-badge-intuition" href="code-library/14-multilevel-models/multilevel-models-intuition.md">Intuition</a>
+              <a class="cl-badge cl-badge-math"      href="code-library/14-multilevel-models/multilevel-models-math.md">Math</a>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <!-- 15 -->
+      <details class="cl-module">
+        <summary>
+          <span class="cl-mod-num">15</span>
+          <span class="cl-mod-name">Propensity Score Methods</span>
+          <span class="cl-mod-toggle"></span>
+        </summary>
+        <div class="cl-mod-body">
+          <p class="cl-mod-desc">
+            Propensity score estimation, nearest-neighbor matching, inverse probability
+            weighting, balance diagnostics, and ATE vs. ATT.
+          </p>
+          <div class="cl-files">
+            <div class="cl-file-group">
+              <span class="cl-file-label">Code</span>
+              <a class="cl-badge cl-badge-stata"  href="code-library/15-propensity-score-methods/propensity-score-methods.do">Stata</a>
+              <a class="cl-badge cl-badge-r"      href="code-library/15-propensity-score-methods/propensity-score-methods.R">R</a>
+              <a class="cl-badge cl-badge-python" href="code-library/15-propensity-score-methods/propensity-score-methods.py">Python</a>
+            </div>
+            <div class="cl-file-group">
+              <span class="cl-file-label">Docs</span>
+              <a class="cl-badge cl-badge-intuition" href="code-library/15-propensity-score-methods/propensity-score-methods-intuition.md">Intuition</a>
+              <a class="cl-badge cl-badge-math"      href="code-library/15-propensity-score-methods/propensity-score-methods-math.md">Math</a>
+            </div>
+          </div>
+        </div>
+      </details>
+
+    </div>
+
+  </main>
+
+  <footer>
+    &copy; 2026 Jude D. Edelman &nbsp;&middot;&nbsp;
+    <a href="index.html" style="color: inherit; text-decoration: none;">judeedelman.com</a>
+  </footer>
+
+</body>
+</html>
