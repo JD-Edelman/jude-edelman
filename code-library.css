@@ -217,6 +217,16 @@
 
 .cl-back:hover { color: var(--accent); }
 
+/* Coming-soon badge */
+.cl-badge-soon {
+  background: #ece8e2;
+  color: var(--muted);
+  font-style: italic;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+}
+.cl-badge-soon:hover { opacity: 0.75; }
+
 /* Responsive */
 @media (max-width: 600px) {
   .cl-mod-body { padding-left: 0; }

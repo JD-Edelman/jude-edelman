@@ -496,5 +496,36 @@
     <a href="index.html" style="color: inherit; text-decoration: none;">judeedelman.com</a>
   </footer>
 
+<script>
+(function () {
+  var PW = 'jedel', SK = 'cl_pw';
+  document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.cl-file-group').forEach(function (g) {
+      var lbl = g.querySelector('.cl-file-label');
+      if (!lbl || lbl.textContent.trim() !== 'Code') return;
+      g.querySelectorAll('a.cl-badge').forEach(function (b) { b.style.display = 'none'; });
+      var soon = document.createElement('span');
+      soon.className = 'cl-badge cl-badge-soon';
+      soon.textContent = 'Coming soon';
+      soon.title = 'Enter access code to view code files';
+      soon.addEventListener('click', function () {
+        var pw = prompt('Access code:');
+        if (pw === PW) { sessionStorage.setItem(SK, PW); reveal(); }
+      });
+      g.appendChild(soon);
+    });
+    if (sessionStorage.getItem(SK) === PW) reveal();
+  });
+  function reveal() {
+    document.querySelectorAll('.cl-file-group').forEach(function (g) {
+      var lbl = g.querySelector('.cl-file-label');
+      if (!lbl || lbl.textContent.trim() !== 'Code') return;
+      g.querySelectorAll('a.cl-badge').forEach(function (b) { b.style.display = ''; });
+      var s = g.querySelector('.cl-badge-soon');
+      if (s) s.style.display = 'none';
+    });
+  }
+})();
+</script>
 </body>
 </html>
