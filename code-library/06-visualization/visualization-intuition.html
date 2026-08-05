@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Visualization — Intuition</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+  <style>
+    :root { --bg:#faf8f5; --text:#111111; --muted:#666666; --border:#d8d4ce; --accent:#7a3b2e; }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:var(--text);font-family:'EB Garamond',Georgia,serif;font-size:1.08rem;line-height:1.8;padding:48px 24px 96px;}
+    body::before{content:'';display:block;position:fixed;top:0;left:0;right:0;height:4px;background:var(--accent);z-index:100;}
+    .page{max-width:680px;margin:0 auto;}
+    .back{font-family:'Inter',sans-serif;font-size:0.78rem;color:var(--muted);text-decoration:none;display:inline-block;margin-bottom:40px;}
+    .back:hover{color:var(--accent);}
+    h1{font-size:1.75rem;font-weight:400;margin-bottom:6px;line-height:1.3;}
+    .subtitle{font-family:'Inter',sans-serif;font-size:0.72rem;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);margin-bottom:48px;}
+    h2{font-family:'Inter',sans-serif;font-size:0.72rem;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);margin:52px 0 18px;padding-top:52px;border-top:1px solid var(--border);}
+    h3{font-size:1.05rem;font-weight:500;margin:28px 0 10px;}
+    p{margin-bottom:16px;}
+    p:last-child{margin-bottom:0;}
+    .practice{border-left:3px solid var(--accent);padding-left:16px;color:var(--muted);font-size:0.95rem;margin:0 0 24px;font-style:italic;}
+    .eq{background:#f2ede7;border:1px solid var(--border);border-radius:4px;padding:20px 24px;margin:20px 0;overflow-x:auto;text-align:center;}
+    table{width:100%;border-collapse:collapse;font-size:0.92rem;margin-bottom:24px;}
+    th{font-family:'Inter',sans-serif;font-size:0.68rem;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);text-align:left;padding:8px 12px;border-bottom:1px solid var(--border);}
+    td{padding:8px 12px;border-bottom:1px solid var(--border);vertical-align:top;line-height:1.55;}
+    td:first-child{font-family:'Inter',sans-serif;font-size:0.85rem;white-space:nowrap;}
+    ul,ol{padding-left:1.4em;margin-bottom:16px;}
+    li{margin-bottom:6px;}
+    strong{font-weight:500;}
+    em{font-style:italic;}
+    code{font-family:'Inter',monospace;font-size:0.83rem;background:#ece8e2;padding:1px 5px;border-radius:3px;}
+    .katex-display{overflow-x:auto;}
+  </style>
+</head>
+<body>
+  <div class="page">
+    <a class="back" href="../../code-library.html">← Code Library</a>
+    <h1>Visualization</h1>
+    <div class="subtitle">Intuition</div>
+
+    <h2>1. What Problem Does This Solve?</h2>
+
+    <p>Numbers in tables are hard to process at scale. A regression output with 15 coefficients tells you something, but the human visual system cannot quickly answer "which of these is largest?", "are most of them positive?", or "do any confidence intervals overlap zero?" by scanning rows. Visualization translates quantitative structure into perceptual signals that the brain processes faster and more reliably than text.</p>
+
+    <p>The specific problems visualization solves in social science research:</p>
+
+    <ul>
+      <li><strong>Distribution shape</strong>: a mean and SD do not tell you whether a variable is skewed, bimodal, or has outliers. A histogram or density plot does.</li>
+      <li><strong>Relationship patterns</strong>: two variables can have identical correlations but very different scatterplot patterns (Anscombe's Quartet is the canonical example). A number hides what a plot reveals.</li>
+      <li><strong>Magnitude and uncertainty together</strong>: a table shows $\hat{\beta}$ and SE separately; a coefficient plot shows them as a point and interval, making relative magnitude and statistical uncertainty readable at a glance.</li>
+      <li><strong>Comparison across groups</strong>: side-by-side panels or color-coded series expose group differences that a table of means obscures.</li>
+    </ul>
+
+    <h2>2. When Would a Researcher Reach for It — and When Not?</h2>
+
+    <p><strong>Use visualization when:</strong></p>
+    <ul>
+      <li>Exploring data for the first time (check distributions, outliers, missingness patterns).</li>
+      <li>Communicating findings to a non-technical audience.</li>
+      <li>Presenting regression results where the focus is on the sign and relative size of several coefficients.</li>
+      <li>Showing distributional overlap or separation between groups.</li>
+      <li>Making a descriptive argument that a relationship exists before modeling it.</li>
+    </ul>
+
+    <p><strong>Be cautious or avoid when:</strong></p>
+    <ul>
+      <li>Precise numerical values matter (tables serve that need better).</li>
+      <li>The audience needs exact p-values or point estimates to replicate your work.</li>
+      <li>The plot would require more than a paragraph of explanation to interpret correctly.</li>
+      <li>You are dealing with high-dimensional data where pairwise plots multiply unmanageably.</li>
+    </ul>
+
+    <h2>3. How the Mechanism Works in Plain Language</h2>
+
+    <h3>The Hierarchy of Visual Channels</h3>
+
+    <p>Perceptual research (Cleveland and McGill's foundational work) shows that humans decode some visual properties more accurately than others. In rough order from most to least accurate:</p>
+
+    <ol>
+      <li>Position along a common scale (bar height, dot on an axis)</li>
+      <li>Length (bar length without a shared baseline is less accurate)</li>
+      <li>Angle (pie slices -- harder to compare than you think)</li>
+      <li>Area (bubble size -- even harder)</li>
+      <li>Color hue (categorizes but does not convey quantity)</li>
+    </ol>
+
+    <p>This hierarchy has direct design implications. A bar chart wins over a pie chart because bar height uses position along a common scale; pie slices use angle. Even if the slice labeled "37%" looks about right, comparing two similar-sized slices (say, 31% vs. 34%) is genuinely difficult, while comparing two bar heights is easy.</p>
+
+    <h3>Histograms vs. Density Plots</h3>
+
+    <p>A histogram bins the data into discrete intervals and shows counts or proportions per bin. The shape you see depends on how you chose the bin width, which is an analyst decision, not a property of the data. Change the bin width and the picture changes, sometimes dramatically.</p>
+
+    <p>A kernel density estimate (KDE) smooths over that problem by placing a small curve at each data point and summing them. The result is a continuous curve without hard bin edges. KDE is more visually elegant but has its own choice: bandwidth. A too-wide bandwidth over-smooths and hides real features (two modes look like one); a too-narrow bandwidth creates noise spikes at individual observations.</p>
+
+    <p>The honest choice depends on sample size and purpose. For small samples, a histogram is more transparent because you can see the raw data structure. For larger samples, KDE communicates shape better. For a public presentation, KDE typically looks cleaner. When distribution shape matters for a methods paper, show both.</p>
+
+    <h3>Overplotting in Scatter Plots</h3>
+
+    <p>When you have thousands of respondents (CES 2020 has roughly 61,000), a standard scatter plot is a black rectangle. Every dot overlaps every other dot. Strategies to address this:</p>
+
+    <ul>
+      <li><strong>Jitter</strong>: add a small random displacement to each point so overlapping points separate visually. Best for discrete variables where many observations share exact coordinates.</li>
+      <li><strong>Alpha transparency</strong>: make each dot semi-transparent, so dense regions appear darker. Works well for continuous variables.</li>
+      <li><strong>Binning (2D histogram or hex bins)</strong>: divide the plot area into cells and color each cell by count. Shows density structure without individual points.</li>
+    </ul>
+
+    <h3>Coefficient Plots</h3>
+
+    <p>A coefficient plot shows each predictor on the y-axis with its point estimate on the x-axis and a horizontal line for the confidence interval. A vertical reference line sits at zero. The reader can immediately see: which coefficients are large in absolute terms, which are positive vs. negative, and which CIs cross zero (not distinguishable from null). This is information that would require scanning multiple columns in a table.</p>
+
+    <h3>Facets vs. Color</h3>
+
+    <p>When you want to compare a relationship across groups, you have two options. Color uses different hues to distinguish groups within a single plot; facets (also called small multiples) replicate the plot once per group in separate panels.</p>
+
+    <p>Color is appropriate when the groups overlap in the data space and you want to see that overlap directly (e.g., two income distributions on the same axis). Facets are appropriate when the groups' data ranges are similar but you want to examine each group's pattern without visual clutter, or when you have more than 3-4 groups (color palettes degrade with more than 4-5 categories).</p>
+
+    <h3>Exploratory vs. Presentation Visualization</h3>
+
+    <p>An exploratory plot is for you. It should be fast to produce, may have default colors and axis labels, and can be ugly as long as it reveals something true. An exploratory plot that takes 30 minutes to polish is wasted effort if it ends up in your notes and nowhere else.</p>
+
+    <p>A presentation plot is for an audience. It earns investment in axis labels that explain units, a title that states the takeaway, legends that are readable without prior knowledge, and color choices that remain interpretable in black-and-white print and for color-blind viewers. The same underlying data may support both, but they should be made separately with different goals.</p>
+
+    <h2>4. Honest Strengths vs. Weaknesses</h2>
+
+    <p><strong>Strengths:</strong></p>
+    <ul>
+      <li>Reveals distributional features (skew, bimodality, outliers) invisible in summary statistics.</li>
+      <li>Communicates effect size and uncertainty simultaneously when done well.</li>
+      <li>Builds intuition for data structure before modeling.</li>
+      <li>In presentation contexts, makes findings accessible to readers who will not engage with regression tables.</li>
+    </ul>
+
+    <p><strong>Weaknesses:</strong></p>
+    <ul>
+      <li>Plots can mislead. A truncated y-axis makes tiny differences look dramatic. Wide bins on a histogram can erase a real bimodal structure. These are not just beginner mistakes; they appear in published work.</li>
+      <li>Visualization of more than 2-3 variables simultaneously is hard. High-dimensional structure (like what a principal components analysis finds) cannot be faithfully shown in 2D without assumptions.</li>
+      <li>Plots are harder to replicate precisely than tables. A reader cannot extract exact numbers from a bar chart.</li>
+      <li>Color choices that look fine on your monitor may print poorly, appear different on a projector, or be unreadable for people with color vision deficiency. Colorbrewer palettes and viridis address this but require deliberate choices.</li>
+    </ul>
+
+  </div>
+</body>
+</html>

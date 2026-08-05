@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Descriptive Statistics — Math</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+  <style>
+    :root { --bg:#faf8f5; --text:#111111; --muted:#666666; --border:#d8d4ce; --accent:#7a3b2e; }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:var(--text);font-family:'EB Garamond',Georgia,serif;font-size:1.08rem;line-height:1.8;padding:48px 24px 96px;}
+    body::before{content:'';display:block;position:fixed;top:0;left:0;right:0;height:4px;background:var(--accent);z-index:100;}
+    .page{max-width:680px;margin:0 auto;}
+    .back{font-family:'Inter',sans-serif;font-size:0.78rem;color:var(--muted);text-decoration:none;display:inline-block;margin-bottom:40px;}
+    .back:hover{color:var(--accent);}
+    h1{font-size:1.75rem;font-weight:400;margin-bottom:6px;line-height:1.3;}
+    .subtitle{font-family:'Inter',sans-serif;font-size:0.72rem;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);margin-bottom:48px;}
+    h2{font-family:'Inter',sans-serif;font-size:0.72rem;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);margin:52px 0 18px;padding-top:52px;border-top:1px solid var(--border);}
+    h3{font-size:1.05rem;font-weight:500;margin:28px 0 10px;}
+    p{margin-bottom:16px;}
+    p:last-child{margin-bottom:0;}
+    .practice{border-left:3px solid var(--accent);padding-left:16px;color:var(--muted);font-size:0.95rem;margin:0 0 24px;font-style:italic;}
+    .eq{background:#f2ede7;border:1px solid var(--border);border-radius:4px;padding:20px 24px;margin:20px 0;overflow-x:auto;text-align:center;}
+    table{width:100%;border-collapse:collapse;font-size:0.92rem;margin-bottom:24px;}
+    th{font-family:'Inter',sans-serif;font-size:0.68rem;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);text-align:left;padding:8px 12px;border-bottom:1px solid var(--border);}
+    td{padding:8px 12px;border-bottom:1px solid var(--border);vertical-align:top;line-height:1.55;}
+    td:first-child{font-family:'Inter',sans-serif;font-size:0.85rem;white-space:nowrap;}
+    ul,ol{padding-left:1.4em;margin-bottom:16px;}
+    li{margin-bottom:6px;}
+    strong{font-weight:500;}
+    em{font-style:italic;}
+    code{font-family:'Inter',monospace;font-size:0.83rem;background:#ece8e2;padding:1px 5px;border-radius:3px;}
+    .katex-display{overflow-x:auto;}
+  </style>
+</head>
+<body>
+  <div class="page">
+    <a class="back" href="../../code-library.html">← Code Library</a>
+    <h1>Descriptive Statistics</h1>
+    <div class="subtitle">Mathematical Derivation</div>
+
+    <table>
+      <thead><tr><th>Symbol</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td>$N$</td><td>Population size</td></tr>
+        <tr><td>$n$</td><td>Sample size</td></tr>
+        <tr><td>$X_i$</td><td>Value of variable $X$ for population unit $i$</td></tr>
+        <tr><td>$x_i$</td><td>Value of variable $X$ for sample unit $i$</td></tr>
+        <tr><td>$\mu$</td><td>Population mean of $X$</td></tr>
+        <tr><td>$\bar{X}$</td><td>Sample mean of $X$</td></tr>
+        <tr><td>$\sigma^2$</td><td>Population variance of $X$</td></tr>
+        <tr><td>$s^2$</td><td>Sample variance of $X$ (unbiased, divides by $n-1$)</td></tr>
+        <tr><td>$s^2_b$</td><td>Biased sample variance (divides by $n$)</td></tr>
+        <tr><td>$s$</td><td>Sample standard deviation</td></tr>
+        <tr><td>$E[\cdot]$</td><td>Expectation operator</td></tr>
+        <tr><td>$\text{Var}(\cdot)$</td><td>Variance operator</td></tr>
+        <tr><td>$\text{Cov}(X,Y)$</td><td>Sample covariance between $X$ and $Y$</td></tr>
+        <tr><td>$\bar{Y}$</td><td>Sample mean of $Y$</td></tr>
+        <tr><td>$s_X, s_Y$</td><td>Sample standard deviations of $X$ and $Y$</td></tr>
+        <tr><td>$r$</td><td>Pearson correlation coefficient</td></tr>
+        <tr><td>$O_{rc}$</td><td>Observed count in row $r$, column $c$ of a contingency table</td></tr>
+        <tr><td>$E_{rc}$</td><td>Expected count in cell $(r,c)$ under independence</td></tr>
+        <tr><td>$n_{r\cdot}$</td><td>Row $r$ marginal total</td></tr>
+        <tr><td>$n_{\cdot c}$</td><td>Column $c$ marginal total</td></tr>
+        <tr><td>$n$</td><td>Grand total of a contingency table</td></tr>
+        <tr><td>$R$</td><td>Number of rows in a contingency table</td></tr>
+        <tr><td>$C$</td><td>Number of columns in a contingency table</td></tr>
+        <tr><td>$\chi^2$</td><td>Chi-square test statistic</td></tr>
+        <tr><td>$df$</td><td>Degrees of freedom</td></tr>
+        <tr><td>$w_i$</td><td>Sampling weight for observation $i$</td></tr>
+        <tr><td>$\bar{X}_w$</td><td>Weighted mean of $X$</td></tr>
+        <tr><td>$\pi_i$</td><td>Probability of selection for unit $i$</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Part A — Mean and Variance</h2>
+
+    <div class="practice">In practice: The sample mean and variance are the first statistics you compute for any variable. Knowing why the sample variance divides by $n-1$ rather than $n$ is not pedantic; it matters whenever you construct confidence intervals or test statistics from small to moderate samples.</div>
+
+    <h3>Population and sample means</h3>
+
+    <p>The <strong>population mean</strong> is the average of all $N$ units in the target population:</p>
+
+    <div class="eq">$$\mu = \frac{1}{N} \cdot \sum_{i=1}^{N} X_i$$</div>
+
+    <p>Because we rarely observe every unit, we work with the <strong>sample mean</strong> computed from $n$ observed cases:</p>
+
+    <div class="eq">$$\bar{X} = \frac{1}{n} \cdot \sum_{i=1}^{n} x_i$$</div>
+
+    <p>$\bar{X}$ is an <strong>unbiased estimator</strong> of $\mu$. To verify, apply the expectation operator to $\bar{X}$, using the fact that each sampled unit has $E[x_i] = \mu$:</p>
+
+    <div class="eq">$$\begin{aligned} E[\bar{X}] &= E\!\left[\frac{1}{n} \cdot \sum x_i\right] \\ &= \frac{1}{n} \cdot \sum E[x_i] \\ &= \frac{1}{n} \cdot n \cdot \mu \\ &= \mu \end{aligned}$$</div>
+
+    <p>On average across all possible samples, $\bar{X}$ hits the population mean exactly. This holds regardless of the shape of the distribution of $X$; no normality assumption is required.</p>
+
+    <h3>Population variance and Bessel's correction</h3>
+
+    <p>The <strong>population variance</strong> measures the average squared distance of each unit from the population mean:</p>
+
+    <div class="eq">$$\sigma^2 = \frac{1}{N} \cdot \sum_{i=1}^{N} (X_i - \mu)^2$$</div>
+
+    <p>The natural sample analog, dividing by $n$, produces the biased estimate:</p>
+
+    <div class="eq">$$s^2_b = \frac{1}{n} \cdot \sum_{i=1}^{n} (x_i - \bar{X})^2$$</div>
+
+    <p>To see why this underestimates $\sigma^2$, start with an algebraic identity. For each observation:</p>
+
+    <div class="eq">$$(x_i - \bar{X})^2 = \left[(x_i - \mu) - (\bar{X} - \mu)\right]^2$$</div>
+
+    <p>Squaring and summing across all $n$ observations, and using the fact that cross-terms sum to zero:</p>
+
+    <div class="eq">$$\sum (x_i - \bar{X})^2 = \sum (x_i - \mu)^2 - n \cdot (\bar{X} - \mu)^2$$</div>
+
+    <p>Taking expectations on both sides, and noting that $\text{Var}(\bar{X}) = \sigma^2/n$:</p>
+
+    <div class="eq">$$\begin{aligned} E\!\left[\sum (x_i - \bar{X})^2\right] &= n\sigma^2 - n \cdot \frac{\sigma^2}{n} \\ &= n\sigma^2 - \sigma^2 \\ &= (n-1)\sigma^2 \end{aligned}$$</div>
+
+    <p>So dividing by $n$ gives $E[s^2_b] = (n-1)\sigma^2/n$, which is less than $\sigma^2$. The sample mean "uses up" one degree of freedom by centering the deviations on $\bar{X}$ rather than on the true $\mu$, making the sum of squared deviations systematically too small. <strong>Bessel's correction</strong> divides by $n-1$ instead:</p>
+
+    <div class="eq">$$s^2 = \frac{1}{n-1} \cdot \sum_{i=1}^{n} (x_i - \bar{X})^2$$</div>
+
+    <p>This gives $E[s^2] = \sigma^2$, an unbiased estimate. For $n = 30$, the uncorrected estimate understates the variance by $1/30 \approx 3.3\%$. For $n = 5$, the understatement is $1/5 = 20\%$, large enough to noticeably widen standard errors and narrow confidence intervals if you use the wrong denominator.</p>
+
+    <h2>Part B — Pearson's Correlation</h2>
+
+    <div class="practice">In practice: Correlation is the most-reported measure of bivariate association in social science, but it only captures linear relationships. Knowing the Cauchy-Schwarz derivation of the bounds reminds you that $r = 0$ is compatible with strong curved or non-monotone relationships.</div>
+
+    <h3>Covariance</h3>
+
+    <p>The <strong>sample covariance</strong> between $X$ and $Y$ measures how the two variables move together, expressed in the original units of both variables:</p>
+
+    <div class="eq">$$\text{Cov}(X, Y) = \frac{1}{n-1} \cdot \sum_{i=1}^{n} (x_i - \bar{X})(y_i - \bar{Y})$$</div>
+
+    <p>A positive covariance means that observations above the mean of $X$ tend to be above the mean of $Y$. The magnitude of covariance depends on the scales of $X$ and $Y$, which makes it difficult to interpret directly.</p>
+
+    <h3>Pearson correlation</h3>
+
+    <p><strong>Pearson's $r$</strong> standardizes the covariance by the product of the two standard deviations, removing the unit dependence:</p>
+
+    <div class="eq">$$r = \frac{\text{Cov}(X, Y)}{s_X \cdot s_Y}$$</div>
+
+    <h3>Why $r$ is bounded between $-1$ and $1$</h3>
+
+    <p>The <strong>Cauchy-Schwarz inequality</strong> states that for any two sequences $a_i$ and $b_i$:</p>
+
+    <div class="eq">$$\left[\sum a_i \cdot b_i\right]^2 \leq \left(\sum a_i^2\right) \cdot \left(\sum b_i^2\right)$$</div>
+
+    <p>Set $a_i = (x_i - \bar{X})$ and $b_i = (y_i - \bar{Y})$. Then the left side is $[\text{Cov}(X,Y) \cdot (n-1)]^2$ and the right side is $[s_X \cdot (n-1)^{1/2}]^2 \cdot [s_Y \cdot (n-1)^{1/2}]^2$. Dividing both sides by $[s_X \cdot s_Y \cdot (n-1)]^2$ gives:</p>
+
+    <div class="eq">$$r^2 \leq 1$$</div>
+
+    <p>Therefore $-1 \leq r \leq 1$. Equality holds when $a_i$ and $b_i$ are proportional for every $i$, meaning all points fall exactly on a straight line. $r = 1$ when the line has a positive slope; $r = -1$ when it has a negative slope.</p>
+
+    <p>A dataset with a U-shaped or sinusoidal relationship between $X$ and $Y$ can easily have $r \approx 0$ because the positive and negative deviations cancel. Always plot your data before trusting a correlation summary.</p>
+
+    <h2>Part C — Chi-Square Test of Independence</h2>
+
+    <div class="practice">In practice: When you cross-tabulate two categorical variables (e.g., race by housing tenure), chi-square tells you whether the row and column classifications are statistically independent or whether some cells are more (or less) common than chance would predict.</div>
+
+    <h3>Expected counts under independence</h3>
+
+    <p>For a table with $R$ rows and $C$ columns, let $O_{rc}$ be the observed count in cell $(r, c)$. Under the null hypothesis of independence, the probability of falling in row $r$ and column $c$ is the product of the marginal probabilities. This gives the <strong>expected count</strong>:</p>
+
+    <div class="eq">$$E_{rc} = \frac{n_{r\cdot} \times n_{\cdot c}}{n}$$</div>
+
+    <p>where $n_{r\cdot}$ is the total count in row $r$, $n_{\cdot c}$ is the total count in column $c$, and $n$ is the grand total. If independence holds, each cell's expected count is what you would predict from the row and column totals alone.</p>
+
+    <h3>The chi-square statistic</h3>
+
+    <p>The test statistic sums the squared relative discrepancies between observed and expected counts across all cells:</p>
+
+    <div class="eq">$$\chi^2 = \sum_r \sum_c \frac{(O_{rc} - E_{rc})^2}{E_{rc}}$$</div>
+
+    <p>Large values of $\chi^2$ indicate that at least one cell deviates substantially from what independence predicts. As a rule of thumb, the chi-square approximation is reliable when every cell has an expected count of at least 5.</p>
+
+    <h3>Degrees of freedom</h3>
+
+    <p>The table has $R \times C$ cells, but not all deviations are free to vary independently. Constraints from the observed marginal totals reduce the free parameters. The row totals impose $R$ constraints and the column totals impose $C$ constraints, but these share one constraint (they must all add to the same grand total $n$). The effective number of constraints is $R + C - 1$. Therefore:</p>
+
+    <div class="eq">$$df = R \cdot C - (R + C - 1) = (R-1)(C-1)$$</div>
+
+    <p>For a $2 \times 2$ table, $df = (2-1)(2-1) = 1$. Under the null hypothesis of independence and with adequate cell counts, $\chi^2 \sim \chi^2(df)$.</p>
+
+    <h3>Worked $2 \times 2$ example</h3>
+
+    <p>Suppose you cross-tabulate sex (Male/Female) by homeownership (Owner/Renter) for $n = 200$ respondents:</p>
+
+    <div class="eq">$$\begin{array}{lccc} & \text{Owner} & \text{Renter} & \text{Total} \\ \text{Male} & 60 & 40 & 100 \\ \text{Female} & 50 & 50 & 100 \\ \text{Total} & 110 & 90 & 200 \end{array}$$</div>
+
+    <p>Expected counts:</p>
+
+    <div class="eq">$$\begin{aligned} E(\text{Male, Owner}) &= \frac{100 \times 110}{200} = 55 \\ E(\text{Male, Renter}) &= \frac{100 \times 90}{200} = 45 \\ E(\text{Female, Owner}) &= \frac{100 \times 110}{200} = 55 \\ E(\text{Female, Renter}) &= \frac{100 \times 90}{200} = 45 \end{aligned}$$</div>
+
+    <p>Chi-square statistic:</p>
+
+    <div class="eq">$$\begin{aligned} \chi^2 &= \frac{(60-55)^2}{55} + \frac{(40-45)^2}{45} + \frac{(50-55)^2}{55} + \frac{(50-45)^2}{45} \\ &= \frac{25}{55} + \frac{25}{45} + \frac{25}{55} + \frac{25}{45} \\ &= 0.455 + 0.556 + 0.455 + 0.556 \\ &\approx 2.02 \end{aligned}$$</div>
+
+    <p>With $df = 1$ and $\chi^2 \approx 2.02$, the p-value is roughly 0.16; we do not reject independence at conventional thresholds. The observed discrepancies are consistent with sampling variation.</p>
+
+    <h2>Part D — Weighted Mean</h2>
+
+    <div class="practice">In practice: Complex surveys like the ACS, CPS, or NYTD use stratified or clustered sampling designs that do not give every respondent an equal probability of selection. Ignoring weights produces estimates that represent your sample, not the target population.</div>
+
+    <h3>Definition and reduction to the simple mean</h3>
+
+    <p>When observations have sampling weights $w_i$ (typically proportional to $1/\pi_i$, where $\pi_i$ is the probability of selection), the <strong>weighted mean</strong> is:</p>
+
+    <div class="eq">$$\bar{X}_w = \frac{\sum w_i \cdot x_i}{\sum w_i}$$</div>
+
+    <p>When all weights are equal, say $w_i = w$ for all $i$, the expression simplifies:</p>
+
+    <div class="eq">$$\bar{X}_w = \frac{w \cdot \sum x_i}{n \cdot w} = \frac{1}{n} \cdot \sum x_i = \bar{X}$$</div>
+
+    <p>The ordinary sample mean is a special case of the weighted mean with uniform weights. This is reassuring: you are not using a different formula, just a generalized one.</p>
+
+    <h3>What the weights do</h3>
+
+    <p>A respondent from an undersampled group receives a weight greater than 1, so their data counts for more than one person in the estimate. A respondent from an oversampled group receives a weight less than 1. The weighted mean effectively inflates rare-group observations to restore population representativeness.</p>
+
+    <p>In the Current Population Survey, for example, rural respondents are sometimes oversampled to ensure reliable state-level estimates. A rural respondent might carry a weight of 0.6, while an urban respondent might carry a weight of 1.4. The unweighted mean of a national income variable would overrepresent rural incomes because those respondents appear more frequently in the sample than they do in the population. The weighted mean corrects this by scaling each observation back to its population share before averaging.</p>
+
+    <p>Ignoring survey weights when they are present is not a conservative choice; it is a systematic bias of unknown direction and magnitude, depending on how the variable of interest correlates with the sampling design.</p>
+
+  </div>
+</body>
+</html>

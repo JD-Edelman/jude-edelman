@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel Data — Intuition</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+  <style>
+    :root { --bg:#faf8f5; --text:#111111; --muted:#666666; --border:#d8d4ce; --accent:#7a3b2e; }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:var(--text);font-family:'EB Garamond',Georgia,serif;font-size:1.08rem;line-height:1.8;padding:48px 24px 96px;}
+    body::before{content:'';display:block;position:fixed;top:0;left:0;right:0;height:4px;background:var(--accent);z-index:100;}
+    .page{max-width:680px;margin:0 auto;}
+    .back{font-family:'Inter',sans-serif;font-size:0.78rem;color:var(--muted);text-decoration:none;display:inline-block;margin-bottom:40px;}
+    .back:hover{color:var(--accent);}
+    h1{font-size:1.75rem;font-weight:400;margin-bottom:6px;line-height:1.3;}
+    .subtitle{font-family:'Inter',sans-serif;font-size:0.72rem;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);margin-bottom:48px;}
+    h2{font-family:'Inter',sans-serif;font-size:0.72rem;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);margin:52px 0 18px;padding-top:52px;border-top:1px solid var(--border);}
+    h3{font-size:1.05rem;font-weight:500;margin:28px 0 10px;}
+    p{margin-bottom:16px;}
+    p:last-child{margin-bottom:0;}
+    .practice{border-left:3px solid var(--accent);padding-left:16px;color:var(--muted);font-size:0.95rem;margin:0 0 24px;font-style:italic;}
+    .eq{background:#f2ede7;border:1px solid var(--border);border-radius:4px;padding:20px 24px;margin:20px 0;overflow-x:auto;text-align:center;}
+    table{width:100%;border-collapse:collapse;font-size:0.92rem;margin-bottom:24px;}
+    th{font-family:'Inter',sans-serif;font-size:0.68rem;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);text-align:left;padding:8px 12px;border-bottom:1px solid var(--border);}
+    td{padding:8px 12px;border-bottom:1px solid var(--border);vertical-align:top;line-height:1.55;}
+    td:first-child{font-family:'Inter',sans-serif;font-size:0.85rem;white-space:nowrap;}
+    ul,ol{padding-left:1.4em;margin-bottom:16px;}
+    li{margin-bottom:6px;}
+    strong{font-weight:500;}
+    em{font-style:italic;}
+    code{font-family:'Inter',monospace;font-size:0.83rem;background:#ece8e2;padding:1px 5px;border-radius:3px;}
+    .katex-display{overflow-x:auto;}
+  </style>
+</head>
+<body>
+  <div class="page">
+    <a class="back" href="../../code-library.html">← Code Library</a>
+    <h1>Panel Data</h1>
+    <div class="subtitle">Intuition</div>
+
+    <h2>What Problem Does This Technique Solve?</h2>
+    <p>The central problem in observational social science is confounding: the people who receive a treatment or have a characteristic differ in ways that also affect the outcome. Higher-educated people vote at higher rates, but they also differ from lower-educated people in income, media consumption, and social networks. When you compare voters to non-voters, you cannot separate the effect of education from the effects of these correlated traits, most of which you did not measure.</p>
+    <p>Panel data, also called longitudinal data, follows the same units (people, counties, organizations) across multiple time points. This creates a powerful opportunity: you can compare each unit to itself across time, rather than comparing different units to each other. When you do that, every time-invariant characteristic of the unit, whether observed or not, drops out of the comparison. You do not need to measure someone's personality, cultural background, family history, or any other stable trait; they are automatically controlled because you are looking at how that same person changed.</p>
+    <p>The CES includes some panel components and wave-to-wave comparisons. More generally, county-level or state-level panel data (e.g., election returns across multiple years combined with policy variables) are a workhorse of political sociology.</p>
+
+    <h2>Within-Person Variation: What Fixed Effects Actually Use</h2>
+    <p>Fixed effects estimation works exclusively with variation that occurs within units over time. If you are studying individuals, FE asks: among the observations of person $i$, how did changes in the predictor $X$ correlate with changes in the outcome $Y$?</p>
+    <p>A concrete example: you want to know whether county unemployment affects Republican vote share. You have 50 counties measured over 10 elections. FE compares each county to itself: in years when county $i$ had higher unemployment than its own average, did it vote more Republican? The analysis is entirely within-county. Cross-county comparisons, where wealthy counties differ from poor counties in dozens of ways, play no role.</p>
+    <p>The transformation that accomplishes this is demeaning: subtract each unit's mean from each of its observations. After demeaning, a county whose unemployment is always high has a de-meaned unemployment of zero in every year and contributes nothing to the estimate. Only counties that fluctuate contribute.</p>
+
+    <h2>When Fixed Effects Hurts You</h2>
+    <p>FE's strength is also its limitation. Because FE only uses within-unit variation, it cannot estimate effects of variables that do not change within units over your observation window.</p>
+    <p><strong>Time-invariant predictors are completely absorbed.</strong> If you are studying gender effects with individual-level panel data, gender (for most respondents in most datasets) does not change. FE eats the gender variable along with all other unit-specific constants. You cannot estimate the effect of gender with individual FE. This is not a limitation to work around; it is the mathematical consequence of the demeaning.</p>
+    <p><strong>Low within-unit variation reduces precision.</strong> If a predictor rarely changes within units, the within-unit variation is small, and your standard errors will be large. FE is efficient only when there is meaningful variation over time. A variable that is 90% between-unit and 10% within-unit may produce very imprecise FE estimates even in a large panel.</p>
+    <p><strong>FE cannot identify long-run effects well.</strong> Short panels with few time points capture short-run dynamics. Effects that unfold slowly over many years require long panels that most researchers do not have.</p>
+
+    <h2>Random Effects and the Hausman Test</h2>
+    <p>The random effects (RE) model is an alternative to FE. Instead of treating unit-specific constants as parameters to be estimated and eliminated, RE treats them as random variables drawn from a distribution. This allows RE to estimate effects of time-invariant predictors and is more efficient than FE when the assumption holds.</p>
+    <p>The critical assumption for RE: the unit-specific constants must be uncorrelated with the predictors. If the things that make county $i$ permanently different (geography, history, culture) are correlated with your time-varying predictor (policy changes, economic shocks), RE is inconsistent. FE, which eliminates the unit-specific constant, is consistent even in this case.</p>
+    <p><strong>The Hausman test in plain language:</strong> if RE is consistent, both FE and RE give you the right answer, so their estimates should be close. If RE is inconsistent (because the unit effects are correlated with the predictors), RE estimates drift away from the truth while FE stays correct. The Hausman test formalizes this: it tests whether FE and RE estimates differ significantly. A large, significant difference is evidence that RE is inconsistent and FE should be preferred.</p>
+    <p>The Hausman test is a diagnostic, not a proof. Rejecting RE does not mean your FE estimates are valid (they have their own assumptions). It means RE's specific assumption fails.</p>
+
+    <h2>Difference-in-Differences</h2>
+    <p>Difference-in-differences (DiD) is a panel estimator designed for natural experiments: one group (treated) experiences a policy change, another group (control) does not, and you observe both before and after.</p>
+    <p>The intuition: the treated group's post-minus-pre difference includes both the treatment effect and any time trends that would have happened regardless. The control group's post-minus-pre difference captures only the time trend (since they were not treated). Subtracting the control trend from the treated trend isolates the treatment effect.</p>
+    <p>This subtraction is the "double difference": (treated_after - treated_before) - (control_after - control_before).</p>
+    <p>The <strong>parallel trends assumption</strong> is the crucial and untenable-to-verify-perfectly assumption behind DiD: in the absence of treatment, the treated and control groups would have followed parallel time trends. Not the same level, but the same trend. If the treated group was already diverging from the control group before treatment for reasons unrelated to treatment, DiD cannot isolate the treatment effect.</p>
+    <p>Parallel trends is an assumption, not a data property. It cannot be tested in the post-period (you never observe the counterfactual). It can be examined pre-treatment.</p>
+    <p><strong>Event-study plots</strong> extend DiD by estimating a separate treatment effect for each time period before and after treatment, rather than collapsing to a single before/after contrast. A good event-study plot shows: (1) pre-treatment coefficients close to zero (supporting parallel pre-trends); (2) a treatment effect that turns on at the treatment period and evolves in a theoretically sensible way afterward. These plots are the best available empirical evidence for or against parallel trends.</p>
+
+    <h2>Strengths, Weaknesses, and Alternatives</h2>
+    <table>
+      <thead><tr><th></th><th>Fixed Effects Panel Estimation</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Strengths</strong></td><td>Controls for all time-invariant confounders, observed and unobserved; strong identification when within-unit variation is meaningful</td></tr>
+        <tr><td><strong>Weaknesses</strong></td><td>Cannot estimate effects of time-invariant predictors; low efficiency when within-unit variation is sparse; does not handle time-varying confounders; results sensitive to measurement error (which amplifies under demeaning)</td></tr>
+        <tr><td><strong>Alternatives</strong></td><td>Random effects is more efficient but requires stronger assumptions. First differences is equivalent to FE for $T=2$ but differs for $T>2$ panels with heteroskedastic errors. Synthetic control methods construct a weighted control unit when there is only one treated unit. DiD with staggered adoption (different units treated at different times) requires more careful estimators than simple two-way FE when treatment effects are heterogeneous.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

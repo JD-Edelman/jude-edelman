@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Logistic Regression — Intuition</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+  <style>
+    :root { --bg:#faf8f5; --text:#111111; --muted:#666666; --border:#d8d4ce; --accent:#7a3b2e; }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:var(--text);font-family:'EB Garamond',Georgia,serif;font-size:1.08rem;line-height:1.8;padding:48px 24px 96px;}
+    body::before{content:'';display:block;position:fixed;top:0;left:0;right:0;height:4px;background:var(--accent);z-index:100;}
+    .page{max-width:680px;margin:0 auto;}
+    .back{font-family:'Inter',sans-serif;font-size:0.78rem;color:var(--muted);text-decoration:none;display:inline-block;margin-bottom:40px;}
+    .back:hover{color:var(--accent);}
+    h1{font-size:1.75rem;font-weight:400;margin-bottom:6px;line-height:1.3;}
+    .subtitle{font-family:'Inter',sans-serif;font-size:0.72rem;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);margin-bottom:48px;}
+    h2{font-family:'Inter',sans-serif;font-size:0.72rem;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);margin:52px 0 18px;padding-top:52px;border-top:1px solid var(--border);}
+    h3{font-size:1.05rem;font-weight:500;margin:28px 0 10px;}
+    p{margin-bottom:16px;}
+    p:last-child{margin-bottom:0;}
+    .practice{border-left:3px solid var(--accent);padding-left:16px;color:var(--muted);font-size:0.95rem;margin:0 0 24px;font-style:italic;}
+    .eq{background:#f2ede7;border:1px solid var(--border);border-radius:4px;padding:20px 24px;margin:20px 0;overflow-x:auto;text-align:center;}
+    table{width:100%;border-collapse:collapse;font-size:0.92rem;margin-bottom:24px;}
+    th{font-family:'Inter',sans-serif;font-size:0.68rem;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);text-align:left;padding:8px 12px;border-bottom:1px solid var(--border);}
+    td{padding:8px 12px;border-bottom:1px solid var(--border);vertical-align:top;line-height:1.55;}
+    td:first-child{font-family:'Inter',sans-serif;font-size:0.85rem;white-space:nowrap;}
+    ul,ol{padding-left:1.4em;margin-bottom:16px;}
+    li{margin-bottom:6px;}
+    strong{font-weight:500;}
+    em{font-style:italic;}
+    code{font-family:'Inter',monospace;font-size:0.83rem;background:#ece8e2;padding:1px 5px;border-radius:3px;}
+    .katex-display{overflow-x:auto;}
+  </style>
+</head>
+<body>
+  <div class="page">
+    <a class="back" href="../../code-library.html">← Code Library</a>
+    <h1>Logistic Regression</h1>
+    <div class="subtitle">Intuition</div>
+
+    <h2>What Problem It Solves</h2>
+
+    <p>When the outcome is binary (voted / did not vote; college degree / no degree), OLS can predict values below 0 or above 1 -- meaningless as probabilities. Logistic regression constrains predictions to (0, 1) and models the relationship on the log-odds scale, which is unbounded and linear in the predictors.</p>
+
+    <h2>When to Reach for It</h2>
+
+    <p><strong>Reach for it when:</strong></p>
+    <ul>
+      <li>The outcome has exactly two categories: yes/no, survived/died, voted/abstained</li>
+      <li>You want to make probabilistic statements ("the predicted probability of voting rises by X points")</li>
+      <li>Sample size is large enough for maximum likelihood to be reliable (rough rule: ≥ 10 events per predictor)</li>
+    </ul>
+
+    <p><strong>Do not reach for it when:</strong></p>
+    <ul>
+      <li>The outcome has more than two ordered categories (use ordered logit/probit)</li>
+      <li>The outcome has more than two unordered categories (use multinomial logit)</li>
+      <li>Complete separation exists (see below)</li>
+      <li>The outcome is continuous or near-continuous (OLS is more interpretable)</li>
+    </ul>
+
+    <h2>Odds and Log-Odds</h2>
+
+    <p>An <strong>odds</strong> is the ratio of the probability of an event to the probability of it not occurring: odds = p/(1-p). If p = 0.75, odds = 3 (three times as likely to happen as not).</p>
+
+    <p>A <strong>log-odds</strong> (logit) is the natural log of the odds: logit(p) = log[p/(1-p)]. Log-odds range from $-\infty$ to $+\infty$, making them suitable for a linear model. Logistic regression models:</p>
+
+    <p style="padding-left: 1.4em;">log[p/(1-p)] = $\beta_0 + \beta_1 X_1 + \beta_2 X_2 + \ldots$</p>
+
+    <p>The exponential of a coefficient gives an <strong>odds ratio</strong>: OR = exp($\beta_1$). An OR of 1.5 means the odds of the event are 1.5 times higher for a one-unit increase in $X_1$, holding other variables constant.</p>
+
+    <h2>Interpreting Coefficients</h2>
+
+    <p>Odds ratios are multiplicative and asymmetric: OR = 2.0 does not mean the outcome is "twice as common," it means the <em>odds</em> doubled. For rare outcomes (p &lt; 10%), the odds ratio approximates the relative risk. For common outcomes, it overstates the relative risk.</p>
+
+    <p><strong>Average marginal effects (AMEs)</strong> are often preferred for substantive interpretation. An AME for $X_1$ says: on average across the sample, a one-unit increase in $X_1$ is associated with a $\beta_{AME}$ percentage-point change in the predicted probability. This is in the same units as a linear probability model coefficient, making it easier to communicate.</p>
+
+    <h2>Model Fit</h2>
+
+    <ul>
+      <li><strong>Pseudo-$R^2$</strong> (McFadden's): $1 - \ell_\text{full}/\ell_\text{null}$ where $\ell$ is the log-likelihood. Values of 0.2–0.4 indicate good fit, but pseudo-$R^2$ is not comparable across datasets.</li>
+      <li><strong>AUC</strong>: area under the ROC curve. Ranges from 0.5 (no better than chance) to 1.0 (perfect discrimination). Measures the model's ability to rank cases correctly, regardless of threshold.</li>
+      <li><strong>Hosmer-Lemeshow test</strong>: divides predicted probabilities into deciles and tests whether observed event rates match predicted rates. A non-significant result indicates adequate fit.</li>
+    </ul>
+
+    <h2>The Separation Problem</h2>
+
+    <p><strong>Complete separation</strong> occurs when some linear combination of predictors perfectly predicts the outcome (every Democrat voted, no Republican did, with zero overlap). When this happens, the maximum likelihood estimator for the separated variable does not exist: the algorithm pushes the coefficient toward $\pm\infty$. Solutions include Firth's penalized likelihood or dropping/recoding the offending variable.</p>
+
+    <h2>Probit vs. Logit</h2>
+
+    <p>Both model a binary outcome by linking a linear predictor to a probability through an S-shaped function. Logit uses the logistic (sigmoid) function; probit uses the normal CDF. Substantive results are almost identical after rescaling (logit coefficient / 1.6 ≈ probit coefficient). The choice is usually disciplinary convention; logit produces odds ratios, which are easier to communicate in sociology and epidemiology.</p>
+
+    <h2>Strengths vs. Alternatives</h2>
+
+    <table>
+      <thead>
+        <tr><th>Method</th><th>When logit wins</th><th>When the alternative wins</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>OLS (linear probability model)</td><td>Clean probabilistic predictions needed</td><td>Quick approximation, rarely predicted probabilities near 0/1</td></tr>
+        <tr><td>Probit</td><td>Any; results nearly identical</td><td>Probit is theoretically motivated by latent normal variable</td></tr>
+        <tr><td>Ordered logit (Module 04 extension)</td><td>Binary outcome</td><td>Outcome has 3+ ordered categories</td></tr>
+        <tr><td>Fixed effects logit</td><td>Cross-sectional</td><td>Panel with binary outcome (incidental parameters problem)</td></tr>
+      </tbody>
+    </table>
+
+  </div>
+</body>
+</html>

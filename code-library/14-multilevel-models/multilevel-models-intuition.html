@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Multilevel Models — Intuition</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+  <style>
+    :root { --bg:#faf8f5; --text:#111111; --muted:#666666; --border:#d8d4ce; --accent:#7a3b2e; }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:var(--text);font-family:'EB Garamond',Georgia,serif;font-size:1.08rem;line-height:1.8;padding:48px 24px 96px;}
+    body::before{content:'';display:block;position:fixed;top:0;left:0;right:0;height:4px;background:var(--accent);z-index:100;}
+    .page{max-width:680px;margin:0 auto;}
+    .back{font-family:'Inter',sans-serif;font-size:0.78rem;color:var(--muted);text-decoration:none;display:inline-block;margin-bottom:40px;}
+    .back:hover{color:var(--accent);}
+    h1{font-size:1.75rem;font-weight:400;margin-bottom:6px;line-height:1.3;}
+    .subtitle{font-family:'Inter',sans-serif;font-size:0.72rem;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);margin-bottom:48px;}
+    h2{font-family:'Inter',sans-serif;font-size:0.72rem;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);margin:52px 0 18px;padding-top:52px;border-top:1px solid var(--border);}
+    h3{font-size:1.05rem;font-weight:500;margin:28px 0 10px;}
+    p{margin-bottom:16px;}
+    p:last-child{margin-bottom:0;}
+    .practice{border-left:3px solid var(--accent);padding-left:16px;color:var(--muted);font-size:0.95rem;margin:0 0 24px;font-style:italic;}
+    .eq{background:#f2ede7;border:1px solid var(--border);border-radius:4px;padding:20px 24px;margin:20px 0;overflow-x:auto;text-align:center;}
+    table{width:100%;border-collapse:collapse;font-size:0.92rem;margin-bottom:24px;}
+    th{font-family:'Inter',sans-serif;font-size:0.68rem;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);text-align:left;padding:8px 12px;border-bottom:1px solid var(--border);}
+    td{padding:8px 12px;border-bottom:1px solid var(--border);vertical-align:top;line-height:1.55;}
+    td:first-child{font-family:'Inter',sans-serif;font-size:0.85rem;white-space:nowrap;}
+    ul,ol{padding-left:1.4em;margin-bottom:16px;}
+    li{margin-bottom:6px;}
+    strong{font-weight:500;}
+    em{font-style:italic;}
+    code{font-family:'Inter',monospace;font-size:0.83rem;background:#ece8e2;padding:1px 5px;border-radius:3px;}
+    .katex-display{overflow-x:auto;}
+  </style>
+</head>
+<body>
+  <div class="page">
+    <a class="back" href="../../code-library.html">← Code Library</a>
+    <h1>Multilevel Models</h1>
+    <div class="subtitle">Intuition</div>
+
+    <h2>1. What Problem Does This Technique Solve?</h2>
+
+    <p>Survey data rarely comes from a simple random sample of independent individuals. In the CES 2020, respondents live in states, states have different political cultures, policy environments, and demographic compositions. If you run a standard OLS regression and pretend each respondent is independent, you are making a claim that knowing someone lives in Mississippi tells you nothing extra about their outcome once you account for their individual characteristics. That claim is almost certainly wrong.</p>
+
+    <p>The technical name for this problem is <strong>non-independence due to clustering</strong>. Observations from the same group tend to be more similar to each other than observations drawn at random from the full population. When you ignore that similarity, your standard errors are too small -- your model is acting as if you have more independent pieces of information than you actually do. The result is inflated $t$-statistics and false positives. Multilevel models (also called mixed-effects models or hierarchical linear models) solve this by explicitly modeling the clustering structure.</p>
+
+    <h2>2. When Would a Researcher Reach for This -- and When Not?</h2>
+
+    <p><strong>Reach for multilevel models when:</strong></p>
+    <ul>
+      <li>Your data has a clear nesting structure (respondents in states, students in schools, workers in firms, waves in individuals) and that structure is substantively meaningful, not just a nuisance.</li>
+      <li>You want to include predictors that live at the group level (state-level unemployment rate, school funding per pupil). Fixed effects cannot estimate coefficients on variables that don't vary within groups.</li>
+      <li>Your groups are few in number or have small sample sizes within them. Fixed effects become unreliable when groups have only a handful of observations; multilevel models use partial pooling to stabilize estimates.</li>
+      <li>You are genuinely interested in the variance across groups, not just the average effect.</li>
+      <li>You want to make predictions for new groups not in your data (a random-effects assumption enables that; a fixed-effects assumption does not).</li>
+    </ul>
+
+    <p><strong>Do not reach for multilevel models when:</strong></p>
+    <ul>
+      <li>Your primary goal is causal identification and you want to control for all time-invariant group characteristics without modeling them. Fixed effects are more conservative and make fewer distributional assumptions.</li>
+      <li>You have a very large number of groups with many observations per group and no interest in between-group variation. OLS with clustered standard errors may be sufficient.</li>
+      <li>The nesting structure is arbitrary or very shallow (e.g., two groups). With only two or three groups there is not enough information to estimate a distribution of random effects.</li>
+    </ul>
+
+    <h2>3. How It Works -- Plain Language</h2>
+
+    <p><strong>The clustering problem visualized.</strong> Imagine you survey 50 respondents per state. If you run OLS, you implicitly act as if all 50 are independent draws from the same population. But Alabamans share a state legislature, news media ecosystem, and social environment that makes their opinions more correlated with each other than with Oregonians. Your 50 Alabaman observations don't give you 50 independent data points -- you get something less.</p>
+
+    <p><strong>What a random intercept does.</strong> A random intercept model says: each group (state) gets its own baseline level of the outcome, and those baselines are treated as a sample from a normal distribution centered at the overall mean. You're not estimating a separate dummy variable for each state. Instead, you're estimating the <em>distribution</em> of state baselines -- specifically, its mean and variance. The individual state deviations from that mean are called random effects.</p>
+
+    <p>This matters because it changes how the model treats small and large states differently. A state with 500 respondents gives you a precise estimate of its baseline. A state with 15 respondents gives you a noisy one. The multilevel model automatically blends each group's observed deviation with the grand mean, pulling small-sample groups closer to the center. This is called <strong>shrinkage</strong> or <strong>partial pooling</strong>.</p>
+
+    <p><strong>Shrinkage is a feature, not a bug.</strong> Suppose Wyoming has 12 respondents in your CES sample and happens to have an extreme average outcome just by chance. A fixed-effects model takes that extreme average at face value. A multilevel model says: "given how little data we have from Wyoming, we should trust this estimate less and pull it toward the overall mean." You lose a little bit on Wyoming specifically, but you gain a lot in aggregate predictive accuracy. This is mathematically equivalent to putting a regularizing prior on the group effects.</p>
+
+    <p><strong>Random slopes.</strong> A random intercept only lets groups differ in their baseline level. A random slope lets groups differ in how strongly a predictor relates to the outcome. Maybe the gender gap in political trust is large in some states and small (or reversed) in others. A random slope on gender within state allows the model to estimate that variation.</p>
+
+    <p><strong>Cross-level interactions.</strong> Once you have a random slope, you can ask: what explains the variation in that slope across states? Enter a state-level variable (e.g., state median income) to moderate the individual-level slope. The coefficient on the product of the state variable and the individual variable is called a cross-level interaction. It answers the question: "Does the effect of $X$ on $Y$ for individuals depend on the group context those individuals live in?"</p>
+
+    <p><strong>The intraclass correlation (ICC).</strong> The ICC is a single number between 0 and 1 that summarizes how much of the total variance in your outcome lives between groups rather than within them. An ICC of 0 means groups are irrelevant -- everyone is as different from their group-mates as from strangers. An ICC of 0.20 means 20% of the variability in the outcome is explained just by knowing which group someone belongs to, before you know anything else about them. The ICC also equals the expected correlation between two randomly chosen people from the same group.</p>
+
+    <h2>4. Strengths, Weaknesses, and Alternatives</h2>
+
+    <p><strong>Strengths:</strong></p>
+    <ul>
+      <li>Corrects standard errors for clustering, reducing false positives.</li>
+      <li>Produces efficient estimates through partial pooling, especially for small groups.</li>
+      <li>Accommodates group-level predictors (level-2 covariates) that fixed effects cannot estimate.</li>
+      <li>Quantifies how much variance lives at each level of the hierarchy.</li>
+      <li>Can extend to three or more levels (respondents in counties in states), crossed structures, and binary outcomes (generalized linear mixed models).</li>
+    </ul>
+
+    <p><strong>Weaknesses:</strong></p>
+    <ul>
+      <li>Requires distributional assumptions about the random effects (usually normality). Violations can affect inference, though the models are somewhat robust.</li>
+      <li>Computationally expensive for large datasets with many groups and random slopes.</li>
+      <li>Estimation (REML, full ML) is more complex than OLS and requires understanding the distinction between the two.</li>
+      <li>The unconfoundedness assumption is still present: the model does not automatically handle selection into groups. If people sort into states based on unobserved characteristics that also affect the outcome, the coefficients are still biased.</li>
+      <li>Between-group variation is not separated from between-group selection. Random effects absorb between-state differences, but those differences may reflect selection, not causal context.</li>
+    </ul>
+
+    <p><strong>Alternatives:</strong></p>
+    <ul>
+      <li><strong>Fixed effects (FE) regression:</strong> estimates a dummy variable (or within-transformation) for each group. Eliminates all between-group confounding. Cannot estimate group-level predictors. Preferred when causal identification is the priority and between-group variance is a nuisance.</li>
+      <li><strong>OLS with clustered standard errors:</strong> ignores between-group structure in point estimates, but corrects SEs for clustering. Appropriate when the nesting is a design feature to account for rather than a phenomenon to model. Less efficient than MLM when group effects are real.</li>
+      <li><strong>Bayesian hierarchical models:</strong> same structure as MLM but estimated via MCMC. More flexible priors, exact uncertainty quantification, natural regularization. Higher computational cost and steeper learning curve.</li>
+      <li><strong>Aggregate-level analysis:</strong> if you only have group-level outcomes and predictors, this is equivalent. But aggregating individual data throws away within-group variation.</li>
+    </ul>
+
+    <p><strong>Rule of thumb for choosing between MLM and FE:</strong> if you care about level-2 predictors, have small groups, or want to model between-group variance as substantively meaningful, use MLM. If your goal is clean identification of a causal effect and you can afford to burn the between-group variation, use FE.</p>
+  </div>
+</body>
+</html>

@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Visualization — Math</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+  <style>
+    :root { --bg:#faf8f5; --text:#111111; --muted:#666666; --border:#d8d4ce; --accent:#7a3b2e; }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:var(--text);font-family:'EB Garamond',Georgia,serif;font-size:1.08rem;line-height:1.8;padding:48px 24px 96px;}
+    body::before{content:'';display:block;position:fixed;top:0;left:0;right:0;height:4px;background:var(--accent);z-index:100;}
+    .page{max-width:680px;margin:0 auto;}
+    .back{font-family:'Inter',sans-serif;font-size:0.78rem;color:var(--muted);text-decoration:none;display:inline-block;margin-bottom:40px;}
+    .back:hover{color:var(--accent);}
+    h1{font-size:1.75rem;font-weight:400;margin-bottom:6px;line-height:1.3;}
+    .subtitle{font-family:'Inter',sans-serif;font-size:0.72rem;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);margin-bottom:48px;}
+    h2{font-family:'Inter',sans-serif;font-size:0.72rem;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);margin:52px 0 18px;padding-top:52px;border-top:1px solid var(--border);}
+    h3{font-size:1.05rem;font-weight:500;margin:28px 0 10px;}
+    p{margin-bottom:16px;}
+    p:last-child{margin-bottom:0;}
+    .practice{border-left:3px solid var(--accent);padding-left:16px;color:var(--muted);font-size:0.95rem;margin:0 0 24px;font-style:italic;}
+    .eq{background:#f2ede7;border:1px solid var(--border);border-radius:4px;padding:20px 24px;margin:20px 0;overflow-x:auto;text-align:center;}
+    table{width:100%;border-collapse:collapse;font-size:0.92rem;margin-bottom:24px;}
+    th{font-family:'Inter',sans-serif;font-size:0.68rem;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);text-align:left;padding:8px 12px;border-bottom:1px solid var(--border);}
+    td{padding:8px 12px;border-bottom:1px solid var(--border);vertical-align:top;line-height:1.55;}
+    td:first-child{font-family:'Inter',sans-serif;font-size:0.85rem;white-space:nowrap;}
+    ul,ol{padding-left:1.4em;margin-bottom:16px;}
+    li{margin-bottom:6px;}
+    strong{font-weight:500;}
+    em{font-style:italic;}
+    code{font-family:'Inter',monospace;font-size:0.83rem;background:#ece8e2;padding:1px 5px;border-radius:3px;}
+    .katex-display{overflow-x:auto;}
+  </style>
+</head>
+<body>
+  <div class="page">
+    <a class="back" href="../../code-library.html">← Code Library</a>
+    <h1>Visualization</h1>
+    <div class="subtitle">Mathematical Derivation</div>
+
+    <table>
+      <thead><tr><th>Symbol</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td>$x$</td><td>Evaluation point on the real line</td></tr>
+        <tr><td>$x_i$</td><td>Observed data value for observation $i$</td></tr>
+        <tr><td>$n$</td><td>Sample size</td></tr>
+        <tr><td>$f(x)$</td><td>True underlying probability density function</td></tr>
+        <tr><td>$\hat{f}(x)$</td><td>Estimated (kernel density) density function</td></tr>
+        <tr><td>$K(u)$</td><td>Kernel function; a smooth, symmetric probability density</td></tr>
+        <tr><td>$h$</td><td>Bandwidth; controls smoothness of the KDE</td></tr>
+        <tr><td>$u$</td><td>Standardized distance: $(x - x_i)/h$</td></tr>
+        <tr><td>$\mu_2(K)$</td><td>Second moment of the kernel: $\int u^2 K(u)\, du$</td></tr>
+        <tr><td>$R(K)$</td><td>Roughness of the kernel: $\int K^2(u)\, du$</td></tr>
+        <tr><td>$\hat{\sigma}$</td><td>Sample standard deviation of the data</td></tr>
+        <tr><td>$h^*$</td><td>Optimal (Silverman) bandwidth</td></tr>
+        <tr><td>MISE</td><td>Mean integrated squared error</td></tr>
+        <tr><td>$\bar{X}$</td><td>Sample mean</td></tr>
+        <tr><td>$s$</td><td>Sample standard deviation</td></tr>
+        <tr><td>SE</td><td>Standard error of the mean: $s/\sqrt{n}$</td></tr>
+        <tr><td>$\mu$</td><td>True population mean</td></tr>
+        <tr><td>$\sigma^2$</td><td>Population variance</td></tr>
+        <tr><td>$t_{\alpha/2,\, n-1}$</td><td>$t$ critical value with $n-1$ degrees of freedom at tail probability $\alpha/2$</td></tr>
+        <tr><td>$\hat{\beta}_k$</td><td>OLS estimate of the $k$-th regression coefficient</td></tr>
+        <tr><td>$SE(\hat{\beta}_k)$</td><td>Standard error of $\hat{\beta}_k$</td></tr>
+        <tr><td>$p$</td><td>Number of parameters in the regression model</td></tr>
+        <tr><td>$r_{XY}$</td><td>Pearson correlation between $X$ and $Y$</td></tr>
+        <tr><td>$\hat{\beta}_{std}$</td><td>Standardized regression coefficient</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Part A — Kernel Density Estimation</h2>
+
+    <div class="practice">In practice: When you produce a density plot in Stata (<code>kdensity</code>) or R (<code>geom_density</code>), the software is computing a KDE under the hood. The shape you see depends critically on the bandwidth $h$. Understanding the math tells you when to trust the default and when to override it.</div>
+
+    <h3>The Problem with Histograms</h3>
+
+    <p>Given $n$ observed data values $x_1, x_2, \ldots, x_n$, we want to estimate the underlying probability density function $f(x)$ at any point $x$ on the real line.</p>
+
+    <p>A histogram with bin width $h$ estimates $f(x)$ by:</p>
+
+    <div class="eq">$$\hat{f}_{hist}(x) = \frac{1}{nh} \cdot \#\{i : x_i \text{ falls in the same bin as } x\}$$</div>
+
+    <p>This is a step function: discontinuous, sensitive to bin edge placement, and coarse. Two analysts using the same data but different bin starting points can produce visibly different histograms. The KDE fixes this.</p>
+
+    <h3>The KDE Formula</h3>
+
+    <p>The <strong>kernel density estimator</strong> smooths by replacing the box-counting with a smooth kernel function $K$ placed at each observation:</p>
+
+    <div class="eq">$$\hat{f}(x) = \frac{1}{nh} \sum_{i=1}^{n} K\!\left(\frac{x - x_i}{h}\right)$$</div>
+
+    <p>The argument $(x - x_i)/h$ is the standardized distance from the evaluation point to observation $i$, measured in units of the bandwidth. Each observation contributes a small bump centered at $x_i$, and the KDE is the sum of all $n$ bumps, normalized so the result is a valid density.</p>
+
+    <h3>The Gaussian Kernel</h3>
+
+    <p>The most common choice is the <strong>Gaussian kernel</strong>:</p>
+
+    <div class="eq">$$K(u) = \frac{1}{\sqrt{2\pi}} \cdot \exp\!\left(-\frac{u^2}{2}\right)$$</div>
+
+    <p>This is simply the standard normal density evaluated at $u$.</p>
+
+    <p><strong>Showing $K$ integrates to 1.</strong> The integral of $K(u)$ over all $u$ is the integral of the standard normal density:</p>
+
+    <div class="eq">$$\int_{-\infty}^{\infty} K(u)\, du = \int_{-\infty}^{\infty} \frac{1}{\sqrt{2\pi}} \exp\!\left(-\frac{u^2}{2}\right) du = 1$$</div>
+
+    <p>This is the standard Gaussian integral, provable by squaring it, converting to polar coordinates, and evaluating. The result confirms $K$ is a valid probability density.</p>
+
+    <p><strong>Why this matters for the KDE.</strong> Because $K$ integrates to 1, the KDE $\hat{f}(x)$ also integrates to 1:</p>
+
+    <div class="eq">$$\int_{-\infty}^{\infty} \hat{f}(x)\, dx = \frac{1}{nh} \sum_i \int_{-\infty}^{\infty} K\!\left(\frac{x - x_i}{h}\right) dx$$</div>
+
+    <p>Substitute $u = (x - x_i)/h$, so $dx = h\, du$:</p>
+
+    <div class="eq">$$= \frac{1}{nh} \sum_i h \cdot \int_{-\infty}^{\infty} K(u)\, du = \frac{1}{n} \sum_i 1 = 1$$</div>
+
+    <p>So $\hat{f}$ is itself a valid density, regardless of bandwidth $h$. You can integrate the KDE to get probabilities, just as you would the true density.</p>
+
+    <h3>Bias-Variance Tradeoff for Bandwidth Selection</h3>
+
+    <h3>Bias of the KDE</h3>
+
+    <p>The expected value of $\hat{f}(x)$ at a single point $x$ is:</p>
+
+    <div class="eq">$$E[\hat{f}(x)] = \frac{1}{h} \int K\!\left(\frac{x - t}{h}\right) f(t)\, dt$$</div>
+
+    <p>Substitute $u = (t - x)/h$, so $t = x + uh$ and $dt = h\, du$:</p>
+
+    <div class="eq">$$E[\hat{f}(x)] = \int K(u)\, f(x + uh)\, du$$</div>
+
+    <p>Expand $f(x + uh)$ in a Taylor series around $x$:</p>
+
+    <div class="eq">$$f(x + uh) = f(x) + uh\, f'(x) + \frac{u^2 h^2}{2} f''(x) + O(h^3)$$</div>
+
+    <p>Plug in and integrate term by term, using three kernel properties:</p>
+    <ul>
+      <li>$\int K(u)\, du = 1$ ($K$ is a valid density)</li>
+      <li>$\int u\, K(u)\, du = 0$ ($K$ is symmetric, so odd moments vanish)</li>
+      <li>$\int u^2 K(u)\, du = \mu_2(K)$ (second moment; for the Gaussian kernel, $\mu_2 = 1$)</li>
+    </ul>
+
+    <div class="eq">$$E[\hat{f}(x)] = f(x) \cdot 1 + f'(x) \cdot h \cdot 0 + f''(x) \cdot \frac{h^2}{2} \cdot \mu_2(K) + O(h^3)$$</div>
+
+    <p>The <strong>bias</strong> at $x$ is therefore:</p>
+
+    <div class="eq">$$\text{Bias}[\hat{f}(x)] = E[\hat{f}(x)] - f(x) \approx \frac{h^2}{2} \cdot \mu_2(K) \cdot f''(x)$$</div>
+
+    <p>Bias grows with $h^2$. Where $f$ has strong curvature (peaks or valleys), large $h$ smears over real features. Where $f$ is nearly linear ($f'' \approx 0$), the KDE is approximately unbiased regardless of $h$.</p>
+
+    <h3>Variance of the KDE</h3>
+
+    <p>The variance at $x$ (for large $n$) is approximately:</p>
+
+    <div class="eq">$$\text{Var}[\hat{f}(x)] \approx \frac{f(x) \cdot R(K)}{nh}$$</div>
+
+    <p>where $R(K) = \int K^2(u)\, du$. For the Gaussian kernel, $R(K) = 1/(2\sqrt{\pi}) \approx 0.282$.</p>
+
+    <p>As $h$ increases (more smoothing), variance decreases. As $h$ decreases, variance increases and the estimate becomes spiky. The analyst cannot have both low bias and low variance; choosing $h$ is choosing where to sit on this tradeoff.</p>
+
+    <h3>The Mean Integrated Squared Error</h3>
+
+    <p>The global tradeoff is summarized by the <strong>mean integrated squared error</strong> (MISE):</p>
+
+    <div class="eq">$$\begin{aligned} \text{MISE}(h) &= \int \left[\text{Bias}^2(\hat{f}(x)) + \text{Var}(\hat{f}(x))\right] dx \\ &\approx \frac{h^4}{4} \cdot \mu_2(K)^2 \cdot \int [f''(x)]^2\, dx + \frac{R(K)}{nh} \end{aligned}$$</div>
+
+    <p>The first term grows with $h$ (bias penalty); the second shrinks with $h$ (variance benefit). Minimizing over $h$ by taking $d(\text{MISE})/dh = 0$:</p>
+
+    <div class="eq">$$h^* = \left[\frac{R(K)}{\mu_2(K)^2 \cdot \int [f''(x)]^2\, dx \cdot n}\right]^{1/5}$$</div>
+
+    <p>This scales as $n^{-1/5}$: as sample size grows, the optimal bandwidth shrinks, but slowly. Quadrupling $n$ only halves the optimal bandwidth approximately ($4^{-1/5} \approx 0.758$).</p>
+
+    <h3>Silverman's Rule of Thumb</h3>
+
+    <p>The term $\int [f''(x)]^2\, dx$ depends on the true density, which we don't know. If we assume $f$ is Gaussian with variance $\sigma^2$, then $\int [f''(x)]^2\, dx = 3/(8\sqrt{\pi}\, \sigma^5)$. Plugging in for the Gaussian kernel yields <strong>Silverman's rule of thumb</strong>:</p>
+
+    <div class="eq">$$h^* = 1.06 \cdot \hat{\sigma} \cdot n^{-1/5}$$</div>
+
+    <p>where $\hat{\sigma}$ is the sample standard deviation (or a robust alternative like the interquartile range divided by 1.34).</p>
+
+    <p>For $n = 1{,}000$ and $\hat{\sigma} = 1$: $h^* \approx 1.06 \cdot 1 \cdot 1000^{-0.2} \approx 0.106$. For $n = 100$ and $\hat{\sigma} = 1$: $h^* \approx 1.06 \cdot 1 \cdot 100^{-0.2} \approx 0.149$. The bandwidth grows as sample size shrinks, automatically smoothing more when data are sparse. This is the correct behavior: with fewer observations, you need to borrow more information from neighbors to get a stable estimate.</p>
+
+    <p>Silverman's rule is the default bandwidth in most software and works well for unimodal, roughly symmetric distributions. It over-smooths for multimodal distributions, so if you suspect multiple modes (for example, a bimodal income distribution), reduce $h$ manually or use a data-driven selector like cross-validation.</p>
+
+    <h2>Part B — Error Bars and Confidence Intervals</h2>
+
+    <div class="practice">In practice: Bar charts and point plots in social science papers almost always show error bars, but authors frequently fail to state what the bars represent. SE bars and 95% CI bars look different and answer different questions. Misreading them is one of the most common errors in interpreting published figures.</div>
+
+    <h3>Two Different Things Error Bars Can Show</h3>
+
+    <p>Let $X_1, \ldots, X_n$ be a random sample from a population with mean $\mu$ and variance $\sigma^2$. Define:</p>
+
+    <div class="eq">$$\begin{aligned} \bar{X} &= \frac{1}{n} \sum_i X_i \quad \text{(sample mean)} \\ s^2 &= \frac{1}{n-1} \sum_i (X_i - \bar{X})^2 \quad \text{(sample variance)} \\ SE &= \frac{s}{\sqrt{n}} \quad \text{(standard error of the mean)} \end{aligned}$$</div>
+
+    <p><strong>SE bars</strong> show $\bar{X} \pm SE$. They answer: how precisely have we estimated the mean? One SE above and below spans approximately the middle 68% of the sampling distribution of $\bar{X}$ (assuming normality).</p>
+
+    <p><strong>95% CI bars</strong> show $\bar{X} \pm t_{\alpha/2,\, n-1} \cdot SE$. They answer: what is the plausible range of the true population mean? These bars are wider. If you show SE bars on a presentation slide, the audience may interpret them as 95% CIs, which would overstate your precision; state explicitly which you are showing.</p>
+
+    <h3>Deriving the 95% CI from the Pivot Quantity</h3>
+
+    <p>The key is the <strong>pivot quantity</strong>: a function of the data and the unknown parameter whose distribution does not depend on any unknown parameter.</p>
+
+    <div class="eq">$$\frac{\bar{X} - \mu}{s/\sqrt{n}} \sim t_{n-1}$$</div>
+
+    <p>This follows from the fact that $(n-1)s^2/\sigma^2 \sim \chi^2_{n-1}$ and is independent of $\bar{X}$ when observations are i.i.d. normal. The ratio of a standard normal to the square root of a scaled chi-squared is, by definition, a $t$-distribution.</p>
+
+    <p>Start from the probability statement:</p>
+
+    <div class="eq">$$P\!\left(-t_{\alpha/2,\, n-1} \leq \frac{\bar{X} - \mu}{s/\sqrt{n}} \leq t_{\alpha/2,\, n-1}\right) = 1 - \alpha$$</div>
+
+    <p>Rearrange to isolate $\mu$:</p>
+
+    <div class="eq">$$P\!\left(\bar{X} - t_{\alpha/2,\, n-1} \cdot \frac{s}{\sqrt{n}} \leq \mu \leq \bar{X} + t_{\alpha/2,\, n-1} \cdot \frac{s}{\sqrt{n}}\right) = 1 - \alpha$$</div>
+
+    <p>The 95% CI is:</p>
+
+    <div class="eq">$$\bar{X} \pm t_{0.025,\, n-1} \cdot \frac{s}{\sqrt{n}}$$</div>
+
+    <p>For $n > 30$, $t_{0.025,\, n-1} \approx 1.96$, so the familiar "mean $\pm$ 1.96 SE" approximation is valid. For smaller samples, the exact $t$ critical value (which is larger) must be used.</p>
+
+    <h3>The Overlapping CI Fallacy</h3>
+
+    <p>A common mistake: concluding that two groups are not significantly different because their 95% CI bars overlap visually.</p>
+
+    <p>Let $\bar{X}_1$ and $\bar{X}_2$ be group means with standard errors $SE_1$ and $SE_2$. The SE of their difference is:</p>
+
+    <div class="eq">$$SE(\bar{X}_1 - \bar{X}_2) = \sqrt{SE_1^2 + SE_2^2}$$</div>
+
+    <p>The 95% CI for the difference is:</p>
+
+    <div class="eq">$$(\bar{X}_1 - \bar{X}_2) \pm 1.96 \cdot \sqrt{SE_1^2 + SE_2^2}$$</div>
+
+    <p>Two CIs can overlap visually even when this interval for the difference excludes zero, because the SE of the difference is smaller than the sum of the individual SEs. Specifically, two groups' 95% CI bars can overlap by up to about half a bar-width and the difference can still be statistically significant at $p < 0.05$.</p>
+
+    <p>The practical recommendation: plot SE bars (tighter, less likely to cause this confusion) and report the formal test of the difference separately. Never eyeball CI bars to infer significance of a difference.</p>
+
+    <h2>Part C — Coefficient Plots</h2>
+
+    <div class="practice">In practice: Coefficient plots are becoming the standard alternative to regression tables in top sociology journals. They communicate the same information more efficiently: magnitude, direction, uncertainty, and significance are all visible at once without reading rows of numbers.</div>
+
+    <h3>What Is Being Plotted</h3>
+
+    <p>In a multiple regression $Y = \beta_0 + \beta_1 X_1 + \cdots + \beta_k X_k + \varepsilon$, the OLS estimator produces $\hat{\beta} = (X^\top X)^{-1} X^\top Y$ with covariance matrix $\text{Var}(\hat{\beta}) = \sigma^2 (X^\top X)^{-1}$.</p>
+
+    <p>For each coefficient $k$, the estimated standard error is:</p>
+
+    <div class="eq">$$SE(\hat{\beta}_k) = \sqrt{\hat{\sigma}^2 \cdot \left[(X^\top X)^{-1}\right]_{kk}}$$</div>
+
+    <p>where $\hat{\sigma}^2 = SSR/(n-p)$ and $p$ is the number of parameters.</p>
+
+    <p>The coefficient plot for predictor $k$ shows:</p>
+    <ul>
+      <li>Point: $\hat{\beta}_k$ on the horizontal axis</li>
+      <li>Interval: $\hat{\beta}_k \pm t_{\alpha/2,\, n-p} \cdot SE(\hat{\beta}_k)$ as horizontal error bars</li>
+      <li>Reference line: a vertical line at $\hat{\beta}_k = 0$</li>
+    </ul>
+
+    <p>The <strong>95% CI</strong> for the $k$-th coefficient is:</p>
+
+    <div class="eq">$$\hat{\beta}_k \pm t_{\alpha/2,\, n-p} \cdot SE(\hat{\beta}_k)$$</div>
+
+    <p>An interval that excludes zero corresponds exactly to $p < 0.05$ (two-sided). Dots crossing the zero line are visually obvious without reading p-values, which is the main advantage over a table.</p>
+
+    <h3>Why This Is More Informative Than a Table</h3>
+
+    <p>A standard regression table gives you columns of numbers that require arithmetic to compare. A coefficient plot encodes relative magnitude as horizontal position (further right means larger positive effect), uncertainty as bar length (longer bar means less precise estimate), and significance as whether the bar crosses zero. All four dimensions are processed simultaneously by the eye.</p>
+
+    <p>A coefficient with a large positive $\hat{\beta}$ and a narrow CI communicates both large effect and high confidence. A coefficient with a small $\hat{\beta}$ and a wide CI communicates small or uncertain effect. Tables force the reader to do this synthesis mentally; coefficient plots present it directly.</p>
+
+    <h3>Standardized Coefficients</h3>
+
+    <p>When predictors are on different scales (income in dollars, age in years, education in years), the raw coefficients $\hat{\beta}_k$ are not directly comparable in magnitude. Standardizing fixes this.</p>
+
+    <p>If both $X$ and $Y$ are standardized to mean 0 and standard deviation 1 before estimation, the resulting coefficient is the <strong>standardized coefficient</strong>:</p>
+
+    <div class="eq">$$\hat{\beta}_{std} = \hat{\beta}_k \cdot \frac{\sigma_{X_k}}{\sigma_Y}$$</div>
+
+    <p>In the bivariate case (one predictor), the standardized coefficient equals the Pearson correlation:</p>
+
+    <div class="eq">$$\hat{\beta}_{std} = r_{XY}$$</div>
+
+    <p>This follows from the OLS formula for a single predictor: $\hat{\beta} = \sum(x_i - \bar{x})(y_i - \bar{y}) / \sum(x_i - \bar{x})^2$, which equals $r_{XY} \cdot (\sigma_Y / \sigma_X)$. After standardizing $X$ and $Y$, $\sigma_X = \sigma_Y = 1$, so $\hat{\beta}_{std} = r_{XY}$.</p>
+
+    <p>Standardized coefficients are directly comparable across predictors: the one with the largest $|\hat{\beta}_{std}|$ has the strongest linear association with $Y$, regardless of original units. This makes coefficient plots especially powerful when all displayed coefficients are standardized: the visual distance from zero immediately ranks predictors by importance.</p>
+
+  </div>
+</body>
+</html>

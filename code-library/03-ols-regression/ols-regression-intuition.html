@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OLS Regression — Intuition</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+  <style>
+    :root { --bg:#faf8f5; --text:#111111; --muted:#666666; --border:#d8d4ce; --accent:#7a3b2e; }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:var(--text);font-family:'EB Garamond',Georgia,serif;font-size:1.08rem;line-height:1.8;padding:48px 24px 96px;}
+    body::before{content:'';display:block;position:fixed;top:0;left:0;right:0;height:4px;background:var(--accent);z-index:100;}
+    .page{max-width:680px;margin:0 auto;}
+    .back{font-family:'Inter',sans-serif;font-size:0.78rem;color:var(--muted);text-decoration:none;display:inline-block;margin-bottom:40px;}
+    .back:hover{color:var(--accent);}
+    h1{font-size:1.75rem;font-weight:400;margin-bottom:6px;line-height:1.3;}
+    .subtitle{font-family:'Inter',sans-serif;font-size:0.72rem;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);margin-bottom:48px;}
+    h2{font-family:'Inter',sans-serif;font-size:0.72rem;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);margin:52px 0 18px;padding-top:52px;border-top:1px solid var(--border);}
+    h3{font-size:1.05rem;font-weight:500;margin:28px 0 10px;}
+    p{margin-bottom:16px;}
+    p:last-child{margin-bottom:0;}
+    .practice{border-left:3px solid var(--accent);padding-left:16px;color:var(--muted);font-size:0.95rem;margin:0 0 24px;font-style:italic;}
+    .eq{background:#f2ede7;border:1px solid var(--border);border-radius:4px;padding:20px 24px;margin:20px 0;overflow-x:auto;text-align:center;}
+    table{width:100%;border-collapse:collapse;font-size:0.92rem;margin-bottom:24px;}
+    th{font-family:'Inter',sans-serif;font-size:0.68rem;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);text-align:left;padding:8px 12px;border-bottom:1px solid var(--border);}
+    td{padding:8px 12px;border-bottom:1px solid var(--border);vertical-align:top;line-height:1.55;}
+    td:first-child{font-family:'Inter',sans-serif;font-size:0.85rem;white-space:nowrap;}
+    ul,ol{padding-left:1.4em;margin-bottom:16px;}
+    li{margin-bottom:6px;}
+    strong{font-weight:500;}
+    em{font-style:italic;}
+    code{font-family:'Inter',monospace;font-size:0.83rem;background:#ece8e2;padding:1px 5px;border-radius:3px;}
+    .katex-display{overflow-x:auto;}
+  </style>
+</head>
+<body>
+  <div class="page">
+    <a class="back" href="../../code-library.html">← Code Library</a>
+    <h1>OLS Regression</h1>
+    <div class="subtitle">Intuition</div>
+
+    <h2>What Problem It Solves</h2>
+
+    <p>You have an outcome you want to explain (immigration restrictionism, vote choice, income) and multiple predictors measured on the same people. OLS draws the best-fitting linear surface through that cloud of points and tells you how much each predictor is associated with the outcome, holding all others constant.</p>
+
+    <h2>When to Reach for OLS</h2>
+
+    <p><strong>Reach for it when:</strong></p>
+
+    <ul>
+      <li>The outcome is continuous or near-continuous (ideology on a 1-5 scale, income in dollars, test scores)</li>
+      <li>You want a single coefficient that summarizes the relationship in original units</li>
+      <li>Your research question is about association or prediction, not causation (though OLS is also the backbone of many causal designs: DiD, IV, RD all deliver estimates through regression)</li>
+    </ul>
+
+    <p><strong>Do not reach for it when:</strong></p>
+
+    <ul>
+      <li>The outcome is binary (use logit/probit; see Module 04)</li>
+      <li>The outcome is a count with many zeros (use Poisson or negative binomial)</li>
+      <li>You have only 10-20 observations and strongly non-normal errors (the t-tests rely on large-n approximations)</li>
+      <li>The outcome is bounded and most observations pile up at the boundary (proportion data near 0 or 1: use fractional logit)</li>
+    </ul>
+
+    <h2>How It Works</h2>
+
+    <p>OLS finds the line (or hyperplane, with multiple predictors) that minimizes the sum of squared vertical distances between the observed outcome values and the line's predictions. "Squared" rather than absolute distances: squaring penalizes large errors more than small ones, which gives the method its nice algebraic properties, and it makes the solution unique.</p>
+
+    <p>The coefficient on predictor X tells you: on average, a one-unit increase in X is associated with a $\beta$-unit change in the outcome, holding all other predictors in the model constant. That "holding constant" part is what makes regression useful: it lets you isolate one relationship while statistically adjusting for others.</p>
+
+    <h2>Standard Errors and Why They Matter</h2>
+
+    <p>The coefficient estimate $\hat{\beta}$ is a random variable; it would take a different value in a different sample. The standard error measures how much it would vary. Two flavors matter here:</p>
+
+    <ul>
+      <li><strong>Default (homoskedastic) SEs:</strong> assume the spread of errors is the same at every value of X. Almost never literally true in social science data.</li>
+      <li><strong>Robust (HC3) SEs:</strong> no assumption about error spread; valid even with heteroskedasticity. Use these by default.</li>
+      <li><strong>Clustered SEs:</strong> when observations share a common context (respondents in the same state), errors within clusters are correlated. Clustered SEs account for this. Ignoring clustering can dramatically understate uncertainty.</li>
+    </ul>
+
+    <h2>What $R^2$ Tells You (and Doesn't)</h2>
+
+    <p>$R^2$ is the proportion of outcome variance explained by the model. An $R^2$ of 0.30 means 30% of the variation in the outcome is accounted for by the predictors.</p>
+
+    <p>$R^2$ does <strong>not</strong> tell you:</p>
+
+    <ul>
+      <li>Whether the relationships are causal</li>
+      <li>Whether the model is correctly specified</li>
+      <li>Whether any particular coefficient is meaningful</li>
+    </ul>
+
+    <p>$R^2$ mechanically increases whenever you add a predictor, even a useless one. Adjusted $R^2$ penalizes for that. Neither measure is a stand-in for theoretical justification.</p>
+
+    <h2>Strengths vs. Alternatives</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Method</th>
+          <th>When OLS wins</th>
+          <th>When the alternative wins</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Logit/probit</td>
+          <td>Outcome is continuous</td>
+          <td>Outcome is binary</td>
+        </tr>
+        <tr>
+          <td>Weighted OLS</td>
+          <td>Homogeneous sample</td>
+          <td>Complex survey data (Module 05)</td>
+        </tr>
+        <tr>
+          <td>Fixed effects (Module 12)</td>
+          <td>Time-invariant confounders are not a concern</td>
+          <td>You need to control for all unobserved individual-level factors</td>
+        </tr>
+        <tr>
+          <td>Ridge/Lasso</td>
+          <td>Low-dimensional, interpretable model needed</td>
+          <td>Many correlated predictors, prediction is the goal</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>OLS is the workhorse of applied social science not because it is always optimal, but because its assumptions are transparent, its output is interpretable in original units, and decades of applied work make its limitations well-understood.</p>
+
+  </div>
+</body>
+</html>

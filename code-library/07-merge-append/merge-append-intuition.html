@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Merge and Append — Intuition</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+  <style>
+    :root { --bg:#faf8f5; --text:#111111; --muted:#666666; --border:#d8d4ce; --accent:#7a3b2e; }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:var(--text);font-family:'EB Garamond',Georgia,serif;font-size:1.08rem;line-height:1.8;padding:48px 24px 96px;}
+    body::before{content:'';display:block;position:fixed;top:0;left:0;right:0;height:4px;background:var(--accent);z-index:100;}
+    .page{max-width:680px;margin:0 auto;}
+    .back{font-family:'Inter',sans-serif;font-size:0.78rem;color:var(--muted);text-decoration:none;display:inline-block;margin-bottom:40px;}
+    .back:hover{color:var(--accent);}
+    h1{font-size:1.75rem;font-weight:400;margin-bottom:6px;line-height:1.3;}
+    .subtitle{font-family:'Inter',sans-serif;font-size:0.72rem;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);margin-bottom:48px;}
+    h2{font-family:'Inter',sans-serif;font-size:0.72rem;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);margin:52px 0 18px;padding-top:52px;border-top:1px solid var(--border);}
+    h3{font-size:1.05rem;font-weight:500;margin:28px 0 10px;}
+    p{margin-bottom:16px;}
+    p:last-child{margin-bottom:0;}
+    .practice{border-left:3px solid var(--accent);padding-left:16px;color:var(--muted);font-size:0.95rem;margin:0 0 24px;font-style:italic;}
+    .eq{background:#f2ede7;border:1px solid var(--border);border-radius:4px;padding:20px 24px;margin:20px 0;overflow-x:auto;text-align:center;}
+    table{width:100%;border-collapse:collapse;font-size:0.92rem;margin-bottom:24px;}
+    th{font-family:'Inter',sans-serif;font-size:0.68rem;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);text-align:left;padding:8px 12px;border-bottom:1px solid var(--border);}
+    td{padding:8px 12px;border-bottom:1px solid var(--border);vertical-align:top;line-height:1.55;}
+    td:first-child{font-family:'Inter',sans-serif;font-size:0.85rem;white-space:nowrap;}
+    ul,ol{padding-left:1.4em;margin-bottom:16px;}
+    li{margin-bottom:6px;}
+    strong{font-weight:500;}
+    em{font-style:italic;}
+    code{font-family:'Inter',monospace;font-size:0.83rem;background:#ece8e2;padding:1px 5px;border-radius:3px;}
+    .katex-display{overflow-x:auto;}
+  </style>
+</head>
+<body>
+  <div class="page">
+    <a class="back" href="../../code-library.html">← Code Library</a>
+    <h1>Merge and Append</h1>
+    <div class="subtitle">Intuition</div>
+
+    <h2>1. What Problem Does This Solve?</h2>
+    <p>Real social science data is almost never contained in a single rectangular file. The CES 2020 survey, for example, might be distributed across a main respondent file, a validated vote file released months later, and a district-level contextual file containing legislative district characteristics. These three sources describe the same units (or related units) but were created by different teams, at different times, with different granularities.</p>
+    <p>Merging and appending are the operations that combine these separate files into a single analysis dataset. They are not exotic transformations; they are routine data infrastructure. But they are a major source of analytic errors: silent row loss, silent row duplication, and mismatched keys that produce garbage without warning. Understanding the logic precisely prevents those errors.</p>
+
+    <h2>2. When Would a Researcher Reach for It — and When Not?</h2>
+    <p><strong>Use a merge (adding columns from a second file) when:</strong></p>
+    <ul>
+      <li>You want to add variables from a different level of analysis to your main file (e.g., county-level unemployment rate to a person-level survey file).</li>
+      <li>Two files cover the same units (respondents, counties, years) and you want all their variables in one place.</li>
+      <li>You are linking a follow-up survey wave to a baseline file on a shared respondent ID.</li>
+    </ul>
+    <p><strong>Use an append (stacking rows from a second file) when:</strong></p>
+    <ul>
+      <li>Two files have the same variables but cover different observations (e.g., CES data from two different years, or respondents split across two files for processing reasons).</li>
+      <li>You are building a pooled panel by combining annual cross-sections.</li>
+    </ul>
+    <p><strong>Do not merge when you should append, and vice versa.</strong> The signal that you are in the wrong operation: if after merging you have more rows than you started with (and you were not expecting that), you have created row duplicates. If after appending you have the same number of rows but variables are all missing for one file's observations, you have misidentified variable alignment.</p>
+
+    <h2>3. How the Mechanism Works in Plain Language</h2>
+    <h3>The Key Variable</h3>
+    <p>Before any join, identify the key: the column (or combination of columns) that uniquely identifies each row in each file. For a person-level file, that might be a respondent ID. For a county-year file, it might be (FIPS code, year). The key is what the merge algorithm uses to decide which rows to connect.</p>
+    <p>A critical check before merging: confirm that the key is actually unique in each file. If respondent ID 10042 appears twice in your left file, every row in the right file that matches ID 10042 will be paired with both copies. Your row count will silently balloon.</p>
+
+    <h3>Join Types in Plain Language</h3>
+    <p><strong>Inner join</strong>: keep only the rows where the key appears in both files. If a respondent is in your CES file but not in the validated vote file (because they were not matched), they disappear. This is often what you want if you only care about respondents with complete data, but it is silent data loss, not filtered data. Know how many rows you drop.</p>
+    <p><strong>Left join</strong>: keep all rows from the left file. Rows whose key does not appear in the right file get missing values for the right-side columns. Use this when your primary file defines the analysis sample and the right-side file provides supplementary variables that may not cover everyone.</p>
+    <p><strong>Right join</strong>: the mirror of a left join. Rarely used explicitly; analysts just swap which file is "left."</p>
+    <p><strong>Full outer join</strong>: keep all rows from both files, filling in missing values wherever a row appears in only one file. Use this when both files are authoritative and you want to see the full universe of keys across both.</p>
+
+    <h3>The Merge Indicator</h3>
+    <p>After merging, always inspect the merge indicator (called <code>_merge</code> in Stata). It takes three values:</p>
+    <ul>
+      <li>1 = row came from left file only (right-side key had no match)</li>
+      <li>2 = row came from right file only (left-side key had no match)</li>
+      <li>3 = row matched in both files</li>
+    </ul>
+    <p>A merge indicator full of 3s means a clean merge. Any 1s or 2s are mismatches. Some are expected (not everyone has a validated vote record). Many unexpected 1s or 2s suggest a key mismatch: possibly a string/numeric type discrepancy, leading/trailing whitespace, inconsistent capitalization ("TX" vs. "tx"), or a coding difference between files.</p>
+
+    <h3>Common Key Mismatch Problems</h3>
+    <ul>
+      <li><strong>Type mismatch</strong>: one file stores the respondent ID as a string ("00142"), the other as a numeric (142). They look like the same value but do not match.</li>
+      <li><strong>Leading zeros</strong>: a numeric ID converted to string may drop leading zeros. "00142" becomes "142."</li>
+      <li><strong>Whitespace</strong>: a state abbreviation imported from a CSV might be stored as " TX" (with a space). It will not match "TX." <code>trim()</code> functions fix this.</li>
+      <li><strong>Case sensitivity</strong>: "Democrat" vs. "democrat" vs. "DEMOCRAT" will all fail to match in a case-sensitive join.</li>
+      <li><strong>Encoding differences</strong>: rare in modern workflows but still appears when combining files from different sources or operating systems.</li>
+    </ul>
+
+    <h3>When Append Is Right Instead</h3>
+    <p>Appending stacks rows vertically. Two files with the same columns but covering different years of respondents get combined into one file with more rows and the same columns. The key thing to know: software aligns columns by name, not by position. If the 2019 file has variables in order (id, age, income) and the 2020 file has them in order (id, income, age), the append will correctly align them as long as the column names match. If a variable exists in one file but not the other, that variable gets missing values for all rows from the file that lacks it.</p>
+
+    <h2>4. Honest Strengths vs. Weaknesses</h2>
+    <p><strong>Strengths:</strong></p>
+    <ul>
+      <li>Enables multi-level and longitudinal analysis by linking data across levels and time.</li>
+      <li>Preserves the original files (non-destructive: you create a new combined file).</li>
+      <li>With proper key checks and merge indicator inspection, errors are detectable before they corrupt results.</li>
+    </ul>
+    <p><strong>Weaknesses and honest caveats:</strong></p>
+    <ul>
+      <li>Silent errors are the main risk. An inner join that drops 30% of your sample is not an error message; it is a smaller dataset. You have to notice it.</li>
+      <li>Many-to-many merges (where the key is not unique in either file) produce a Cartesian product of matching rows. This is almost always wrong for analysis purposes. The row count can explode without warning.</li>
+      <li>Key quality degrades in practice. IDs get transcribed incorrectly, string formats drift between data vintages, and external data sources (Census, administrative records) use different coding schemes than your survey. Budget time for key cleaning before merging.</li>
+      <li>Merging multiple files in sequence compounds errors. A mismatched key in the second merge may be invisible because the first merge already silently dropped the relevant rows.</li>
+    </ul>
+  </div>
+</body>
+</html>

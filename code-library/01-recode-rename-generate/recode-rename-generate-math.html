@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recode, Rename, Generate — Math</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+  <style>
+    :root { --bg:#faf8f5; --text:#111111; --muted:#666666; --border:#d8d4ce; --accent:#7a3b2e; }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:var(--text);font-family:'EB Garamond',Georgia,serif;font-size:1.08rem;line-height:1.8;padding:48px 24px 96px;}
+    body::before{content:'';display:block;position:fixed;top:0;left:0;right:0;height:4px;background:var(--accent);z-index:100;}
+    .page{max-width:680px;margin:0 auto;}
+    .back{font-family:'Inter',sans-serif;font-size:0.78rem;color:var(--muted);text-decoration:none;display:inline-block;margin-bottom:40px;}
+    .back:hover{color:var(--accent);}
+    h1{font-size:1.75rem;font-weight:400;margin-bottom:6px;line-height:1.3;}
+    .subtitle{font-family:'Inter',sans-serif;font-size:0.72rem;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);margin-bottom:48px;}
+    h2{font-family:'Inter',sans-serif;font-size:0.72rem;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);margin:52px 0 18px;padding-top:52px;border-top:1px solid var(--border);}
+    h3{font-size:1.05rem;font-weight:500;margin:28px 0 10px;}
+    p{margin-bottom:16px;}
+    p:last-child{margin-bottom:0;}
+    .practice{border-left:3px solid var(--accent);padding-left:16px;color:var(--muted);font-size:0.95rem;margin:0 0 24px;font-style:italic;}
+    .eq{background:#f2ede7;border:1px solid var(--border);border-radius:4px;padding:20px 24px;margin:20px 0;overflow-x:auto;text-align:center;}
+    table{width:100%;border-collapse:collapse;font-size:0.92rem;margin-bottom:24px;}
+    th{font-family:'Inter',sans-serif;font-size:0.68rem;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);text-align:left;padding:8px 12px;border-bottom:1px solid var(--border);}
+    td{padding:8px 12px;border-bottom:1px solid var(--border);vertical-align:top;line-height:1.55;}
+    td:first-child{font-family:'Inter',sans-serif;font-size:0.85rem;white-space:nowrap;}
+    ul,ol{padding-left:1.4em;margin-bottom:16px;}
+    li{margin-bottom:6px;}
+    strong{font-weight:500;}
+    em{font-style:italic;}
+    code{font-family:'Inter',monospace;font-size:0.83rem;background:#ece8e2;padding:1px 5px;border-radius:3px;}
+    .katex-display{overflow-x:auto;}
+  </style>
+</head>
+<body>
+  <div class="page">
+    <a class="back" href="../../code-library.html">← Code Library</a>
+    <h1>Recode, Rename, Generate</h1>
+    <div class="subtitle">Mathematical Derivation</div>
+
+    <table>
+      <thead><tr><th>Symbol</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td>$C$</td><td>A categorical variable taking $K$ distinct values</td></tr>
+        <tr><td>$K$</td><td>Number of categories in $C$</td></tr>
+        <tr><td>$D_k$</td><td>Indicator (dummy) variable for category $k$; equals 1 if observation belongs to category $k$, 0 otherwise</td></tr>
+        <tr><td>$X$</td><td>Design matrix ($n \times p$), including intercept column and predictor columns</td></tr>
+        <tr><td>$X^\top$</td><td>Transpose of $X$</td></tr>
+        <tr><td>$\hat{\beta}$</td><td>OLS coefficient vector estimate</td></tr>
+        <tr><td>$\beta_0$</td><td>Intercept coefficient</td></tr>
+        <tr><td>$\beta_1$</td><td>Slope or group-difference coefficient</td></tr>
+        <tr><td>$\bar{y}_1, \bar{y}_0$</td><td>Sample means of the outcome in the group where $D=1$ and $D=0$ respectively</td></tr>
+        <tr><td>$y$</td><td>$n \times 1$ vector of observed outcomes</td></tr>
+        <tr><td>$Z$</td><td>Linearly transformed version of predictor $X$</td></tr>
+        <tr><td>$a$</td><td>Multiplicative scaling constant in the linear transformation $Z = aX + b$</td></tr>
+        <tr><td>$b$</td><td>Additive shift constant in the linear transformation $Z = aX + b$</td></tr>
+        <tr><td>$\mu$</td><td>Population mean of $X$</td></tr>
+        <tr><td>$\sigma^2$</td><td>Population variance of $X$</td></tr>
+        <tr><td>$E[\cdot]$</td><td>Expectation operator</td></tr>
+        <tr><td>$\text{Var}(\cdot)$</td><td>Variance operator</td></tr>
+        <tr><td>$R_i$</td><td>Missingness indicator: 1 if observation $i$ is observed, 0 if missing</td></tr>
+        <tr><td>$p$</td><td>Proportion of observations that are observed (non-missing)</td></tr>
+        <tr><td>$s$</td><td>Sentinel (missing) code value (e.g., 9 or 99)</td></tr>
+        <tr><td>$\bar{x}_{\text{true}}$</td><td>True mean of the variable among observed cases</td></tr>
+        <tr><td>$\bar{x}_{\text{cont}}$</td><td>Contaminated mean computed when sentinel codes are left as valid values</td></tr>
+        <tr><td>$f_{\text{mis}}$</td><td>Fraction of observations that are missing</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Part A — Indicator (Dummy) Variable Algebra</h2>
+
+    <div class="practice">In practice: When you recode a categorical variable like race or region into dummies in Stata, software creates $K-1$ new columns. Understanding the algebra behind this choice helps you interpret intercepts correctly and avoid the perfect multicollinearity trap.</div>
+
+    <h3>Why $K-1$ dummies, not $K$</h3>
+
+    <p>We need to understand what goes wrong when all $K$ dummies are included. Each observation belongs to exactly one category, so the sum of all $K$ indicator variables equals 1 for every row. That means the sum of all $K$ dummy columns equals the intercept column, which is also all ones.</p>
+
+    <div class="eq">$$D_1 + D_2 + \cdots + D_K = 1 \quad \text{(for every observation } i\text{)}$$</div>
+
+    <p>This is an exact linear dependency among the columns of $X$. When columns of $X$ are perfectly collinear, the matrix $X^\top X$ is singular (its determinant is zero) and the inverse $(X^\top X)^{-1}$ does not exist. OLS has no unique solution. Dropping one category, the <strong>reference category</strong>, removes this dependency and makes the system solvable.</p>
+
+    <p>The reference category determines what the intercept means: $\beta_0$ is the predicted outcome for an observation in the reference group, holding all other predictors at zero. Changing the reference category changes the numeric value of $\beta_0$ and of the remaining dummy coefficients, but does not change fitted values or model fit in any way.</p>
+
+    <h3>The design matrix for a 3-category variable</h3>
+
+    <p>Suppose race has three categories: White (reference), Black, and Other. We include two dummies: $D_{\text{Black}}$ and $D_{\text{Other}}$. Consider four example observations:</p>
+
+    <div class="eq">$$\begin{aligned}
+&\text{Observation} \quad \text{Race} \quad D_{\text{Black}} \quad D_{\text{Other}} \\
+&\quad 1 \qquad\quad \text{White} \qquad 0 \qquad\quad 0 \\
+&\quad 2 \qquad\quad \text{Black} \qquad 1 \qquad\quad 0 \\
+&\quad 3 \qquad\quad \text{Other} \qquad 0 \qquad\quad 1 \\
+&\quad 4 \qquad\quad \text{Black} \qquad 1 \qquad\quad 0
+\end{aligned}$$</div>
+
+    <p>With an intercept column prepended, the design matrix $X$ for these four rows looks like:</p>
+
+    <div class="eq">$$X = \begin{bmatrix} 1 & 0 & 0 \\ 1 & 1 & 0 \\ 1 & 0 & 1 \\ 1 & 1 & 0 \end{bmatrix} \leftarrow \begin{array}{l} \text{White} \\ \text{Black} \\ \text{Other} \\ \text{Black} \end{array}$$</div>
+
+    <p>The model is:</p>
+
+    <div class="eq">$$y = \beta_0 + \beta_1 \cdot D_{\text{Black}} + \beta_2 \cdot D_{\text{Other}} + \varepsilon$$</div>
+
+    <p>$\beta_0$ is the expected outcome for White respondents. $\beta_1$ is the mean difference between Black and White respondents, holding other predictors fixed. $\beta_2$ is the mean difference between Other and White respondents. No coefficient directly compares Black to Other, but that comparison can be computed as $\beta_1 - \beta_2$.</p>
+
+    <h3>The OLS coefficient on a single dummy equals a mean difference</h3>
+
+    <p>For the simple case of one dummy $D \in \{0, 1\}$ and an intercept, the design matrix is:</p>
+
+    <div class="eq">$$X = \begin{bmatrix} 1 & D_1 \\ 1 & D_2 \\ \vdots & \vdots \\ 1 & D_n \end{bmatrix}$$</div>
+
+    <p>Compute $X^\top X$ and $X^\top y$:</p>
+
+    <div class="eq">$$X^\top X = \begin{bmatrix} n & n_1 \\ n_1 & n_1 \end{bmatrix}$$</div>
+
+    <p>where $n_1 = \sum D_i$ is the count of observations with $D=1$ and $n_0 = n - n_1$ is the count with $D=0$. Similarly:</p>
+
+    <div class="eq">$$X^\top y = \begin{bmatrix} \sum y_i \\ \sum D_i y_i \end{bmatrix}$$</div>
+
+    <p>Inverting $X^\top X$ and multiplying by $X^\top y$ yields:</p>
+
+    <div class="eq">$$\begin{aligned} \hat{\beta}_0 &= \bar{y}_0 \quad \text{(mean of } y \text{ among } D=0 \text{ group)} \\ \hat{\beta}_1 &= \bar{y}_1 - \bar{y}_0 \quad \text{(difference in means)} \end{aligned}$$</div>
+
+    <p>The OLS coefficient on a dummy variable is exactly the difference in group means. This confirms that regression with a single binary predictor and an intercept reproduces a two-sample comparison of means. If you add covariates, $\hat{\beta}_1$ becomes the mean difference adjusted for those covariates rather than the raw difference.</p>
+
+    <h2>Part B — Linear Transformations and What They Do to Regression Coefficients</h2>
+
+    <div class="practice">In practice: Researchers frequently rescale variables for interpretability: converting income from dollars to thousands, centering age at its mean, or standardizing a scale score. The math below shows exactly how those choices ripple through coefficient estimates.</div>
+
+    <h3>How a linear transformation changes means and variances</h3>
+
+    <p>Let $X$ be a variable with mean $\mu$ and variance $\sigma^2$. Define a new variable:</p>
+
+    <div class="eq">$$Z = aX + b$$</div>
+
+    <p>where $a \neq 0$ and $b$ are constants. The expected value of $Z$ follows from linearity of expectation:</p>
+
+    <div class="eq">$$E[Z] = E[aX + b] = a \cdot E[X] + b = a\mu + b$$</div>
+
+    <p>Adding $b$ shifts the mean by $b$; multiplying by $a$ scales it by $a$. For the variance, additive shifts disappear because variance measures spread around the center, not the center itself:</p>
+
+    <div class="eq">$$\begin{aligned} \text{Var}(Z) &= \text{Var}(aX + b) \\ &= E[(aX + b - (a\mu + b))^2] \\ &= E[(a(X - \mu))^2] \\ &= a^2 \cdot E[(X - \mu)^2] \\ &= a^2 \sigma^2 \end{aligned}$$</div>
+
+    <p>The standard deviation transforms as:</p>
+
+    <div class="eq">$$\sigma_Z = |a| \cdot \sigma_X$$</div>
+
+    <p>Two special cases matter most in practice. <strong>Mean-centering</strong> sets $b = -\bar{X}$ and $a = 1$, so the new variable has mean zero but identical variance and the regression coefficient is unchanged; only the intercept shifts to the predicted value at the mean of $X$. <strong>Standardizing</strong> sets $a = 1/s_X$ and $b = -\bar{X}/s_X$, producing a variable with mean 0 and standard deviation 1; the coefficient on the standardized variable is interpretable as the change in $y$ per one-standard-deviation increase in $X$.</p>
+
+    <h3>How a linear transformation changes a regression coefficient</h3>
+
+    <p>Suppose the true regression model is:</p>
+
+    <div class="eq">$$y = \beta_0 + \beta_1 \cdot X + \varepsilon$$</div>
+
+    <p>Now replace $X$ with $Z = aX + b$. To see what happens to the coefficient, substitute $X = (Z - b)/a$:</p>
+
+    <div class="eq">$$\begin{aligned} y &= \beta_0 + \beta_1 \cdot \frac{Z - b}{a} + \varepsilon \\ &= \left(\beta_0 - \frac{\beta_1 b}{a}\right) + \frac{\beta_1}{a} \cdot Z + \varepsilon \end{aligned}$$</div>
+
+    <p>The new coefficient on $Z$ is:</p>
+
+    <div class="eq">$$\hat{\beta}_{1,\text{new}} = \frac{\hat{\beta}_1}{a}$$</div>
+
+    <p>and the new intercept is $\beta_0 - \beta_1 b / a$. The slope rescales by the inverse of $a$. If you double the unit of $X$ ($a = 2$, say converting years to half-years), the coefficient halves. If you divide $X$ by 1000 (converting dollars to thousands, so $a = 1/1000$), the coefficient multiplies by 1000. This is why coefficients on age in years and age in decades cannot be compared numerically without rescaling; the underlying relationship is the same, but the unit of measurement differs by a factor of 10.</p>
+
+    <p>Predictions are unaffected: for any observation, $\hat{\beta}_0 + \hat{\beta}_1 \cdot x = (\beta_0 - \beta_1 b/a) + (\beta_1/a) \cdot (ax+b)$, and these simplify to the same number. Rescaling is always a representational choice, not a substantive one.</p>
+
+    <h2>Part C — Missing Value Propagation and Bias from Sentinel Codes</h2>
+
+    <div class="practice">In practice: Survey datasets routinely encode "refused," "don't know," and "not applicable" with numeric sentinel codes like 7, 8, 9, 97, 98, 99. If you forget to recode these before computing means or running regressions, you will silently contaminate every downstream statistic. The math below makes the size of that contamination precise.</div>
+
+    <h3>Setup: observed and missing cases</h3>
+
+    <p>Let $X$ be a variable for $n$ total observations. Define the <strong>missingness indicator</strong>:</p>
+
+    <div class="eq">$$\begin{aligned} R_i &= 1 \quad \text{if observation } i \text{ is observed (valid)} \\ R_i &= 0 \quad \text{if observation } i \text{ is missing} \end{aligned}$$</div>
+
+    <p>Let $p = \frac{1}{n} \sum R_i$ be the proportion observed, so $1-p$ is the missing fraction. The true mean among observed cases is:</p>
+
+    <div class="eq">$$\bar{x}_{\text{true}} = \frac{1}{\sum R_i} \cdot \sum R_i \cdot x_i$$</div>
+
+    <h3>Contaminated mean when the sentinel code is treated as valid</h3>
+
+    <p>Suppose the missing code is $s$ (a number like 9 or 99). If the analyst leaves $s$ in the data, the computed mean treats it as a real data value:</p>
+
+    <div class="eq">$$\bar{x}_{\text{cont}} = \frac{1}{n} \cdot \left[ \sum R_i \cdot x_i + s \cdot \sum (1 - R_i) \right]$$</div>
+
+    <p>This can be rewritten using $p$ and $\bar{x}_{\text{true}}$. The sum of observed values is $n \cdot p \cdot \bar{x}_{\text{true}}$, and the count of missing cases is $n \cdot (1-p)$:</p>
+
+    <div class="eq">$$\begin{aligned} \bar{x}_{\text{cont}} &= \frac{1}{n} \cdot \left[ n \cdot p \cdot \bar{x}_{\text{true}} + n \cdot (1-p) \cdot s \right] \\ &= p \cdot \bar{x}_{\text{true}} + (1-p) \cdot s \end{aligned}$$</div>
+
+    <p>The contaminated mean is a weighted average of the true mean and the sentinel value, with the missing fraction as the weight on $s$. The <strong>bias</strong> is:</p>
+
+    <div class="eq">$$\begin{aligned} \text{Bias} &= \bar{x}_{\text{cont}} - \bar{x}_{\text{true}} \\ &= p \cdot \bar{x}_{\text{true}} + (1-p) \cdot s - \bar{x}_{\text{true}} \\ &= (1-p) \cdot s - (1-p) \cdot \bar{x}_{\text{true}} \\ &= (1-p) \cdot (s - \bar{x}_{\text{true}}) \end{aligned}$$</div>
+
+    <p>Reading this formula: the bias equals the missing fraction times the gap between the sentinel code and the true mean. When $s > \bar{x}_{\text{true}}$ (the common case, since sentinel codes are often at the top of a scale), the bias is positive and the contaminated mean is inflated. The bias grows linearly with the proportion missing.</p>
+
+    <h3>Worked numerical example</h3>
+
+    <p>Suppose you have a 1-to-5 satisfaction scale with a true mean of 3.0, and 10% of respondents are coded 9 for "refused":</p>
+
+    <div class="eq">$$\begin{aligned} \bar{x}_{\text{cont}} &= 0.90 \cdot 3.0 + 0.10 \cdot 9 \\ &= 2.70 + 0.90 \\ &= 3.60 \end{aligned}$$</div>
+
+    <div class="eq">$$\text{Bias} = (1 - 0.90) \cdot (9 - 3.0) = 0.10 \cdot 6 = 0.60$$</div>
+
+    <p>A contaminated mean of 3.60 compared to a true mean of 3.0 is a 20% upward distortion, large enough to reverse substantive conclusions. If 20% of cases are missing rather than 10%, the bias doubles to 1.20, more than an entire scale point. The only safe rule is to declare all sentinel codes as missing before any arithmetic, any regression, or any cross-tabulation.</p>
+
+    <h3>Propagation into regression</h3>
+
+    <p>When a contaminated $X$ enters a regression as a predictor, the spurious covariance between $X$ and $y$ (driven entirely by the sentinel values, not by any real relationship) contaminates $\hat{\beta}$. The OLS formula $\hat{\beta} = (X^\top X)^{-1} X^\top y$ depends on cross-products of every row of $X$ with $y$. Sentinel values in $X$ create artificial variation that has nothing to do with the true relationship. The direction of the resulting bias in $\hat{\beta}$ depends on whether missingness is correlated with the outcome, so there is no simple general formula, but the problem is always present and always avoidable by proper recoding.</p>
+
+  </div>
+</body>
+</html>

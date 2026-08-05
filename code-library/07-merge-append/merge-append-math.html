@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Merge and Append — Mathematical Derivation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+  <style>
+    :root { --bg:#faf8f5; --text:#111111; --muted:#666666; --border:#d8d4ce; --accent:#7a3b2e; }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:var(--text);font-family:'EB Garamond',Georgia,serif;font-size:1.08rem;line-height:1.8;padding:48px 24px 96px;}
+    body::before{content:'';display:block;position:fixed;top:0;left:0;right:0;height:4px;background:var(--accent);z-index:100;}
+    .page{max-width:680px;margin:0 auto;}
+    .back{font-family:'Inter',sans-serif;font-size:0.78rem;color:var(--muted);text-decoration:none;display:inline-block;margin-bottom:40px;}
+    .back:hover{color:var(--accent);}
+    h1{font-size:1.75rem;font-weight:400;margin-bottom:6px;line-height:1.3;}
+    .subtitle{font-family:'Inter',sans-serif;font-size:0.72rem;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);margin-bottom:48px;}
+    h2{font-family:'Inter',sans-serif;font-size:0.72rem;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);margin:52px 0 18px;padding-top:52px;border-top:1px solid var(--border);}
+    h3{font-size:1.05rem;font-weight:500;margin:28px 0 10px;}
+    p{margin-bottom:16px;}
+    p:last-child{margin-bottom:0;}
+    .practice{border-left:3px solid var(--accent);padding-left:16px;color:var(--muted);font-size:0.95rem;margin:0 0 24px;font-style:italic;}
+    .eq{background:#f2ede7;border:1px solid var(--border);border-radius:4px;padding:20px 24px;margin:20px 0;overflow-x:auto;text-align:center;}
+    table{width:100%;border-collapse:collapse;font-size:0.92rem;margin-bottom:24px;}
+    th{font-family:'Inter',sans-serif;font-size:0.68rem;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);text-align:left;padding:8px 12px;border-bottom:1px solid var(--border);}
+    td{padding:8px 12px;border-bottom:1px solid var(--border);vertical-align:top;line-height:1.55;}
+    td:first-child{font-family:'Inter',sans-serif;font-size:0.85rem;white-space:nowrap;}
+    ul,ol{padding-left:1.4em;margin-bottom:16px;}
+    li{margin-bottom:6px;}
+    strong{font-weight:500;}
+    em{font-style:italic;}
+    code{font-family:'Inter',monospace;font-size:0.83rem;background:#ece8e2;padding:1px 5px;border-radius:3px;}
+    .katex-display{overflow-x:auto;}
+  </style>
+</head>
+<body>
+  <div class="page">
+    <a class="back" href="../../code-library.html">← Code Library</a>
+    <h1>Merge and Append</h1>
+    <div class="subtitle">Mathematical Derivation</div>
+
+    <h2>Symbols</h2>
+    <table>
+      <thead><tr><th>Symbol</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td>$L$</td><td>Left table (the "base" or analysis table)</td></tr>
+        <tr><td>$R$</td><td>Right table (the table being merged in)</td></tr>
+        <tr><td>$n_L$</td><td>Number of rows in $L$</td></tr>
+        <tr><td>$n_R$</td><td>Number of rows in $R$</td></tr>
+        <tr><td>$A$</td><td>Multiset of key values in $L$</td></tr>
+        <tr><td>$B$</td><td>Multiset of key values in $R$</td></tr>
+        <tr><td>$A \cap B$</td><td>Set of key values present in both $L$ and $R$ (intersection)</td></tr>
+        <tr><td>$A \cup B$</td><td>Set of key values present in either $L$ or $R$ (union)</td></tr>
+        <tr><td>$A \setminus B$</td><td>Set of key values in $A$ but not in $B$ (set difference)</td></tr>
+        <tr><td>$|A|$</td><td>Number of distinct key values in $A$</td></tr>
+        <tr><td>$c_L(k)$</td><td>Number of times key value $k$ appears in $L$</td></tr>
+        <tr><td>$c_R(k)$</td><td>Number of times key value $k$ appears in $R$</td></tr>
+        <tr><td>$D$</td><td>Total number of rows with a given key column</td></tr>
+        <tr><td>$U$</td><td>Number of distinct values of a given key column</td></tr>
+        <tr><td>$C_L$</td><td>Set of column names in $L$</td></tr>
+        <tr><td>$C_R$</td><td>Set of column names in $R$</td></tr>
+        <tr><td>$K$</td><td>Key column used for joining</td></tr>
+        <tr><td>$(K_1, K_2, \ldots, K_p)$</td><td>Composite key: a tuple of columns that together are unique</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Part A — Set Theory of Joins</h2>
+    <div class="practice">In practice: Before you merge two datasets, you should be able to state precisely which rows you expect in the result. The set-theory framing gives you that precision. It also forces you to confront, before running the code, how many rows you will lose in an inner join.</div>
+
+    <h3>Inner Join</h3>
+    <p>The <strong>inner join</strong> returns all rows from $L$ matched with all rows from $R$ where the key values agree.</p>
+    <p>Result key set:</p>
+    <div class="eq">$$A \cap B$$</div>
+    <p>For a 1:1 join (key is unique in both tables):</p>
+    <div class="eq">$$\text{Row count} = |A \cap B| \leq \min(|A|, |B|)$$</div>
+    <p>Equality holds when $A \subseteq B$ or $B \subseteq A$. The lost rows are those in $A \setminus B$ (keys in $L$ with no match in $R$) and $B \setminus A$ (keys in $R$ with no match in $L$).</p>
+    <p>The proportion of rows dropped from $L$ is:</p>
+    <div class="eq">$$\text{Drop rate}_L = \frac{|A \setminus B|}{|A|} = \frac{|A| - |A \cap B|}{|A|}$$</div>
+    <p>If your left table has state-level data for 50 states and the right table has crime statistics for 48 states (two states missing), the inner join returns 48 rows. Those two states vanish silently unless you check.</p>
+
+    <h3>Left Join</h3>
+    <p>The <strong>left join</strong> returns all rows of $L$, matched with $R$ where a match exists, and NULL for right-side columns where no match exists.</p>
+    <div class="eq">$$\begin{aligned} \text{Result key set} &= A \quad \text{(all keys in } L\text{)} \\ \text{Row count (1:1 case)} &= n_L \end{aligned}$$</div>
+    <p>For rows in $A \cap B$: right-side columns are populated. For rows in $A \setminus B$: right-side columns are NULL.</p>
+    <p>The left join is the safe default when you want to keep all your analysis units and accept NAs for unmatched covariates. You never lose left-table rows; you learn which rows lack matches by looking at which right-side columns are missing.</p>
+
+    <h3>Full Outer Join</h3>
+    <p>The <strong>full outer join</strong> returns all rows from both $L$ and $R$.</p>
+    <div class="eq">$$\begin{aligned} \text{Result key set} &= A \cup B \\ \text{Row count (1:1 case)} &= |A \cup B| = |A| + |B| - |A \cap B| \end{aligned}$$</div>
+    <p>This is the <strong>inclusion-exclusion principle</strong>: the size of the union equals the sum of the individual sizes minus the size of the intersection (to avoid double-counting matched keys). For rows in $A \cap B$, columns from both tables are populated. For rows in $A \setminus B$, right-side columns are NULL. For rows in $B \setminus A$, left-side columns are NULL.</p>
+
+    <h3>Cross Join (Cartesian Product)</h3>
+    <p>The <strong>cross join</strong> matches every row of $L$ with every row of $R$ regardless of key.</p>
+    <div class="eq">$$\text{Row count} = n_L \times n_R$$</div>
+    <p>No key is required. This is rarely the intended operation, but it is what you get in a many-to-many merge where the key is not unique in either table (for matching keys).</p>
+
+    <h2>Part B — Cardinality and Row Counts</h2>
+    <div class="practice">In practice: Cardinality determines whether your merge is safe. Getting the cardinality wrong is one of the most common data-pipeline bugs in survey research, and it is silent: R and Stata will produce a result either way.</div>
+
+    <h3>Cardinality Notation</h3>
+    <ul>
+      <li><strong>1:1</strong> — each key value appears at most once in both $L$ and $R$.</li>
+      <li><strong>m:1</strong> (many-to-one) — a key value may appear multiple times in $L$, but at most once in $R$. Example: multiple survey respondents in the same congressional district; the district-characteristics file has one row per district.</li>
+      <li><strong>1:m</strong> — the mirror of m:1. Rare in applied use; usually a matter of which table is called "left."</li>
+      <li><strong>m:m</strong> (many-to-many) — a key value may appear multiple times in both $L$ and $R$.</li>
+    </ul>
+
+    <h3>Row Count in a Many-to-Many Join</h3>
+    <p>For a single key value $k$ that appears $c_L(k)$ times in $L$ and $c_R(k)$ times in $R$, the inner join produces $c_L(k) \times c_R(k)$ rows for that key value.</p>
+    <p>The total row count of a many-to-many inner join is:</p>
+    <div class="eq">$$\text{Row count} = \sum_{k \in A \cap B} c_L(k) \cdot c_R(k)$$</div>
+    <p>In the worst case, when all $n_L$ rows share one key value and all $n_R$ rows share the same key value:</p>
+    <div class="eq">$$\text{Maximum row count} = n_L \times n_R$$</div>
+    <p>A many-to-many join between a 10,000-row person file and a 500-row person file (persons appear multiple times in both) can produce millions of rows. This is almost always a bug, not a feature.</p>
+    <p><strong>Worked example.</strong> Suppose $L$ has 5 respondents all from county 001, and $R$ has 3 years of county-level data for county 001. The inner join produces $5 \times 3 = 15$ rows. If you did not intend to create a person-year panel, you have accidentally triplicated your respondent data.</p>
+
+    <h3>Safe vs. Unsafe Cardinality</h3>
+    <p>For most analytic purposes:</p>
+    <ul>
+      <li><strong>1:1 — safe.</strong> Row count is preserved. Each row gets exactly one match.</li>
+      <li><strong>m:1 — safe.</strong> Each left row gets at most one match (the single right-row for that key). Adding a district-level variable to a person-level file is a clean m:1 merge.</li>
+      <li><strong>1:m or m:m — unsafe</strong> for most analysis. Row counts increase, and each resulting row is not a distinct unit of observation.</li>
+    </ul>
+    <p>Before any merge, assert your expected cardinality. In Stata:</p>
+    <p><code>merge 1:1 caseid using rightfile.dta</code></p>
+    <p>If Stata finds duplicate keys in either file, it returns an error before doing anything dangerous. This is the correct behavior and a useful safety check.</p>
+
+    <h2>Part C — Key Uniqueness</h2>
+    <div class="practice">In practice: You should verify key uniqueness before every merge, not after. Discovering a many-to-many explosion in the result is harder to diagnose than catching duplicate keys before the merge.</div>
+
+    <h3>The Uniqueness Condition</h3>
+    <p>A column $K$ is a <strong>key</strong> for table $T$ if and only if all values in $K$ are distinct:</p>
+    <div class="eq">$$\forall\, i \neq j \text{ in } T,\quad K_i \neq K_j$$</div>
+    <p>Equivalently: the number of duplicate key values is 0.</p>
+
+    <h3>Duplicate Count Formula</h3>
+    <p>Let $D$ = total rows with key $K$ in $T$. Let $U$ = number of distinct values of $K$ in $T$. Then:</p>
+    <div class="eq">$$\text{Duplicate count} = D - U$$</div>
+    <p>If $D - U = 0$, $K$ is a valid key. If $D - U > 0$, $K$ has duplicates and is not a key; any merge using $K$ may produce unintended row inflation.</p>
+    <p>In Stata: <code>duplicates report caseid</code>. In R: <code>get_dupes(df, caseid)</code>. Always run this before a merge.</p>
+
+    <h3>Composite Keys</h3>
+    <p>Sometimes no single column uniquely identifies rows. A <strong>composite key</strong> is a tuple of columns $(K_1, K_2, \ldots, K_p)$ that is unique in their combination. In a county-year panel, neither county FIPS code nor year alone is unique, but (FIPS, year) together is.</p>
+    <p>Checking a composite key in Stata:</p>
+    <p><code>duplicates report fips year</code></p>
+    <p>Zero duplicates confirms that (fips, year) is a valid composite key. Nonzero means you need to investigate before merging on those columns.</p>
+
+    <h2>Part D — Append</h2>
+    <div class="practice">In practice: Append is the operation for pooling survey waves, stacking replicate datasets, or combining files from different geographic regions. It is simpler than merging but has its own pitfalls around column naming and variable coverage.</div>
+
+    <h3>Definition</h3>
+    <p>An <strong>append</strong> stacks the rows of two (or more) tables with the same columns:</p>
+    <div class="eq">$$\text{Result row count} = n_L + n_R$$</div>
+    <p>This is exact, not approximate. No keys are involved; rows from $L$ and rows from $R$ simply sit below each other in the result.</p>
+    <p>Unlike a merge, append never creates NAs from the join itself; all NAs in the result come from variables that exist in one file but not the other.</p>
+
+    <h3>Column Alignment by Name, Not Position</h3>
+    <p>If $L$ has columns (id, age, income) and $R$ has columns (id, income, age), the append aligns by column name:</p>
+    <ul>
+      <li>Column "id" gets values from $L$'s id column stacked above $R$'s id column.</li>
+      <li>Column "age" gets values from $L$'s age column stacked above $R$'s age column.</li>
+      <li>Column "income" similarly.</li>
+    </ul>
+    <p>The positional order within each file is irrelevant. This contrasts with naive row concatenation in some low-level environments (for example, cbind in R or hstack in NumPy), which would treat column 1 of $L$ as the same as column 1 of $R$ regardless of name.</p>
+
+    <h3>Handling Non-Overlapping Columns</h3>
+    <p>If $L$ has a variable $X$ that $R$ does not, the appended result has $X$ for all $L$ rows and missing for all $R$ rows. If $R$ has a variable $Z$ that $L$ does not, the result has $Z$ missing for all $L$ rows.</p>
+    <p>Formally, let $C_L$ and $C_R$ be the column sets of $L$ and $R$. The append result has column set $C_L \cup C_R$, with:</p>
+    <ul>
+      <li>Non-missing values for column $c$ in row $i$ if $i \in L$ and $c \in C_L$, or $i \in R$ and $c \in C_R$.</li>
+      <li>Missing values otherwise.</li>
+    </ul>
+    <p>When pooling two survey waves, variable names must match exactly for the variables you intend to stack. A variable called <code>voted_2020</code> in one wave and <code>vote_2020</code> in another will appear as two separate columns after appending, both mostly missing. Rename before appending.</p>
+
+    <h3>Tracking Source After Appending</h3>
+    <p>Since appending discards information about which file each row came from, create a source indicator before appending:</p>
+    <p><code>gen wave = 2019</code><br>
+    <code>save wave2019_tagged.dta, replace</code><br><br>
+    <code>use wave2020.dta</code><br>
+    <code>gen wave = 2020</code><br>
+    <code>append using wave2019_tagged.dta</code></p>
+    <p>The row count identity $n_L + n_R = N_{\text{result}}$ can then be verified, and the wave variable allows group-specific analysis or wave fixed effects.</p>
+  </div>
+</body>
+</html>

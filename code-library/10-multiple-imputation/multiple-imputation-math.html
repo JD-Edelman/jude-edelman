@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Multiple Imputation — Math</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+  <style>
+    :root { --bg:#faf8f5; --text:#111111; --muted:#666666; --border:#d8d4ce; --accent:#7a3b2e; }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:var(--text);font-family:'EB Garamond',Georgia,serif;font-size:1.08rem;line-height:1.8;padding:48px 24px 96px;}
+    body::before{content:'';display:block;position:fixed;top:0;left:0;right:0;height:4px;background:var(--accent);z-index:100;}
+    .page{max-width:680px;margin:0 auto;}
+    .back{font-family:'Inter',sans-serif;font-size:0.78rem;color:var(--muted);text-decoration:none;display:inline-block;margin-bottom:40px;}
+    .back:hover{color:var(--accent);}
+    h1{font-size:1.75rem;font-weight:400;margin-bottom:6px;line-height:1.3;}
+    .subtitle{font-family:'Inter',sans-serif;font-size:0.72rem;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);margin-bottom:48px;}
+    h2{font-family:'Inter',sans-serif;font-size:0.72rem;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);margin:52px 0 18px;padding-top:52px;border-top:1px solid var(--border);}
+    h3{font-size:1.05rem;font-weight:500;margin:28px 0 10px;}
+    p{margin-bottom:16px;}
+    p:last-child{margin-bottom:0;}
+    .practice{border-left:3px solid var(--accent);padding-left:16px;color:var(--muted);font-size:0.95rem;margin:0 0 24px;font-style:italic;}
+    .eq{background:#f2ede7;border:1px solid var(--border);border-radius:4px;padding:20px 24px;margin:20px 0;overflow-x:auto;text-align:center;}
+    table{width:100%;border-collapse:collapse;font-size:0.92rem;margin-bottom:24px;}
+    th{font-family:'Inter',sans-serif;font-size:0.68rem;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);text-align:left;padding:8px 12px;border-bottom:1px solid var(--border);}
+    td{padding:8px 12px;border-bottom:1px solid var(--border);vertical-align:top;line-height:1.55;}
+    td:first-child{font-family:'Inter',sans-serif;font-size:0.85rem;white-space:nowrap;}
+    ul,ol{padding-left:1.4em;margin-bottom:16px;}
+    li{margin-bottom:6px;}
+    strong{font-weight:500;}
+    em{font-style:italic;}
+    code{font-family:'Inter',monospace;font-size:0.83rem;background:#ece8e2;padding:1px 5px;border-radius:3px;}
+    .katex-display{overflow-x:auto;}
+  </style>
+</head>
+<body>
+  <div class="page">
+    <a class="back" href="../../code-library.html">← Code Library</a>
+    <h1>Multiple Imputation</h1>
+    <div class="subtitle">Mathematical Derivation</div>
+
+    <h2>Symbols</h2>
+    <table>
+      <thead><tr><th>Symbol</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td>$M$</td><td>Number of imputed datasets</td></tr>
+        <tr><td>$m$</td><td>Index over imputed datasets, $m = 1, \ldots, M$</td></tr>
+        <tr><td>$Q$</td><td>True population parameter of interest (e.g., a regression coefficient)</td></tr>
+        <tr><td>$\hat{Q}_m$</td><td>Point estimate of $Q$ from the analysis of imputed dataset $m$</td></tr>
+        <tr><td>$\hat{U}_m$</td><td>Within-imputation variance (squared SE) from imputed dataset $m$</td></tr>
+        <tr><td>$\bar{Q}$</td><td>Pooled point estimate across $M$ datasets (Rubin's Rules)</td></tr>
+        <tr><td>$\bar{U}$</td><td>Average within-imputation variance</td></tr>
+        <tr><td>$B$</td><td>Between-imputation variance</td></tr>
+        <tr><td>$T$</td><td>Total variance of the pooled estimate</td></tr>
+        <tr><td>$\lambda$</td><td>Fraction of missing information (FMI)</td></tr>
+        <tr><td>$\nu$</td><td>Degrees of freedom for the pooled t-test</td></tr>
+        <tr><td>$X_j$</td><td>The $j$-th variable being imputed</td></tr>
+        <tr><td>$X_{-j}$</td><td>All variables except $X_j$</td></tr>
+        <tr><td>$M_j$</td><td>Set of row indices where $X_j$ is originally missing</td></tr>
+        <tr><td>$\tilde{x}_{ji}$</td><td>Current imputed value of $X_j$ for observation $i$</td></tr>
+        <tr><td>$\bar{x}_j$</td><td>Column mean of $X_j$ over observed rows</td></tr>
+        <tr><td>$p$</td><td>Number of variables with missing values</td></tr>
+        <tr><td>$T_{\text{iter}}$</td><td>Number of MICE Gibbs sampler iterations</td></tr>
+        <tr><td>$\hat{\beta},\, \hat{\sigma}^2$</td><td>OLS coefficient estimate and residual variance from the imputation model</td></tr>
+        <tr><td>$\beta^*,\, \sigma^{2*}$</td><td>Posterior draws of imputation model parameters</td></tr>
+        <tr><td>$\alpha$</td><td>True coefficient in the data-generating process for the variance derivation</td></tr>
+        <tr><td>$\sigma^2_Z$</td><td>Variance of the predictor $Z$ in the variance derivation</td></tr>
+        <tr><td>$\sigma^2_\varepsilon$</td><td>Residual variance in the data-generating process</td></tr>
+        <tr><td>$n_{\text{obs}}$</td><td>Number of observed rows for variable $X_j$ in the current MICE step</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Part A — Rubin's Rules</h2>
+    <div class="practice">In practice: You run your regression (or whatever analysis) on each of the $M$ completed datasets separately, producing $M$ sets of estimates. Rubin's Rules tell you how to combine them into a single publishable result: one coefficient, one standard error, one p-value.</div>
+
+    <h3>Step 1: Pool the Point Estimates</h3>
+    <p>The pooled estimate is the simple average of the $M$ estimates:</p>
+    <div class="eq">$$\bar{Q} = \frac{1}{M} \sum_{m=1}^{M} \hat{Q}_m$$</div>
+    <p>This is unbiased for the true population parameter $Q$ under MAR, because each $\hat{Q}_m$ is an unbiased estimate and averaging over $M$ datasets averages out the imputation uncertainty.</p>
+    <p>If your 20 imputed datasets give education coefficients of 0.31, 0.28, 0.33, and so on, the pooled estimate is their average: roughly 0.30. This is a weighted average of the information in each complete dataset.</p>
+
+    <h3>Step 2: Compute the Within-Imputation Variance</h3>
+    <p>Let $\hat{U}_m = [\text{SE}(\hat{Q}_m)]^2$ be the estimated variance of $\hat{Q}_m$ from imputed dataset $m$. Average these across all $M$ datasets:</p>
+    <div class="eq">$$\bar{U} = \frac{1}{M} \sum_{m=1}^{M} \hat{U}_m$$</div>
+    <p>This is the uncertainty you would have even if there were no missing data. It is the ordinary sampling variability, reflecting how much the estimate would bounce around across different samples of the same size from the population.</p>
+
+    <h3>Step 3: Compute the Between-Imputation Variance</h3>
+    <p>The between-imputation variance captures how much the $M$ point estimates differ from each other due to uncertainty about the missing values:</p>
+    <div class="eq">$$B = \frac{1}{M-1} \sum_{m=1}^{M} (\hat{Q}_m - \bar{Q})^2$$</div>
+    <p>This is the sample variance of the $M$ point estimates. If the missing data contribute little uncertainty (few missing values, or strong predictors in the imputation model), $B$ will be small. If the missing data are informative for $Q$, $B$ will be large.</p>
+    <p>If $B$ is large relative to $\bar{U}$, your missing data are informative for the parameter of interest and you need more imputations (larger $M$) to stabilize the estimate.</p>
+
+    <h3>Step 4: Total Variance</h3>
+    <p>The total variance of the pooled estimate combines both sources with a finite-$M$ correction:</p>
+    <div class="eq">$$T = \bar{U} + \left(1 + \frac{1}{M}\right) \cdot B$$</div>
+    <p>The factor $(1 + 1/M)$ accounts for the fact that $\bar{Q}$ is estimated from a finite number $M$ of imputed datasets rather than infinitely many. If $M \to \infty$, the factor approaches 1 and $T = \bar{U} + B$. The extra $1/M$ term is the <strong>Monte Carlo error</strong> in $\bar{Q}$ from using only $M$ draws: the variance of $\bar{Q}$ as a Monte Carlo estimator of the posterior mean contributes $B/M$ to the total variance.</p>
+    <p>With $M = 5$ imputations and $\lambda = 0.30$, your SE is inflated by about 30% relative to a complete dataset. With $M = 20$, the Monte Carlo error in that inflation is negligible.</p>
+
+    <h3>Step 5: Pooled Inference</h3>
+    <p>The pooled standard error:</p>
+    <div class="eq">$$\text{SE}_{\text{pooled}} = \sqrt{T}$$</div>
+    <p>The pooled test statistic for $H_0: Q = 0$:</p>
+    <div class="eq">$$t = \frac{\bar{Q}}{\sqrt{T}}$$</div>
+    <p>This $t$-statistic is referred to a $t$-distribution with $\nu$ degrees of freedom, derived in Part B below.</p>
+
+    <h2>Part B — Degrees of Freedom and the Fraction of Missing Information</h2>
+    <div class="practice">In practice: FMI and degrees of freedom tell you how much the missing data are costing you. A high FMI means your missing data substantially inflate your standard errors and reduce the power of your tests.</div>
+
+    <h3>Fraction of Missing Information (FMI)</h3>
+    <p>The <strong>FMI</strong> $\lambda$ quantifies what proportion of the total variance $T$ is attributable to the missing data rather than to ordinary sampling variability:</p>
+    <div class="eq">$$\lambda = \frac{\left(1 + \frac{1}{M}\right) B}{T}$$</div>
+    <p>When $\lambda = 0$, all uncertainty comes from sampling variability (no information is lost to missingness). When $\lambda = 1$, all uncertainty comes from the imputation (the data provide essentially no information about $Q$).</p>
+    <p>An FMI of 0.05 means the missing data cost you about 5% efficiency, which is essentially nothing. An FMI of 0.40 means your effective sample size is about 60% of what it would be with complete data.</p>
+
+    <h3>Adjusted Degrees of Freedom</h3>
+    <p>The <strong>Barnard-Rubin</strong> degrees-of-freedom formula for imputed data is:</p>
+    <div class="eq">$$\nu = \frac{M - 1}{\lambda^2}$$</div>
+    <p>The key behavior:</p>
+    <ul>
+      <li>When $\lambda$ is small (little missing data), $\nu$ is large and the $t$-distribution approaches the normal. The missing data impose little penalty.</li>
+      <li>When $\lambda$ is large (severe missingness), $\nu$ is small, giving a heavy-tailed $t$-distribution and wide confidence intervals. This is appropriate: severe missing data genuinely reduce what you can conclude.</li>
+      <li>When $M$ is small, $\nu$ is also constrained by $M - 1$, penalizing you for having too few imputed datasets.</li>
+    </ul>
+
+    <h3>Numerical Example</h3>
+    <p>Suppose $\lambda = 0.20$ (20% of the variance is due to missing data).</p>
+    <p>With $M = 20$ imputations:</p>
+    <div class="eq">$$\nu = \frac{20 - 1}{(0.20)^2} = \frac{19}{0.04} = 475$$</div>
+    <p>With $M = 5$ imputations and the same $\lambda$:</p>
+    <div class="eq">$$\nu = \frac{5 - 1}{(0.20)^2} = \frac{4}{0.04} = 100$$</div>
+    <p>More imputations give you more degrees of freedom for the test, producing less conservative inference. With $M = 5$, you are using a $t(100)$ distribution; with $M = 20$, you are nearly at the normal ($t(475) \approx z$). The old default of $M = 5$ imputations was adequate only when FMI was very small. For FMI around 0.20 or higher, $M = 20$ or more is advisable.</p>
+
+    <h2>Part C — The MICE Algorithm</h2>
+    <div class="practice">In practice: MICE (Multivariate Imputation by Chained Equations) is how modern software (R's <code>mice</code>, Stata's <code>mi impute chained</code>) actually generates the imputed datasets. It handles mixed variable types and complex missingness patterns by iterating through one variable at a time.</div>
+
+    <h3>Setup</h3>
+    <p>Let there be $p$ variables $X_1, X_2, \ldots, X_p$ each with some missing values, on $n$ observations.</p>
+    <p><strong>Initialization:</strong> Replace all missing values with column means:</p>
+    <div class="eq">$$\tilde{x}_{ji} \leftarrow \bar{x}_j \quad \text{for all } i \text{ where } X_j \text{ is missing}$$</div>
+    <p>These initial values are rough placeholders. Their only purpose is to give the iterative procedure somewhere to start.</p>
+
+    <h3>One MICE Iteration</h3>
+    <p>For each variable $j = 1, 2, \ldots, p$ in turn:</p>
+    <p><strong>Step 1: Identify missing rows.</strong> Let $M_j = \{i : X_{ji} \text{ is originally missing}\}$. For these rows, $\tilde{x}_{ji}$ is a working imputation, not real data.</p>
+    <p><strong>Step 2: Fit the imputation model.</strong> Using only the observed rows of $X_j$ (all $i$ not in $M_j$), fit a regression:</p>
+    <div class="eq">$$X_j = \beta_0 + X_{-j}\,\beta + \varepsilon$$</div>
+    <p>where $X_{-j}$ is the matrix of all other variables, using their currently imputed values for any rows where they were missing. Obtain coefficient estimates $\hat{\beta}$ and residual variance estimate $\hat{\sigma}^2$.</p>
+    <p><strong>Step 3: Draw from the posterior.</strong> Rather than using $\hat{\beta}$ directly, draw new parameter values from the posterior distribution:</p>
+    <div class="eq">$$\begin{aligned} \sigma^{2*} &\sim \left[\text{Scaled Inverse-}\chi^2 \text{ with } n_{\text{obs}} - p \text{ d.f. and scale } \hat{\sigma}^2\right] \\ \beta^* &\sim \mathcal{N}\!\left(\hat{\beta},\; \sigma^{2*}(X'_{\text{obs}} X_{\text{obs}})^{-1}\right) \end{aligned}$$</div>
+    <p>This step injects uncertainty about the imputation model itself. It is essential for preserving variance (see Part D).</p>
+    <p><strong>Step 4: Generate imputed values.</strong> For each row $i$ in $M_j$, draw:</p>
+    <div class="eq">$$\tilde{x}_{ji} \sim \mathcal{N}\!\left(x_{-j,i}\,\beta^*,\; \sigma^{2*}\right)$$</div>
+    <p>This replaces the previous imputed value with a draw from the <strong>posterior predictive distribution</strong>: a value that is plausible given the data and uncertain given the parameters.</p>
+    <p>After cycling through all $p$ variables, one iteration is complete.</p>
+
+    <h3>Convergence</h3>
+    <p>Run the cycle for $T_{\text{iter}}$ iterations. Convergence means the distribution of imputed values has stabilized. In practice: run 10 to 20 iterations and plot the mean and SD of each imputed variable across iterations. If the traces look like white noise around a stable level, the chain has converged. A trace that is still trending upward or downward at iteration 20 indicates the chain has not mixed and you should run more iterations.</p>
+    <p><strong>Theoretical justification:</strong> Each pass through the $p$ conditional distributions constitutes one sweep of a <strong>Gibbs sampler</strong>. Under regularity conditions (proper conditional posteriors, a proper joint posterior), the Gibbs sampler converges in distribution to the joint posterior $p(X_{\text{missing}} \mid X_{\text{observed}})$. Draws from this posterior predictive distribution represent $M$ plausible complete datasets given the observed data, which is exactly what Rubin's Rules require.</p>
+    <p>After $T_{\text{iter}}$ burn-in iterations, extract $M$ complete datasets at evenly-spaced iteration points (or run $M$ independent chains from different starting values). These are the $M$ imputed datasets that feed into Rubin's Rules.</p>
+
+    <h2>Part D — Why Posterior Draws Preserve Variance</h2>
+    <div class="practice">In practice: Some older imputation approaches replace missing values with the regression prediction (the conditional mean). This section shows why that deflates variance and biases downstream analyses, and why the posterior draw in MICE fixes the problem.</div>
+
+    <p><strong>Claim:</strong> Imputing the conditional mean $E[X_j \mid X_{-j}]$ instead of drawing from the posterior reduces the variance of the imputed variable below its true variance.</p>
+
+    <h3>Derivation</h3>
+    <p>Suppose the true data-generating process is:</p>
+    <div class="eq">$$X = \alpha Z + \varepsilon$$</div>
+    <p>where $Z$ is a scalar predictor, $\varepsilon \sim \mathcal{N}(0, \sigma^2_\varepsilon)$, and $Z$ and $\varepsilon$ are independent. The true variance of $X$:</p>
+    <div class="eq">$$\text{Var}(X) = \alpha^2 \text{Var}(Z) + \sigma^2_\varepsilon = \alpha^2 \sigma^2_Z + \sigma^2_\varepsilon$$</div>
+    <p>Now suppose we impute missing values of $X$ by the conditional mean:</p>
+    <div class="eq">$$\tilde{x} = E[X \mid Z] = \alpha Z$$</div>
+    <p>The variance of these imputed values:</p>
+    <div class="eq">$$\text{Var}(\tilde{x}) = \alpha^2 \text{Var}(Z) = \alpha^2 \sigma^2_Z$$</div>
+    <p>Comparing:</p>
+    <div class="eq">$$\text{Var}(\tilde{x}) = \alpha^2 \sigma^2_Z \;<\; \alpha^2 \sigma^2_Z + \sigma^2_\varepsilon = \text{Var}(X)$$</div>
+    <p>The imputed variable is less variable than the real variable. This is not a matter of degree; it is guaranteed whenever any residual variance $\sigma^2_\varepsilon > 0$ exists in the true model, meaning whenever prediction is imperfect.</p>
+    <p><strong>Why this harms downstream analysis:</strong> If $X$ appears as a predictor in your outcome model, the regression coefficient on $X$ depends on $\text{Var}(X)$:</p>
+    <div class="eq">$$\hat{\beta}_X = \frac{\text{Cov}(X, Y)}{\text{Var}(X)}$$</div>
+    <p>Artificially shrinking $\text{Var}(X)$ while $\text{Cov}(X, Y)$ is shrunk less (or not at all) biases $\hat{\beta}_X$. The direction depends on the specific model, but in practice <strong>conditional mean imputation</strong> attenuates the correlation between $X$ and $Y$, mimicking classical measurement error attenuation.</p>
+    <p><strong>The fix:</strong> draw $\tilde{x} \sim \mathcal{N}(\alpha Z, \sigma^2_\varepsilon)$ rather than setting $\tilde{x} = \alpha Z$. The draw adds back the residual noise, restoring $\text{Var}(\tilde{x}) \approx \text{Var}(X)$ in expectation. This is exactly what Step 4 of the MICE algorithm does.</p>
+    <p>Conditional mean imputation is like replacing every missing value with the regression prediction. It makes the imputed variable look like a perfect linear function of the predictors, which is never true of real data.</p>
+  </div>
+</body>
+</html>

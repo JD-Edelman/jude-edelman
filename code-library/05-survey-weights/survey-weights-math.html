@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Survey Weights — Math</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+  <style>
+    :root { --bg:#faf8f5; --text:#111111; --muted:#666666; --border:#d8d4ce; --accent:#7a3b2e; }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:var(--text);font-family:'EB Garamond',Georgia,serif;font-size:1.08rem;line-height:1.8;padding:48px 24px 96px;}
+    body::before{content:'';display:block;position:fixed;top:0;left:0;right:0;height:4px;background:var(--accent);z-index:100;}
+    .page{max-width:680px;margin:0 auto;}
+    .back{font-family:'Inter',sans-serif;font-size:0.78rem;color:var(--muted);text-decoration:none;display:inline-block;margin-bottom:40px;}
+    .back:hover{color:var(--accent);}
+    h1{font-size:1.75rem;font-weight:400;margin-bottom:6px;line-height:1.3;}
+    .subtitle{font-family:'Inter',sans-serif;font-size:0.72rem;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);margin-bottom:48px;}
+    h2{font-family:'Inter',sans-serif;font-size:0.72rem;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);margin:52px 0 18px;padding-top:52px;border-top:1px solid var(--border);}
+    h3{font-size:1.05rem;font-weight:500;margin:28px 0 10px;}
+    p{margin-bottom:16px;}
+    p:last-child{margin-bottom:0;}
+    .practice{border-left:3px solid var(--accent);padding-left:16px;color:var(--muted);font-size:0.95rem;margin:0 0 24px;font-style:italic;}
+    .eq{background:#f2ede7;border:1px solid var(--border);border-radius:4px;padding:20px 24px;margin:20px 0;overflow-x:auto;text-align:center;}
+    table{width:100%;border-collapse:collapse;font-size:0.92rem;margin-bottom:24px;}
+    th{font-family:'Inter',sans-serif;font-size:0.68rem;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);text-align:left;padding:8px 12px;border-bottom:1px solid var(--border);}
+    td{padding:8px 12px;border-bottom:1px solid var(--border);vertical-align:top;line-height:1.55;}
+    td:first-child{font-family:'Inter',sans-serif;font-size:0.85rem;white-space:nowrap;}
+    ul,ol{padding-left:1.4em;margin-bottom:16px;}
+    li{margin-bottom:6px;}
+    strong{font-weight:500;}
+    em{font-style:italic;}
+    code{font-family:'Inter',monospace;font-size:0.83rem;background:#ece8e2;padding:1px 5px;border-radius:3px;}
+    .katex-display{overflow-x:auto;}
+  </style>
+</head>
+<body>
+  <div class="page">
+    <a class="back" href="../../code-library.html">← Code Library</a>
+    <h1>Survey Weights</h1>
+    <div class="subtitle">Mathematical Derivation</div>
+
+    <table>
+      <thead><tr><th>Symbol</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td>$U$</td><td>Finite population of $N$ units, $U = \{1, 2, \ldots, N\}$</td></tr>
+        <tr><td>$N$</td><td>Total number of units in the population</td></tr>
+        <tr><td>$Y_i$</td><td>Value of the outcome for unit $i$</td></tr>
+        <tr><td>$T$</td><td>Population total: $T = \sum_{i \in U} Y_i$</td></tr>
+        <tr><td>$\bar{Y}$</td><td>Population mean: $\bar{Y} = T/N$</td></tr>
+        <tr><td>$S$</td><td>Probability sample drawn from $U$</td></tr>
+        <tr><td>$\pi_i$</td><td>Inclusion probability of unit $i$: $P(i \in S)$</td></tr>
+        <tr><td>$w_i$</td><td>Design weight for unit $i$: $w_i = 1/\pi_i$</td></tr>
+        <tr><td>$I_i$</td><td>Sample membership indicator: 1 if $i \in S$, else 0</td></tr>
+        <tr><td>$\hat{T}_{HT}$</td><td>Horvitz-Thompson estimator of the population total</td></tr>
+        <tr><td>$\bar{Y}_{HT}$</td><td>Horvitz-Thompson estimator of the population mean</td></tr>
+        <tr><td>$\hat{N}$</td><td>Estimated population size from the sample</td></tr>
+        <tr><td>$H$</td><td>Number of post-strata</td></tr>
+        <tr><td>$h$</td><td>Post-stratum index</td></tr>
+        <tr><td>$N_h$</td><td>Known population size of stratum $h$</td></tr>
+        <tr><td>$n_h$</td><td>Number of sampled units in stratum $h$</td></tr>
+        <tr><td>$\bar{y}_h$</td><td>Sample mean within stratum $h$</td></tr>
+        <tr><td>$\bar{Y}_{ps}$</td><td>Post-stratified estimator of the population mean</td></tr>
+        <tr><td>$w_i^{(ps)}$</td><td>Post-stratification weight for unit $i$ in stratum $h$</td></tr>
+        <tr><td>$g(\hat{t})$</td><td>Smooth function of estimated population totals</td></tr>
+        <tr><td>$\nabla g(t)$</td><td>Gradient vector of $g$ evaluated at true totals $t$</td></tr>
+        <tr><td>$z_i$</td><td>Linearized score for unit $i$</td></tr>
+        <tr><td>DEFF</td><td>Design effect</td></tr>
+        <tr><td>$\rho$</td><td>Intraclass correlation (ICC) within clusters</td></tr>
+        <tr><td>$b$</td><td>Number of units per cluster</td></tr>
+        <tr><td>$m$</td><td>Number of clusters</td></tr>
+        <tr><td>$\sigma^2$</td><td>Population variance of $Y$</td></tr>
+        <tr><td>$\sigma_h^2$</td><td>Within-stratum variance in stratum $h$</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Part A — The Horvitz-Thompson Estimator</h2>
+
+    <div class="practice">In practice: When you download NYTD or CES data with survey weights, the weight variable is $w_i = 1/\pi_i$. Multiplying each person's outcome by their weight and summing gives a nationally representative total.</div>
+
+    <h3>Defining the Estimator</h3>
+
+    <p>The <strong>Horvitz-Thompson (HT) estimator</strong> of the population total is:</p>
+
+    <div class="eq">$$\hat{T}_{HT} = \sum_{i \in S} \frac{Y_i}{\pi_i}$$</div>
+
+    <p>Define the <strong>design weight</strong> $w_i = 1/\pi_i$. Then:</p>
+
+    <div class="eq">$$\hat{T}_{HT} = \sum_{i \in S} w_i Y_i$$</div>
+
+    <p>A respondent with $\pi_i = 0.05$ gets weight 20, meaning they "count as" 20 population members in the estimate.</p>
+
+    <h3>Proving Unbiasedness</h3>
+
+    <p>Define the sample membership indicator $I_i = 1$ if $i \in S$, 0 otherwise. We can rewrite the HT estimator over the full population:</p>
+
+    <div class="eq">$$\hat{T}_{HT} = \sum_{i \in U} I_i \cdot \frac{Y_i}{\pi_i}$$</div>
+
+    <p>Take the expectation over all possible samples $S$:</p>
+
+    <div class="eq">$$E[\hat{T}_{HT}] = \sum_{i \in U} E[I_i] \cdot \frac{Y_i}{\pi_i}$$</div>
+
+    <p>Because $E[I_i] = P(i \in S) = \pi_i$, the $\pi_i$ cancels:</p>
+
+    <div class="eq">$$E[\hat{T}_{HT}] = \sum_{i \in U} \pi_i \cdot \frac{Y_i}{\pi_i} = \sum_{i \in U} Y_i = T$$</div>
+
+    <p>Unbiasedness holds regardless of how $Y$ is distributed. The guarantee comes entirely from the probability sampling design, not from assumptions about the data.</p>
+
+    <h3>HT Estimator of the Population Mean</h3>
+
+    <p>The population mean is $\bar{Y} = T/N$. We often do not know $N$ exactly, so we estimate it by applying the HT logic to the constant outcome $Y_i = 1$:</p>
+
+    <div class="eq">$$\hat{N} = \sum_{i \in S} \frac{1}{\pi_i} = \sum_{i \in S} w_i$$</div>
+
+    <p>The <strong>HT estimator of the mean</strong> is then the ratio:</p>
+
+    <div class="eq">$$\bar{Y}_{HT} = \frac{\hat{T}_{HT}}{\hat{N}} = \frac{\sum_{i \in S} w_i Y_i}{\sum_{i \in S} w_i}$$</div>
+
+    <p>This is a <strong>ratio estimator</strong> and is only approximately unbiased; the approximation is excellent for large samples but can be slightly off for small $n$.</p>
+
+    <h2>Part B — Post-Stratification</h2>
+
+    <div class="practice">In practice: If your survey over-sampled young adults, post-stratification re-weights each age group back to its known Census proportion, removing that source of bias before you run any regressions.</div>
+
+    <h3>Setup</h3>
+
+    <p>Suppose the population is divided into $H$ non-overlapping <strong>post-strata</strong> indexed $h = 1, \ldots, H$ with known population sizes $N_h$ (from Census data or administrative records), where $\sum_h N_h = N$.</p>
+
+    <p>Within stratum $h$, the sample contains $n_h$ units. The sample mean within stratum $h$ is:</p>
+
+    <div class="eq">$$\bar{y}_h = \frac{1}{n_h} \sum_{i \in S_h} Y_i$$</div>
+
+    <p>where $S_h$ is the set of sampled units in stratum $h$.</p>
+
+    <h3>The Post-Stratified Estimator</h3>
+
+    <p>The <strong>post-stratified estimator</strong> of the population mean is:</p>
+
+    <div class="eq">$$\bar{Y}_{ps} = \sum_h \frac{N_h}{N} \cdot \bar{y}_h$$</div>
+
+    <p>This is a weighted average of stratum means, where the weights are the population proportions $N_h/N$, not the sample proportions $n_h/n$.</p>
+
+    <h3>Showing This Is a Weighted Mean</h3>
+
+    <p>Expand $\bar{y}_h$:</p>
+
+    <div class="eq">$$\begin{aligned} \bar{Y}_{ps} &= \sum_h \frac{N_h}{N} \cdot \frac{1}{n_h} \cdot \sum_{i \in S_h} Y_i \\ &= \sum_h \sum_{i \in S_h} \frac{N_h}{N \cdot n_h} \cdot Y_i \end{aligned}$$</div>
+
+    <p>So the <strong>post-stratification weight</strong> for unit $i$ in stratum $h$ is:</p>
+
+    <div class="eq">$$w_i^{(ps)} = \frac{N_h}{n_h}$$</div>
+
+    <p>(up to the constant $1/N$, which cancels in the ratio estimator).</p>
+
+    <p>If young men are 15% of the population but only 8% of your sample, their weight is roughly $15/8 \approx 1.88$. Their responses are multiplied by that factor in every weighted estimate.</p>
+
+    <h3>Why Post-Stratification Reduces Variance</h3>
+
+    <p>If the stratum means $\bar{y}_h$ vary across strata (that is, $H$ explains variance in $Y$), then post-stratification is more efficient than simple HT estimation. The calibration to known $N_h$ pins down the weight given to each stratum, removing between-stratum variance from the error. This is analogous to stratified random sampling, which reduces variance when the outcome varies more between strata than within them.</p>
+
+    <h2>Part C — Taylor Linearization for Variance Estimation</h2>
+
+    <div class="practice">In practice: This is why you must use <code>svyset</code> in Stata or the <code>survey</code> package in R. Applying OLS standard errors to weighted survey data ignores the design structure and typically produces standard errors that are too small.</div>
+
+    <h3>The Problem</h3>
+
+    <p>Many survey statistics are nonlinear functions of estimated totals: means, proportions, regression coefficients, and odds ratios all involve ratios or products of totals. We cannot apply simple variance formulas because the statistic is not a linear combination of the $Y_i$ values.</p>
+
+    <h3>Linearization Setup</h3>
+
+    <p>Let $t = (t_1, t_2, \ldots, t_k)$ be a vector of population totals, and let $\hat{g} = g(\hat{t})$ be a smooth (differentiable) function of the estimated totals $\hat{t} = (\hat{t}_1, \ldots, \hat{t}_k)$.</p>
+
+    <p>By a first-order <strong>Taylor expansion</strong> around the true value $t$:</p>
+
+    <div class="eq">$$g(\hat{t}) \approx g(t) + \nabla g(t)^\top \cdot (\hat{t} - t)$$</div>
+
+    <p>where $\nabla g(t)$ is the $k \times 1$ gradient vector with entries $\partial g / \partial t_j$ evaluated at $t$.</p>
+
+    <h3>Linearized Variance</h3>
+
+    <p>Because $g(\hat{t}) \approx g(t)$ plus a linear term, the variance of $g(\hat{t})$ is approximately:</p>
+
+    <div class="eq">$$\text{Var}[g(\hat{t})] \approx [\nabla g(t)]^\top \cdot \text{Var}(\hat{t}) \cdot [\nabla g(t)]$$</div>
+
+    <p>In practice, we evaluate the gradient at $\hat{t}$ rather than $t$, and plug in a design-based variance estimator for $\text{Var}(\hat{t})$.</p>
+
+    <h3>Application to the Weighted Mean</h3>
+
+    <p>The mean $\bar{Y} = T_Y / T_1$ where $T_Y = \sum Y_i$ and $T_1 = \sum 1 = N$. The gradient of $g(t_Y, t_1) = t_Y / t_1$ is:</p>
+
+    <div class="eq">$$\begin{aligned} \frac{\partial g}{\partial t_Y} &= \frac{1}{t_1} \\[6pt] \frac{\partial g}{\partial t_1} &= -\frac{t_Y}{t_1^2} \end{aligned}$$</div>
+
+    <p>So the linearized "score" for unit $i$ is:</p>
+
+    <div class="eq">$$z_i = \frac{Y_i - \bar{Y}_{HT}}{\hat{N}}$$</div>
+
+    <p>The variance of the mean reduces to:</p>
+
+    <div class="eq">$$\text{Var}(\bar{Y}_{HT}) \approx \frac{1}{N^2} \cdot \text{Var}\!\left(\sum_{i \in S} w_i (Y_i - \bar{Y}_{HT})\right)$$</div>
+
+    <p>This is why survey package standard errors are larger than naive OLS standard errors even with the same data and model. The design-based variance accounts for the full sampling structure, not just heteroskedasticity.</p>
+
+    <h3>Application to Regression Coefficients</h3>
+
+    <p>The OLS coefficient vector is $\hat{\beta} = (X^\top W X)^{-1} X^\top W Y$ where $W$ is the diagonal matrix of survey weights. This is a function of estimated cross-product totals (for example, $t_{XY} = \sum w_i X_i Y_i$). Taylor linearization propagates variance through the matrix inversion to yield design-correct standard errors for $\hat{\beta}$.</p>
+
+    <h2>Part D — The Design Effect</h2>
+
+    <div class="practice">In practice: Cluster sampling (selecting households within neighborhoods, students within schools) is cheaper but statistically less efficient than simple random sampling. DEFF tells you exactly how much efficiency you have lost.</div>
+
+    <h3>Definition</h3>
+
+    <p>Let $\text{Var}_{SRS}(\bar{y}) = \sigma^2/n$ be the variance of the sample mean under simple random sampling. Let $\text{Var}_{complex}(\bar{y})$ be the actual variance under the complex sampling design. The <strong>design effect</strong> is:</p>
+
+    <div class="eq">$$\text{DEFF} = \frac{\text{Var}_{complex}(\bar{y})}{\text{Var}_{SRS}(\bar{y})}$$</div>
+
+    <p>DEFF &gt; 1 means the design inflates variance relative to SRS; DEFF &lt; 1 means it reduces variance.</p>
+
+    <h3>How Clustering Inflates Variance</h3>
+
+    <p>Suppose $n$ units are drawn in $m$ clusters of size $b$ each (so $n = mb$). Units within the same cluster share environmental, social, or interviewer effects, captured by the <strong>intraclass correlation</strong> $\rho$ (ICC):</p>
+
+    <div class="eq">$$\rho = \frac{\text{Cov}(Y_i, Y_j \mid \text{same cluster})}{\text{Var}(Y)}$$</div>
+
+    <p>The variance of the cluster-sample mean is approximately:</p>
+
+    <div class="eq">$$\text{Var}_{cluster}(\bar{y}) \approx \frac{\sigma^2}{n} \cdot [1 + (b - 1)\rho]$$</div>
+
+    <p>So the design effect from clustering alone is:</p>
+
+    <div class="eq">$$\text{DEFF}_{cluster} = 1 + (b - 1)\rho$$</div>
+
+    <p>For a cluster of size $b = 20$ and $\rho = 0.05$:</p>
+
+    <div class="eq">$$\text{DEFF} = 1 + (20 - 1)(0.05) = 1 + 0.95 = 1.95$$</div>
+
+    <p>Your 2,000-person clustered sample gives you the precision of a simple random sample of about 1,026. Ignoring clustering and using the SRS formula underestimates standard errors by a factor of $\sqrt{\text{DEFF}}$, producing confidence intervals that are too narrow and p-values that are too small.</p>
+
+    <h3>How Stratification Reduces Variance</h3>
+
+    <p>When the population is divided into strata before sampling, the variance of the stratified estimator is:</p>
+
+    <div class="eq">$$\text{Var}_{strat}(\bar{y}) = \sum_h \left(\frac{N_h}{N}\right)^2 \cdot \frac{\sigma_h^2}{n_h}$$</div>
+
+    <p>where $\sigma_h^2$ is the within-stratum variance. The key gain: the between-stratum component of variance is eliminated. If the strata differ in their means, stratification removes that source of uncertainty, yielding DEFF &lt; 1. In practice, most complex surveys use both stratification and clustering, so DEFF reflects the net result: clustering raises it, stratification lowers it, and their combination is the actual design effect applied when computing standard errors.</p>
+
+  </div>
+</body>
+</html>

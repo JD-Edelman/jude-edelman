@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recode, Rename, Generate — Intuition</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+  <style>
+    :root { --bg:#faf8f5; --text:#111111; --muted:#666666; --border:#d8d4ce; --accent:#7a3b2e; }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:var(--text);font-family:'EB Garamond',Georgia,serif;font-size:1.08rem;line-height:1.8;padding:48px 24px 96px;}
+    body::before{content:'';display:block;position:fixed;top:0;left:0;right:0;height:4px;background:var(--accent);z-index:100;}
+    .page{max-width:680px;margin:0 auto;}
+    .back{font-family:'Inter',sans-serif;font-size:0.78rem;color:var(--muted);text-decoration:none;display:inline-block;margin-bottom:40px;}
+    .back:hover{color:var(--accent);}
+    h1{font-size:1.75rem;font-weight:400;margin-bottom:6px;line-height:1.3;}
+    .subtitle{font-family:'Inter',sans-serif;font-size:0.72rem;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);margin-bottom:48px;}
+    h2{font-family:'Inter',sans-serif;font-size:0.72rem;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);margin:52px 0 18px;padding-top:52px;border-top:1px solid var(--border);}
+    h3{font-size:1.05rem;font-weight:500;margin:28px 0 10px;}
+    p{margin-bottom:16px;}
+    p:last-child{margin-bottom:0;}
+    .practice{border-left:3px solid var(--accent);padding-left:16px;color:var(--muted);font-size:0.95rem;margin:0 0 24px;font-style:italic;}
+    .eq{background:#f2ede7;border:1px solid var(--border);border-radius:4px;padding:20px 24px;margin:20px 0;overflow-x:auto;text-align:center;}
+    table{width:100%;border-collapse:collapse;font-size:0.92rem;margin-bottom:24px;}
+    th{font-family:'Inter',sans-serif;font-size:0.68rem;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);text-align:left;padding:8px 12px;border-bottom:1px solid var(--border);}
+    td{padding:8px 12px;border-bottom:1px solid var(--border);vertical-align:top;line-height:1.55;}
+    td:first-child{font-family:'Inter',sans-serif;font-size:0.85rem;white-space:nowrap;}
+    ul,ol{padding-left:1.4em;margin-bottom:16px;}
+    li{margin-bottom:6px;}
+    strong{font-weight:500;}
+    em{font-style:italic;}
+    code{font-family:'Inter',monospace;font-size:0.83rem;background:#ece8e2;padding:1px 5px;border-radius:3px;}
+    .katex-display{overflow-x:auto;}
+  </style>
+</head>
+<body>
+  <div class="page">
+    <a class="back" href="../../code-library.html">← Code Library</a>
+    <h1>Recode, Rename, Generate</h1>
+    <div class="subtitle">Intuition</div>
+
+    <h2>What Problem Does This Solve?</h2>
+
+    <p>Raw survey data arrives in a state that is not ready for analysis. Variable names are cryptic instrument codes (<code>V1103b</code>, <code>Q22a_r</code>). Numeric values carry no inherent meaning without a codebook. Scales point in conflicting directions. Categories are too granular for your research question. Missing data are encoded as numeric sentinels (99, -8, 999) that look, to any statistical function, like real values.</p>
+
+    <p>Every one of these problems will silently corrupt your estimates if you ignore them. The recode-rename-generate step is the disciplined process of transforming raw instrument output into an analysis-ready dataset where every variable name is self-documenting, every value has an unambiguous meaning, and derived constructs are built in traceable, deliberate steps.</p>
+
+    <p>In the CES 2020 data specifically, you will encounter Likert items that run 1 = "Strongly agree" through 5 = "Strongly disagree" on some questions and 1 = "Strongly disagree" through 5 = "Strongly agree" on others. Computing a composite scale from un-harmonized items does not average opinions; it averages noise.</p>
+
+    <h2>When to Reach for It, and When Not To</h2>
+
+    <p><strong>Reach for it when:</strong></p>
+
+    <ul>
+      <li>Variable names from the raw file will not be legible six months from now (nearly always true for survey data).</li>
+      <li>Any item uses sentinel codes for "refused," "don't know," or "not applicable" that need to be declared missing before they enter arithmetic.</li>
+      <li>You plan to combine items into a scale, index, or composite, and the items do not currently share a common direction or metric.</li>
+      <li>Your research question requires a derived variable (a ratio, an interaction term, a binary indicator from a continuous measure) that does not exist in the raw file.</li>
+      <li>You are collapsing a fine-grained category variable into broader substantive groups (e.g., collapsing many racial/ethnic codes into a smaller analytic scheme).</li>
+    </ul>
+
+    <p><strong>Do not reach for it when:</strong></p>
+
+    <ul>
+      <li>You are working from a pre-registered analysis plan that specifies exact coding decisions. In that case, every recode must already be documented in the registration; ad hoc recoding after seeing the data introduces researcher degrees of freedom.</li>
+      <li>You are exploring the raw data for the first time. Run descriptives on the raw variables first so you know what you are actually recoding.</li>
+      <li>A collaborator or PI owns the master dataset. Modify a working copy, not the canonical file.</li>
+    </ul>
+
+    <p>The fundamental rule: never overwrite raw variables. Always create a new variable with a distinct name. The raw code should be reproducible from the original file at any time.</p>
+
+    <h2>How the Mechanism Works</h2>
+
+    <p><strong>Renaming</strong> is purely administrative. You assign a human-readable label to a cryptic code name so that code written today is still interpretable by your future self and by collaborators. Good names are short, lowercase, underscore-separated, and hint at the variable's content: <code>pid_strength</code>, <code>voted_2020</code>, <code>income_cat</code>.</p>
+
+    <p><strong>Recoding</strong> changes values. There are three common motivations:</p>
+
+    <ol>
+      <li><em>Direction harmonization.</em> If one scale item runs high-to-low and another runs low-to-high, averaging them produces a meaningless composite. You reverse one so that higher values consistently mean "more" of the same construct.</li>
+      <li><em>Category collapsing.</em> A 7-point income bracket variable might need to become a 3-point low/middle/high grouping for a cross-tabulation or because cell sizes are too small for reliable estimation. Each collapse decision should be theoretically motivated, not just convenient.</li>
+      <li><em>Missing value declaration.</em> Sentinel codes like 99 or -1 must be converted to the software's missing indicator before any calculation. This is not optional; it is the difference between valid estimates and garbage estimates.</li>
+    </ol>
+
+    <p><strong>Generating derived variables</strong> creates new columns from arithmetic or logical operations on existing ones. Common examples:</p>
+
+    <ul>
+      <li><em>Indicator (dummy) variables:</em> converting a multi-category variable into a set of 0/1 flags, one per category.</li>
+      <li><em>Composite scales:</em> averaging across multiple harmonized Likert items that tap the same latent construct.</li>
+      <li><em>Interaction terms:</em> multiplying two variables together so a regression can ask whether the effect of one predictor varies across levels of another.</li>
+      <li><em>Ratio variables:</em> expressing one count as a proportion of another (e.g., share of income from wages).</li>
+    </ul>
+
+    <p>Each derived variable represents a modeling decision. Documenting that decision in code comments or a data dictionary is not cosmetic; it is the only thing that lets you defend your operationalization to a reviewer.</p>
+
+    <h2>Strengths and Weaknesses</h2>
+
+    <p><strong>Strengths:</strong></p>
+
+    <ul>
+      <li>Makes every analysis step reproducible and auditable. A do-file or script that runs from raw data to analysis output with no manual steps is the standard.</li>
+      <li>Protects against silent errors from sentinel codes entering calculations.</li>
+      <li>Separates data-shaping decisions from modeling decisions, which makes both easier to scrutinize.</li>
+      <li>Self-documenting variable names dramatically reduce the cognitive load of reading others' code and of reading your own code later.</li>
+    </ul>
+
+    <p><strong>Weaknesses / Honest Cautions:</strong></p>
+
+    <ul>
+      <li>Recoding choices are researcher choices. Collapsing income into three groups instead of five, or choosing a particular cutpoint for a binary indicator, can substantially change results. This is a garden-of-forking-paths problem: there are many defensible codings, and the one that "works best" for your hypothesis is not automatically the most valid one.</li>
+      <li>Direction harmonization errors are extremely common and extremely hard to catch after the fact. Always inspect value-label distributions before and after recoding.</li>
+      <li>Over-collapsing categories throws away variance and statistical power. Collapsing should be driven by theory or sample-size constraints, not by a desire for tidy tables.</li>
+      <li>Once you generate an interaction term, you are committed to including both constituent main effects in every model that uses it. Omitting a main effect when its interaction is in the model is a specification error, not a shortcut.</li>
+    </ul>
+
+  </div>
+</body>
+</html>

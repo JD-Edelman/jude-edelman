@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel Data — Math</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+  <style>
+    :root { --bg:#faf8f5; --text:#111111; --muted:#666666; --border:#d8d4ce; --accent:#7a3b2e; }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:var(--text);font-family:'EB Garamond',Georgia,serif;font-size:1.08rem;line-height:1.8;padding:48px 24px 96px;}
+    body::before{content:'';display:block;position:fixed;top:0;left:0;right:0;height:4px;background:var(--accent);z-index:100;}
+    .page{max-width:680px;margin:0 auto;}
+    .back{font-family:'Inter',sans-serif;font-size:0.78rem;color:var(--muted);text-decoration:none;display:inline-block;margin-bottom:40px;}
+    .back:hover{color:var(--accent);}
+    h1{font-size:1.75rem;font-weight:400;margin-bottom:6px;line-height:1.3;}
+    .subtitle{font-family:'Inter',sans-serif;font-size:0.72rem;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);margin-bottom:48px;}
+    h2{font-family:'Inter',sans-serif;font-size:0.72rem;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);margin:52px 0 18px;padding-top:52px;border-top:1px solid var(--border);}
+    h3{font-size:1.05rem;font-weight:500;margin:28px 0 10px;}
+    p{margin-bottom:16px;}
+    p:last-child{margin-bottom:0;}
+    .practice{border-left:3px solid var(--accent);padding-left:16px;color:var(--muted);font-size:0.95rem;margin:0 0 24px;font-style:italic;}
+    .eq{background:#f2ede7;border:1px solid var(--border);border-radius:4px;padding:20px 24px;margin:20px 0;overflow-x:auto;text-align:center;}
+    table{width:100%;border-collapse:collapse;font-size:0.92rem;margin-bottom:24px;}
+    th{font-family:'Inter',sans-serif;font-size:0.68rem;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);text-align:left;padding:8px 12px;border-bottom:1px solid var(--border);}
+    td{padding:8px 12px;border-bottom:1px solid var(--border);vertical-align:top;line-height:1.55;}
+    td:first-child{font-family:'Inter',sans-serif;font-size:0.85rem;white-space:nowrap;}
+    ul,ol{padding-left:1.4em;margin-bottom:16px;}
+    li{margin-bottom:6px;}
+    strong{font-weight:500;}
+    em{font-style:italic;}
+    code{font-family:'Inter',monospace;font-size:0.83rem;background:#ece8e2;padding:1px 5px;border-radius:3px;}
+    .katex-display{overflow-x:auto;}
+  </style>
+</head>
+<body>
+  <div class="page">
+    <a class="back" href="../../code-library.html">← Code Library</a>
+    <h1>Panel Data</h1>
+    <div class="subtitle">Mathematical Derivation</div>
+
+    <h2>Symbols</h2>
+    <table>
+      <thead><tr><th>Symbol</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td>$i$</td><td>Unit index (person, county, organization), $i = 1, \ldots, N$</td></tr>
+        <tr><td>$t$</td><td>Time index, $t = 1, \ldots, T$</td></tr>
+        <tr><td>$Y_{it}$</td><td>Outcome for unit $i$ at time $t$</td></tr>
+        <tr><td>$X_{it}$</td><td>Vector of time-varying covariates for unit $i$ at time $t$</td></tr>
+        <tr><td>$\alpha_i$</td><td>Unit fixed effect (time-invariant, unit-specific intercept)</td></tr>
+        <tr><td>$\lambda_t$</td><td>Time fixed effect (unit-invariant, time-specific intercept)</td></tr>
+        <tr><td>$\varepsilon_{it}$</td><td>Idiosyncratic error: unit-and-time-specific residual</td></tr>
+        <tr><td>$\beta$</td><td>Coefficient vector on time-varying covariates (main target of inference)</td></tr>
+        <tr><td>$\bar{Y}_{i\cdot}$</td><td>Time-mean of $Y$ for unit $i$: $(1/T)\sum_t Y_{it}$</td></tr>
+        <tr><td>$\bar{X}_{i\cdot}$</td><td>Time-mean of $X$ for unit $i$: $(1/T)\sum_t X_{it}$</td></tr>
+        <tr><td>$\bar{\lambda}_{i\cdot}$</td><td>Time-mean of time effects: $(1/T)\sum_t \lambda_t$</td></tr>
+        <tr><td>$\bar{\varepsilon}_{i\cdot}$</td><td>Time-mean of idiosyncratic errors for unit $i$</td></tr>
+        <tr><td>$\ddot{Y}_{it}$</td><td>Within-transformed outcome: $Y_{it} - \bar{Y}_{i\cdot}$</td></tr>
+        <tr><td>$\ddot{X}_{it}$</td><td>Within-transformed predictor: $X_{it} - \bar{X}_{i\cdot}$</td></tr>
+        <tr><td>$\ddot{\varepsilon}_{it}$</td><td>Within-transformed error: $\varepsilon_{it} - \bar{\varepsilon}_{i\cdot}$</td></tr>
+        <tr><td>$\hat{\beta}_{\text{FE}}$</td><td>Fixed effects estimator of $\beta$</td></tr>
+        <tr><td>$\hat{\beta}_{\text{RE}}$</td><td>Random effects GLS estimator of $\beta$</td></tr>
+        <tr><td>$\theta$</td><td>Quasi-demeaning parameter in the RE transformation</td></tr>
+        <tr><td>$\sigma^2_\alpha$</td><td>Variance of unit effects $\alpha_i$ across units</td></tr>
+        <tr><td>$\sigma^2_\varepsilon$</td><td>Variance of idiosyncratic errors $\varepsilon_{it}$</td></tr>
+        <tr><td>$Y^*_{it}$</td><td>Quasi-demeaned outcome in the RE transformation</td></tr>
+        <tr><td>$X^*_{it}$</td><td>Quasi-demeaned predictor in the RE transformation</td></tr>
+        <tr><td>$H$</td><td>Hausman test statistic</td></tr>
+        <tr><td>$k$</td><td>Number of regressors in $X_{it}$</td></tr>
+        <tr><td>$D_i$</td><td>Treatment indicator: $D_i = 1$ if treated unit, 0 if control</td></tr>
+        <tr><td>$P_t$</td><td>Post-period indicator: $P_t = 1$ if post-treatment period, 0 if pre</td></tr>
+        <tr><td>$\beta_0, \beta_1, \beta_2, \beta_3$</td><td>Regression coefficients in the DiD model</td></tr>
+        <tr><td>$\delta$</td><td>ATT (average treatment effect on the treated) under parallel trends</td></tr>
+        <tr><td>$Y_{it}(1),\, Y_{it}(0)$</td><td>Potential outcomes with and without treatment</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Part A — The Two-Way Error Components Model</h2>
+    <div class="practice">In practice: Every panel regression starts here. The decomposition of the error term into a unit effect, a time effect, and an idiosyncratic residual is what makes panel data different from a cross-section.</div>
+
+    <p>The baseline panel data model:</p>
+    <div class="eq">$$Y_{it} = \alpha_i + \lambda_t + X_{it}\,\beta + \varepsilon_{it}$$</div>
+    <p>Each component plays a distinct role:</p>
+    <ul>
+      <li>$\alpha_i$ is the <strong>unit fixed effect</strong>: a separate intercept for each unit $i$ that captures everything about unit $i$ that does not change over time. There are $N$ such parameters.</li>
+      <li>$\lambda_t$ is the <strong>time fixed effect</strong>: a separate intercept for each period $t$ that captures anything affecting all units equally in that period (macroeconomic shocks, election years, national policy changes). There are $T$ such parameters.</li>
+      <li>$X_{it}\,\beta$ is the contribution of <strong>time-varying covariates</strong>. $\beta$ is the main object of inference.</li>
+      <li>$\varepsilon_{it}$ is the <strong>idiosyncratic error</strong>: the part of $Y_{it}$ specific to unit $i$ at time $t$ and unexplained by everything else. Assumed $E[\varepsilon_{it}] = 0$ and $\text{Cov}(X_{it}, \varepsilon_{it}) = 0$.</li>
+    </ul>
+    <p>$\alpha_i$ is everything about person $i$ that does not change: personality, family background, innate ability, race, place of birth. You never need to measure these things explicitly. The fixed effects estimator automatically controls for all of them, whether or not you know what they are.</p>
+    <p>The key property of this model is that $\alpha_i$ can be freely correlated with $X_{it}$. If high-$\alpha_i$ units (those with high baseline outcomes) also have persistently high $X_{it}$ values, pooled OLS would be biased. Fixed effects allows and corrects for this correlation.</p>
+
+    <h2>Part B — Within Transformation and the FE Estimator</h2>
+    <div class="practice">In practice: The fixed effects estimator works by removing the unit effect entirely before estimating $\beta$. This section shows the algebra.</div>
+
+    <h3>Derivation of the Within Transformation</h3>
+    <p>Compute the time-mean of the model for unit $i$ by averaging both sides over $t$:</p>
+    <div class="eq">$$\bar{Y}_{i\cdot} = \alpha_i + \bar{\lambda}_{i\cdot} + \bar{X}_{i\cdot}\,\beta + \bar{\varepsilon}_{i\cdot}$$</div>
+    <p>Subtract the time-mean from the original equation period by period:</p>
+    <div class="eq">$$Y_{it} - \bar{Y}_{i\cdot} = (\alpha_i - \alpha_i) + (\lambda_t - \bar{\lambda}_{i\cdot}) + (X_{it} - \bar{X}_{i\cdot})\,\beta + (\varepsilon_{it} - \bar{\varepsilon}_{i\cdot})$$</div>
+    <p>Define the <strong>within-transformed</strong> (demeaned) variables:</p>
+    <div class="eq">$$\ddot{Y}_{it} = Y_{it} - \bar{Y}_{i\cdot}, \quad \ddot{X}_{it} = X_{it} - \bar{X}_{i\cdot}, \quad \ddot{\varepsilon}_{it} = \varepsilon_{it} - \bar{\varepsilon}_{i\cdot}$$</div>
+    <p>The unit effect $\alpha_i$ cancels exactly because $\alpha_i - \alpha_i = 0$. The demeaned model:</p>
+    <div class="eq">$$\ddot{Y}_{it} = (\lambda_t - \bar{\lambda}_{i\cdot}) + \ddot{X}_{it}\,\beta + \ddot{\varepsilon}_{it}$$</div>
+    <p>This is the magic of fixed effects. A variable correlated with both $X$ and $Y$ will bias OLS, but if it is time-invariant, demeaning removes it entirely, even if you never observed it or even knew it existed.</p>
+
+    <h3>The FE Estimator</h3>
+    <p>After demeaning, OLS on the transformed data gives the <strong>FE estimator</strong>:</p>
+    <div class="eq">$$\hat{\beta}_{\text{FE}} = \left(\sum_i \sum_t \ddot{X}_{it}\,\ddot{X}_{it}'\right)^{-1} \left(\sum_i \sum_t \ddot{X}_{it}\,\ddot{Y}_{it}\right)$$</div>
+    <p>This is the standard OLS formula applied to within-transformed data. $\hat{\beta}_{\text{FE}}$ estimates $\beta$ using only variation within units over time. Cross-unit variation is fully absorbed by the demeaning and contributes nothing to the estimate.</p>
+    <p>FE only uses variation within units across time. If education never changes for anyone in your panel, it drops out entirely and you cannot estimate its effect. This is the key limitation of fixed effects: any time-invariant predictor, including demographic variables like race or sex, cannot be identified.</p>
+
+    <h3>Unbiasedness Despite Correlated Unit Effects</h3>
+    <p><strong>Claim:</strong> $\hat{\beta}_{\text{FE}}$ is unbiased even when $\text{Cov}(\alpha_i, X_{it}) \neq 0$.</p>
+    <p><strong>Proof sketch:</strong> Substitute the true model into the FE estimator:</p>
+    <div class="eq">$$\hat{\beta}_{\text{FE}} = \beta + \left(\sum_i \sum_t \ddot{X}_{it}\,\ddot{X}_{it}'\right)^{-1} \left(\sum_i \sum_t \ddot{X}_{it}\,\ddot{\varepsilon}_{it}\right)$$</div>
+    <p>For unbiasedness we need:</p>
+    <div class="eq">$$E\!\left[\sum_i \sum_t \ddot{X}_{it}\,\ddot{\varepsilon}_{it}\right] = 0$$</div>
+    <p>Under <strong>strict exogeneity</strong> ($X_{it}$ is uncorrelated with $\varepsilon_{is}$ for all $s$ and $t$, not just the contemporaneous error), all covariance terms involving $X$ and $\varepsilon$ vanish:</p>
+    <div class="eq">$$E\!\left[\ddot{X}_{it}\,\ddot{\varepsilon}_{it}\right] = E\!\left[(X_{it} - \bar{X}_{i\cdot})(\varepsilon_{it} - \bar{\varepsilon}_{i\cdot})\right] = 0$$</div>
+    <p>and therefore $E[\hat{\beta}_{\text{FE}}] = \beta$.</p>
+    <p>Critically: the term involving $\alpha_i$ was eliminated by demeaning before this expectation was ever taken. Even if $\alpha_i$ is arbitrarily correlated with $X_{it}$, it does not appear in the demeaned model and cannot bias $\hat{\beta}_{\text{FE}}$.</p>
+    <p>Pooled OLS regressing ideology on income would be biased if high-income people are also systematically more conservative for non-income reasons (some fixed $\alpha_i$). FE removes that bias by looking only at how each person's ideology changed when their own income changed over time.</p>
+
+    <h2>Part C — Random Effects GLS</h2>
+    <div class="practice">In practice: RE is more efficient than FE when the unit effects are actually uncorrelated with the predictors. RE uses both within-unit and between-unit variation. The Hausman test (Part D) decides which is appropriate.</div>
+
+    <h3>The Quasi-Demeaning Transformation</h3>
+    <p>Instead of subtracting the full unit mean, RE subtracts a fraction $\theta$ of it:</p>
+    <div class="eq">$$Y^*_{it} = Y_{it} - \theta\,\bar{Y}_{i\cdot}$$</div>
+    <p>where $\theta$ is chosen to be:</p>
+    <div class="eq">$$\theta = 1 - \frac{\sigma_\varepsilon}{\sqrt{T\sigma^2_\alpha + \sigma^2_\varepsilon}}$$</div>
+    <p>Think of $\theta$ as a dial. When $\theta = 1$, RE equals FE (use only within-unit variation). When $\theta = 0$, RE equals pooled OLS (use all variation, both within and between units). The data choose $\theta$ based on how large the unit effects are relative to the idiosyncratic noise.</p>
+    <p><strong>Interpretation of the two extremes:</strong></p>
+    <p>If $\sigma^2_\alpha$ is very large (unit effects dominate): $T\sigma^2_\alpha \gg \sigma^2_\varepsilon$, so $\sqrt{T\sigma^2_\alpha + \sigma^2_\varepsilon} \gg \sigma_\varepsilon$, so $\theta \approx 1$. Full demeaning. RE approaches FE.</p>
+    <p>If $\sigma^2_\alpha \approx 0$ (no unit effects): $\sqrt{T\sigma^2_\alpha + \sigma^2_\varepsilon} \approx \sigma_\varepsilon$, so $\theta \approx 1 - 1 = 0$. No demeaning. RE approaches pooled OLS.</p>
+    <p>The RE estimator:</p>
+    <div class="eq">$$\hat{\beta}_{\text{RE}} = \left(\sum_i \sum_t X^*_{it}\,X^{*\prime}_{it}\right)^{-1} \left(\sum_i \sum_t X^*_{it}\,Y^*_{it}\right)$$</div>
+    <p>where $X^*_{it} = X_{it} - \theta\,\bar{X}_{i\cdot}$ is the quasi-demeaned predictor.</p>
+    <p><strong>The critical assumption for RE consistency:</strong> $\text{Cov}(\alpha_i, X_{it}) = 0$. The unit effects must be uncorrelated with the predictors. Unlike FE, RE does not eliminate $\alpha_i$ from the model; it treats $\alpha_i$ as part of the composite error. If $\alpha_i$ is correlated with $X_{it}$, the composite error is correlated with $X_{it}$ and $\hat{\beta}_{\text{RE}}$ is biased and inconsistent.</p>
+
+    <h2>Part D — The Hausman Test</h2>
+    <div class="practice">In practice: The Hausman test is the standard way to choose between FE and RE. It asks whether the two estimators give the same answer in your data.</div>
+
+    <h3>Setup</h3>
+    <p>Under $H_0$ (RE is consistent), both $\hat{\beta}_{\text{FE}}$ and $\hat{\beta}_{\text{RE}}$ are consistent. Their difference converges to zero in probability.</p>
+    <p>Under $H_1$ (RE is inconsistent because $\text{Cov}(\alpha_i, X_{it}) \neq 0$), $\hat{\beta}_{\text{RE}}$ is biased while $\hat{\beta}_{\text{FE}}$ remains consistent. The difference diverges from zero.</p>
+
+    <h3>Test Statistic</h3>
+    <div class="eq">$$H = (\hat{\beta}_{\text{FE}} - \hat{\beta}_{\text{RE}})'\,\left[\text{Var}(\hat{\beta}_{\text{FE}}) - \text{Var}(\hat{\beta}_{\text{RE}})\right]^{-1} (\hat{\beta}_{\text{FE}} - \hat{\beta}_{\text{RE}})$$</div>
+    <p>Under $H_0$, $H \sim \chi^2(k)$ where $k$ is the number of regressors in $X_{it}$.</p>
+    <p><strong>Why $[\text{Var}(\hat{\beta}_{\text{FE}}) - \text{Var}(\hat{\beta}_{\text{RE}})]$ in the denominator?</strong></p>
+    <p>Under $H_0$, RE is efficient (Gauss-Markov among linear unbiased estimators), so $\text{Var}(\hat{\beta}_{\text{RE}}) \leq \text{Var}(\hat{\beta}_{\text{FE}})$. The matrix $[\text{Var}(\hat{\beta}_{\text{FE}}) - \text{Var}(\hat{\beta}_{\text{RE}})]$ is positive semi-definite under $H_0$, making $H$ non-negative. The Hausman (1978) result shows that under $H_0$:</p>
+    <div class="eq">$$\text{Cov}(\hat{\beta}_{\text{FE}},\, \hat{\beta}_{\text{RE}}) = \text{Var}(\hat{\beta}_{\text{RE}})$$</div>
+    <p>which means:</p>
+    <div class="eq">$$\text{Var}(\hat{\beta}_{\text{FE}} - \hat{\beta}_{\text{RE}}) = \text{Var}(\hat{\beta}_{\text{FE}}) - \text{Var}(\hat{\beta}_{\text{RE}})$$</div>
+    <p>This identity is what allows the denominator to serve as the correct variance for the difference.</p>
+    <p><strong>Decision rule:</strong> Reject RE in favor of FE if $H > \chi^2_{\text{critical}}(k)$ at your chosen significance level (typically 0.05). In practice, many researchers use the clustered-robust version of this test.</p>
+    <p>A significant Hausman test ($p < 0.05$) tells you to use FE. The unit effects are correlated with your predictors, and RE's efficiency advantage is not worth the bias it introduces.</p>
+
+    <h2>Part E — DiD as a 2×2 Regression</h2>
+    <div class="practice">In practice: Difference-in-differences is the most common quasi-experimental design in sociology. The regression formulation generalizes the simple 2×2 table to handle controls, multiple periods, and staggered treatment timing.</div>
+
+    <h3>Setup</h3>
+    <p>Define:</p>
+    <ul>
+      <li>$D_i = 1$ if unit $i$ is in the treated group, $D_i = 0$ if control</li>
+      <li>$P_t = 1$ if time period $t$ is post-treatment, $P_t = 0$ if pre-treatment</li>
+    </ul>
+    <p>The <strong>DiD estimator</strong> is the coefficient on the interaction $D_i \times P_t$ in the regression:</p>
+    <div class="eq">$$Y_{it} = \beta_0 + \beta_1 D_i + \beta_2 P_t + \beta_3 (D_i \times P_t) + \varepsilon_{it}$$</div>
+
+    <h3>Showing $\beta_3$ Is the DiD Estimator</h3>
+    <p>Compute the four group means implied by the regression:</p>
+    <div class="eq">$$\begin{aligned} E[Y \mid D=0, P=0] &= \beta_0 \\ E[Y \mid D=0, P=1] &= \beta_0 + \beta_2 \\ E[Y \mid D=1, P=0] &= \beta_0 + \beta_1 \\ E[Y \mid D=1, P=1] &= \beta_0 + \beta_1 + \beta_2 + \beta_3 \end{aligned}$$</div>
+    <p>The <strong>double difference</strong> (post-minus-pre for treated, minus post-minus-pre for control):</p>
+    <div class="eq">$$\begin{aligned} &\bigl(E[Y|D=1,P=1] - E[Y|D=1,P=0]\bigr) - \bigl(E[Y|D=0,P=1] - E[Y|D=0,P=0]\bigr) \\ &= \bigl[(\beta_0 + \beta_1 + \beta_2 + \beta_3) - (\beta_0 + \beta_1)\bigr] - \bigl[(\beta_0 + \beta_2) - \beta_0\bigr] \\ &= (\beta_2 + \beta_3) - \beta_2 \\ &= \beta_3 \end{aligned}$$</div>
+    <p>$\beta_3$ exactly equals the difference-in-differences: the pre-to-post change in the treated group minus the pre-to-post change in the control group.</p>
+    <p>The DiD estimate $\beta_3$ is literally the 2×2 table double difference. You could compute it by hand from four group means. The regression just formalizes this and lets you add control variables, cluster standard errors, and extend to multiple periods.</p>
+
+    <h3>The ATT Under Parallel Trends</h3>
+    <p>The <strong>ATT</strong> (average treatment effect on the treated) is:</p>
+    <div class="eq">$$\text{ATT} = E\!\left[Y_{it}(1) - Y_{it}(0) \mid D_i = 1,\, P_t = 1\right]$$</div>
+    <p>where $Y_{it}(1)$ is the potential outcome under treatment and $Y_{it}(0)$ is the counterfactual (what the treated unit would have experienced without treatment). Only $Y_{it}(1)$ is observed for treated units in the post period.</p>
+    <p>The <strong>parallel trends assumption</strong> provides the counterfactual:</p>
+    <div class="eq">$$\begin{aligned} &E[Y_{it}(0) \mid D_i=1, P_t=1] - E[Y_{it}(0) \mid D_i=1, P_t=0] \\ &\quad = E[Y_{it}(0) \mid D_i=0, P_t=1] - E[Y_{it}(0) \mid D_i=0, P_t=0] \end{aligned}$$</div>
+    <p>In words: the trend the treated group would have followed without treatment equals the observed trend for the control group. Under this assumption:</p>
+    <div class="eq">$$\text{ATT} = (\bar{Y}_{\text{treated,post}} - \bar{Y}_{\text{treated,pre}}) - (\bar{Y}_{\text{control,post}} - \bar{Y}_{\text{control,pre}}) = \beta_3$$</div>
+    <p>The regression estimator $\hat{\beta}_3$ is an unbiased estimator of the ATT under parallel trends and the usual OLS assumptions on $\varepsilon_{it}$. Parallel trends is an assumption about counterfactual trends, not about pre-treatment levels, and it cannot be tested directly (only the pre-treatment portion of the trend is observed).</p>
+  </div>
+</body>
+</html>

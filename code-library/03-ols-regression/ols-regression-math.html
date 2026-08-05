@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OLS Regression — Math</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+  <style>
+    :root { --bg:#faf8f5; --text:#111111; --muted:#666666; --border:#d8d4ce; --accent:#7a3b2e; }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:var(--text);font-family:'EB Garamond',Georgia,serif;font-size:1.08rem;line-height:1.8;padding:48px 24px 96px;}
+    body::before{content:'';display:block;position:fixed;top:0;left:0;right:0;height:4px;background:var(--accent);z-index:100;}
+    .page{max-width:680px;margin:0 auto;}
+    .back{font-family:'Inter',sans-serif;font-size:0.78rem;color:var(--muted);text-decoration:none;display:inline-block;margin-bottom:40px;}
+    .back:hover{color:var(--accent);}
+    h1{font-size:1.75rem;font-weight:400;margin-bottom:6px;line-height:1.3;}
+    .subtitle{font-family:'Inter',sans-serif;font-size:0.72rem;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);margin-bottom:48px;}
+    h2{font-family:'Inter',sans-serif;font-size:0.72rem;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);margin:52px 0 18px;padding-top:52px;border-top:1px solid var(--border);}
+    h3{font-size:1.05rem;font-weight:500;margin:28px 0 10px;}
+    p{margin-bottom:16px;}
+    p:last-child{margin-bottom:0;}
+    .practice{border-left:3px solid var(--accent);padding-left:16px;color:var(--muted);font-size:0.95rem;margin:0 0 24px;font-style:italic;}
+    .eq{background:#f2ede7;border:1px solid var(--border);border-radius:4px;padding:20px 24px;margin:20px 0;overflow-x:auto;text-align:center;}
+    table{width:100%;border-collapse:collapse;font-size:0.92rem;margin-bottom:24px;}
+    th{font-family:'Inter',sans-serif;font-size:0.68rem;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);text-align:left;padding:8px 12px;border-bottom:1px solid var(--border);}
+    td{padding:8px 12px;border-bottom:1px solid var(--border);vertical-align:top;line-height:1.55;}
+    td:first-child{font-family:'Inter',sans-serif;font-size:0.85rem;white-space:nowrap;}
+    ul,ol{padding-left:1.4em;margin-bottom:16px;}
+    li{margin-bottom:6px;}
+    strong{font-weight:500;}
+    em{font-style:italic;}
+    code{font-family:'Inter',monospace;font-size:0.83rem;background:#ece8e2;padding:1px 5px;border-radius:3px;}
+    .katex-display{overflow-x:auto;}
+  </style>
+</head>
+<body>
+  <div class="page">
+    <a class="back" href="../../code-library.html">← Code Library</a>
+    <h1>OLS Regression</h1>
+    <div class="subtitle">Mathematical Derivation</div>
+
+    <table>
+      <thead><tr><th>Symbol</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td>$y$</td><td>$n \times 1$ vector of observed outcomes</td></tr>
+        <tr><td>$X$</td><td>$n \times p$ design matrix; first column is a vector of ones (intercept), remaining columns are predictors</td></tr>
+        <tr><td>$X^\top$</td><td>Transpose of $X$</td></tr>
+        <tr><td>$\beta$</td><td>$p \times 1$ vector of true (population) coefficients</td></tr>
+        <tr><td>$\hat{\beta}$</td><td>$p \times 1$ vector of OLS coefficient estimates</td></tr>
+        <tr><td>$\varepsilon$</td><td>$n \times 1$ vector of unobserved errors</td></tr>
+        <tr><td>$e$</td><td>$n \times 1$ vector of OLS residuals (observed, computed from data)</td></tr>
+        <tr><td>$n$</td><td>Number of observations</td></tr>
+        <tr><td>$p$</td><td>Number of columns in $X$ (including the intercept)</td></tr>
+        <tr><td>$S(\beta)$</td><td>Sum of squared residuals as a function of $\beta$</td></tr>
+        <tr><td>$H$</td><td>Hat matrix: $H = X(X^\top X)^{-1} X^\top$</td></tr>
+        <tr><td>$I$</td><td>$n \times n$ identity matrix</td></tr>
+        <tr><td>$\hat{y}$</td><td>$n \times 1$ vector of fitted (predicted) values</td></tr>
+        <tr><td>$h_{ii}$</td><td>$i$-th diagonal element of $H$; leverage of observation $i$</td></tr>
+        <tr><td>$\sigma^2$</td><td>True error variance (assumed constant under homoskedasticity)</td></tr>
+        <tr><td>$\hat{\sigma}^2$</td><td>Estimated error variance: $e^\top e / (n-p)$</td></tr>
+        <tr><td>$V_{\text{HC3}}$</td><td>HC3 heteroskedasticity-consistent variance-covariance matrix</td></tr>
+        <tr><td>$V_{\text{cl}}$</td><td>Clustered variance-covariance matrix</td></tr>
+        <tr><td>$G$</td><td>Number of clusters</td></tr>
+        <tr><td>$X_g, e_g$</td><td>Rows of $X$ and elements of $e$ belonging to cluster $g$</td></tr>
+        <tr><td>$SST$</td><td>Total sum of squares: $\sum(y_i - \bar{y})^2$</td></tr>
+        <tr><td>$SSR$</td><td>Regression sum of squares: $\sum(\hat{y}_i - \bar{y})^2$</td></tr>
+        <tr><td>$SSE$</td><td>Error sum of squares (residual sum of squares): $\sum e_i^2$</td></tr>
+        <tr><td>$R^2$</td><td>Coefficient of determination</td></tr>
+        <tr><td>$R^2_{\text{adj}}$</td><td>Adjusted $R^2$</td></tr>
+        <tr><td>$\bar{y}$</td><td>Sample mean of $y$</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Part A — Setup and Estimator Derivation</h2>
+
+    <div class="practice">In practice: OLS is the workhorse estimator for linear models. Understanding the normal equations and their solution clarifies why perfect multicollinearity is fatal and why standard errors depend on the spread of the predictors.</div>
+
+    <h3>The linear model</h3>
+
+    <p>Let $y$ be an $n \times 1$ vector of outcomes and $X$ an $n \times p$ design matrix whose first column is all ones (representing the intercept). The true data-generating model is:</p>
+
+    <div class="eq">$$y = X\beta + \varepsilon$$</div>
+
+    <p>Each row of this equation is $y_i = x_i^\top \beta + \varepsilon_i$, where $x_i$ is the $i$-th row of $X$ transposed into a column vector. The errors $\varepsilon$ represent everything that determines $y$ but is not in $X$.</p>
+
+    <h3>Minimizing the sum of squared residuals</h3>
+
+    <p>OLS chooses $\hat{\beta}$ to minimize the <strong>sum of squared residuals</strong>:</p>
+
+    <div class="eq">$$S(\beta) = (y - X\beta)^\top (y - X\beta)$$</div>
+
+    <p>Expanding the quadratic:</p>
+
+    <div class="eq">$$S(\beta) = y^\top y - 2\beta^\top X^\top y + \beta^\top X^\top X \beta$$</div>
+
+    <p>Take the gradient with respect to $\beta$ and set it equal to zero:</p>
+
+    <div class="eq">$$\frac{\partial S}{\partial \beta} = -2X^\top y + 2X^\top X \beta = 0$$</div>
+
+    <p>Rearranging yields the <strong>normal equations</strong>:</p>
+
+    <div class="eq">$$X^\top X \hat{\beta} = X^\top y$$</div>
+
+    <p>Provided $X$ has full column rank (no predictor is an exact linear combination of others), $X^\top X$ is invertible and the unique solution is:</p>
+
+    <div class="eq">$$\hat{\beta} = (X^\top X)^{-1} X^\top y$$</div>
+
+    <p>This formula says: multiply each predictor by the outcome, account for the correlations among predictors via $(X^\top X)^{-1}$, and produce a weighted combination that best fits the data in the least-squares sense. In practice, statistical software never actually computes the matrix inverse directly; instead it uses numerically stable algorithms (QR decomposition or Cholesky factorization) that solve the normal equations without inverting $X^\top X$. Direct inversion is numerically fragile and unnecessary.</p>
+
+    <h2>Part B — Hat Matrix and Residuals</h2>
+
+    <div class="practice">In practice: The hat matrix tells you how much influence each observation exerts on its own fitted value. High-leverage observations can pull the regression line toward themselves and distort coefficient estimates.</div>
+
+    <h3>Fitted values and the hat matrix</h3>
+
+    <p>Substituting $\hat{\beta}$ into $X\hat{\beta}$ gives the vector of <strong>fitted values</strong>:</p>
+
+    <div class="eq">$$\hat{y} = X\hat{\beta} = X(X^\top X)^{-1} X^\top y = Hy$$</div>
+
+    <p>where $H = X(X^\top X)^{-1} X^\top$ is the <strong>hat matrix</strong> (it "puts the hat on $y$," turning the observed $y$ into predicted $\hat{y}$). The hat matrix is:</p>
+
+    <ul>
+      <li><strong>Symmetric:</strong> $H^\top = H$</li>
+      <li><strong>Idempotent:</strong> $H \cdot H = H$ (applying the projection twice has the same effect as applying it once)</li>
+    </ul>
+
+    <p>The <strong>residuals</strong> are the difference between what was observed and what the model predicts:</p>
+
+    <div class="eq">$$e = y - \hat{y} = (I - H)y$$</div>
+
+    <p>A key property: $X^\top e = 0$. By construction, OLS residuals are uncorrelated with every predictor in $X$, including the intercept (so the residuals sum to zero when a constant is included). This is an algebraic identity, not an empirical finding.</p>
+
+    <h3>Leverage</h3>
+
+    <p>The diagonal elements $h_{ii}$ of $H$ are called <strong>leverage values</strong>. They measure how far observation $i$'s predictor values lie from the center of the predictor space. Leverage satisfies:</p>
+
+    <div class="eq">$$\frac{1}{n} \leq h_{ii} \leq 1 \quad \text{(for all } i \text{, with intercept in model)}$$</div>
+
+    <p>A leverage value of $h_{ii} = 0.9$ means that observation $i$ is extremely unusual in its predictor values and that its fitted value $\hat{y}_i$ is determined almost entirely by $y_i$ itself, with little influence from the rest of the data. An observation with $h_{ii} = 0.9$ is effectively pulling the regression line through itself. High leverage does not by itself mean the observation distorts estimates; it only becomes problematic when the observation also has a large residual (then it is an influential point, captured by measures like Cook's D).</p>
+
+    <h2>Part C — Unbiasedness</h2>
+
+    <div class="practice">In practice: "Unbiased" means that if you repeated your study many times under the same conditions and computed $\hat{\beta}$ each time, the average of those estimates would converge to the true $\beta$. It does not mean any single estimate is correct.</div>
+
+    <h3>Deriving $E[\hat{\beta}] = \beta$</h3>
+
+    <p>Under the assumption $E[\varepsilon] = 0$ (the model is correctly specified in expectation, so no systematic error exists), unbiasedness follows from substituting $y = X\beta + \varepsilon$ into the OLS formula:</p>
+
+    <div class="eq">$$\begin{aligned} \hat{\beta} &= (X^\top X)^{-1} X^\top y \\ &= (X^\top X)^{-1} X^\top (X\beta + \varepsilon) \\ &= (X^\top X)^{-1} X^\top X \beta + (X^\top X)^{-1} X^\top \varepsilon \\ &= \beta + (X^\top X)^{-1} X^\top \varepsilon \end{aligned}$$</div>
+
+    <p>Taking expectations (treating $X$ as fixed and using $E[\varepsilon] = 0$):</p>
+
+    <div class="eq">$$\begin{aligned} E[\hat{\beta}] &= \beta + (X^\top X)^{-1} X^\top E[\varepsilon] \\ &= \beta + (X^\top X)^{-1} X^\top \cdot 0 \\ &= \beta \end{aligned}$$</div>
+
+    <p>This result depends on $E[\varepsilon] = 0$ and on $X$ having full column rank so that $(X^\top X)^{-1}$ exists. It does not require normality of errors, constant error variance, or independence of observations. For a researcher, unbiasedness means that an omitted variable does not bias estimates as long as the omitted variable is uncorrelated with all included predictors. The moment omitted variables correlate with $X$, $E[\varepsilon] \neq 0$ conditional on $X$, and this derivation breaks down.</p>
+
+    <h2>Part D — Variance: Homoskedastic, HC3, and Clustered</h2>
+
+    <div class="practice">In practice: The choice of standard errors matters most when you are testing hypotheses or constructing confidence intervals. The right variance estimator depends on the structure of the error process in your data.</div>
+
+    <h3>Homoskedastic variance</h3>
+
+    <p>Under the assumption $\text{Var}(\varepsilon) = \sigma^2 I$ (errors are independent and identically distributed with constant variance $\sigma^2$):</p>
+
+    <div class="eq">$$\begin{aligned} \text{Var}(\hat{\beta}) &= (X^\top X)^{-1} X^\top \, \text{Var}(y) \, X(X^\top X)^{-1} \\ &= (X^\top X)^{-1} X^\top (\sigma^2 I) X(X^\top X)^{-1} \\ &= \sigma^2 (X^\top X)^{-1} \end{aligned}$$</div>
+
+    <p>The standard error of $\hat{\beta}_k$ is the square root of the $k$-th diagonal element: $\text{SE}(\hat{\beta}_k) = \sigma \cdot \sqrt{[(X^\top X)^{-1}]_{kk}}$. Because $\sigma^2$ is unknown, it is estimated by:</p>
+
+    <div class="eq">$$\hat{\sigma}^2 = \frac{e^\top e}{n - p}$$</div>
+
+    <p>dividing by $n - p$ rather than $n$ to account for the $p$ parameters estimated (an analog of Bessel's correction). Plugging $\hat{\sigma}^2$ in for $\sigma^2$ gives the familiar OLS standard errors.</p>
+
+    <h3>HC3 heteroskedasticity-consistent variance</h3>
+
+    <p>When error variances differ across observations ($\text{Var}(\varepsilon_i) = \sigma_i^2$), the formula $\sigma^2 (X^\top X)^{-1}$ is wrong in both direction and magnitude. The <strong>HC3 sandwich estimator</strong> replaces the assumed constant $\sigma^2$ with observation-specific squared residuals, inflated by the leverage of each point:</p>
+
+    <div class="eq">$$V_{\text{HC3}} = (X^\top X)^{-1} \left[ \sum_i \frac{e_i^2}{(1 - h_{ii})^2} \cdot x_i x_i^\top \right] (X^\top X)^{-1}$$</div>
+
+    <p>The $(1 - h_{ii})^2$ term in the denominator inflates the squared residual for high-leverage observations, producing more conservative (larger) standard errors than simpler alternatives like HC0. The intuition: a high-leverage observation has a residual that is already smaller than it would be without that observation pulling the line toward itself, so we correct upward. HC3 performs best in smaller samples and is the default robust standard error in most modern applied work. In large samples with approximately equal leverage and mild heteroskedasticity, HC3 and homoskedastic standard errors will be close; the two diverge most when you have a handful of observations with extreme predictor values and noticeably different residual magnitudes.</p>
+
+    <h3>Clustered standard errors</h3>
+
+    <p>When observations are grouped into $G$ clusters (e.g., students within schools, or respondents within counties) and errors within clusters are correlated, all standard error formulas above are wrong. The <strong>clustered variance estimator</strong> is:</p>
+
+    <div class="eq">$$V_{\text{cl}} = (X^\top X)^{-1} \left[ \sum_g X_g^\top e_g e_g^\top X_g \right] (X^\top X)^{-1} \cdot \frac{G}{G-1} \cdot \frac{n-1}{n-p}$$</div>
+
+    <p>where $X_g$ and $e_g$ stack the rows of $X$ and the residuals for all observations in cluster $g$. The adjustment factors ($G/(G-1)$ and $(n-1)/(n-p)$) correct for finite cluster counts. When $G$ is small (fewer than 30 to 50 clusters), clustered standard errors become unreliable; with only 10 or 15 clusters, you may need alternative approaches such as the CR2 small-sample correction or permutation inference.</p>
+
+    <h2>Part E — $R^2$ and Adjusted $R^2$</h2>
+
+    <div class="practice">In practice: $R^2$ is widely reported but widely misread. A high $R^2$ does not validate a model; it only says the predictors account for a large share of variance in $y$ in this sample.</div>
+
+    <h3>The variance partition</h3>
+
+    <p>The total variation in $y$ can be exactly partitioned into explained and unexplained components:</p>
+
+    <div class="eq">$$SST = SSR + SSE$$</div>
+
+    <div class="eq">$$\sum (y_i - \bar{y})^2 = \sum (\hat{y}_i - \bar{y})^2 + \sum e_i^2$$</div>
+
+    <p>This identity holds exactly whenever the model includes an intercept. $R^2$ is the fraction of total variance accounted for by the model:</p>
+
+    <div class="eq">$$R^2 = 1 - \frac{SSE}{SST} = \frac{SSR}{SST}$$</div>
+
+    <p>$R^2$ is bounded between 0 and 1 and can be interpreted as the proportion of variance in $y$ explained by $X$. A high $R^2$ tells you the model fits the sample data well. It does not tell you the model is causally correct, that coefficients are unbiased, or that the model will generalize out of sample. A model with one spurious but highly correlated predictor can have $R^2 = 0.90$ while estimating a coefficient with enormous bias.</p>
+
+    <p>$R^2$ cannot decrease when a predictor is added, because additional predictors give the model more flexibility to fit the existing data, and $SSE$ can only stay the same or fall. This creates an incentive to overfit by adding predictors.</p>
+
+    <h3>Adjusted $R^2$</h3>
+
+    <p><strong>Adjusted $R^2$</strong> penalizes the addition of predictors that do not improve fit enough to justify the cost in degrees of freedom:</p>
+
+    <div class="eq">$$R^2_{\text{adj}} = 1 - \frac{SSE / (n-p)}{SST / (n-1)}$$</div>
+
+    <p>When a new predictor is added, $p$ increases by 1, making the denominator of $SSE/(n-p)$ smaller and thus $SSE/(n-p)$ larger, which pushes $R^2_{\text{adj}}$ down. Whether $R^2_{\text{adj}}$ rises or falls depends on whether the predictor's contribution to reducing $SSE$ outweighs this penalty. For $n = 500$ and $k = 5$ predictors (so $p = 6$), the penalty is mild because $(n-1)/(n-p) = 499/494 \approx 1.01$. For $n = 20$ and $k = 5$, the penalty ratio is $19/14 \approx 1.36$, a substantial shrinkage that discourages adding weak predictors in small samples.</p>
+
+  </div>
+</body>
+</html>

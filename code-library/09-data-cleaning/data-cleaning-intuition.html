@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Cleaning — Intuition</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+  <style>
+    :root { --bg:#faf8f5; --text:#111111; --muted:#666666; --border:#d8d4ce; --accent:#7a3b2e; }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:var(--text);font-family:'EB Garamond',Georgia,serif;font-size:1.08rem;line-height:1.8;padding:48px 24px 96px;}
+    body::before{content:'';display:block;position:fixed;top:0;left:0;right:0;height:4px;background:var(--accent);z-index:100;}
+    .page{max-width:680px;margin:0 auto;}
+    .back{font-family:'Inter',sans-serif;font-size:0.78rem;color:var(--muted);text-decoration:none;display:inline-block;margin-bottom:40px;}
+    .back:hover{color:var(--accent);}
+    h1{font-size:1.75rem;font-weight:400;margin-bottom:6px;line-height:1.3;}
+    .subtitle{font-family:'Inter',sans-serif;font-size:0.72rem;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);margin-bottom:48px;}
+    h2{font-family:'Inter',sans-serif;font-size:0.72rem;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);margin:52px 0 18px;padding-top:52px;border-top:1px solid var(--border);}
+    h3{font-size:1.05rem;font-weight:500;margin:28px 0 10px;}
+    p{margin-bottom:16px;}
+    p:last-child{margin-bottom:0;}
+    .practice{border-left:3px solid var(--accent);padding-left:16px;color:var(--muted);font-size:0.95rem;margin:0 0 24px;font-style:italic;}
+    .eq{background:#f2ede7;border:1px solid var(--border);border-radius:4px;padding:20px 24px;margin:20px 0;overflow-x:auto;text-align:center;}
+    table{width:100%;border-collapse:collapse;font-size:0.92rem;margin-bottom:24px;}
+    th{font-family:'Inter',sans-serif;font-size:0.68rem;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);text-align:left;padding:8px 12px;border-bottom:1px solid var(--border);}
+    td{padding:8px 12px;border-bottom:1px solid var(--border);vertical-align:top;line-height:1.55;}
+    td:first-child{font-family:'Inter',sans-serif;font-size:0.85rem;white-space:nowrap;}
+    ul,ol{padding-left:1.4em;margin-bottom:16px;}
+    li{margin-bottom:6px;}
+    strong{font-weight:500;}
+    em{font-style:italic;}
+    code{font-family:'Inter',monospace;font-size:0.83rem;background:#ece8e2;padding:1px 5px;border-radius:3px;}
+    .katex-display{overflow-x:auto;}
+  </style>
+</head>
+<body>
+  <div class="page">
+    <a class="back" href="../../code-library.html">← Code Library</a>
+    <h1>Data Cleaning</h1>
+    <div class="subtitle">Intuition</div>
+
+    <h2>What Problem Does This Technique Solve?</h2>
+    <p>Statistical models are algorithms applied to numbers. They have no way to know whether those numbers are accurate, consistent, or even meaningful. A survey respondent who enters age 999, a merge that silently drops half your sample, or a miscoded dummy variable will all produce output that looks normal. The model will converge, standard errors will print, and the results will be wrong in ways that post-hoc diagnostics cannot catch. Data cleaning is the discipline of making the data truthful before analysis begins.</p>
+    <p>The "garbage in, garbage out" principle is not a warning about extreme cases. It is a description of ordinary survey data. The CES 2020, like every large-scale survey, contains skip-pattern violations, impossible values, and responses that shift meaning depending on how the question was routed. None of these are flagged automatically.</p>
+
+    <h2>When to Reach for It (and When Not To)</h2>
+    <p><strong>Always clean before analyzing.</strong> There is no analysis context in which raw survey data should go directly into a regression. Even simple descriptive tables need cleaned data.</p>
+    <p><strong>Do not treat cleaning as a one-time manual step.</strong> If you check for errors by scrolling through a spreadsheet, those checks are not reproducible and will not re-run when the data are updated. Write assertions in code. If the data change, your checks catch new problems automatically.</p>
+    <p><strong>Do not clean after merging.</strong> String standardization, recoding, and outlier review should happen on each source file before the merge, not on the merged output. Problems caught pre-merge are localized; problems caught post-merge require tracing back to which source introduced them.</p>
+
+    <h2>The Three Mechanisms of Missingness</h2>
+    <p>Understanding why data are missing determines what you can legitimately do about the gap.</p>
+    <p><strong>Missing Completely at Random (MCAR).</strong> The probability that an observation is missing has no relationship to any variable in your dataset, observed or unobserved. A survey software bug randomly fails to record 2% of responses regardless of who the respondent is. Under MCAR, the observed data are a simple random subsample of what you would have seen with complete data. Listwise deletion (dropping all rows with any missing value) is unbiased under MCAR because you are essentially just working with a smaller random sample.</p>
+    <p><strong>Missing at Random (MAR).</strong> "At random" here is misleading jargon. It does not mean random in the ordinary sense. It means: after conditioning on the observed variables in your dataset, the probability of missingness no longer depends on the unobserved value itself. Income questions are more likely to be skipped by men than women, but conditional on gender (which you observed), the probability of skipping does not depend on the actual income value. This is the most common mechanism in social science surveys. Listwise deletion under MAR biases your estimates because the observed cases are systematically different from the missing cases in ways that affect your outcome.</p>
+    <p><strong>Missing Not at Random (MNAR).</strong> The probability of missingness depends on the value that is missing, even after accounting for everything else you observed. High-income respondents skip income questions at higher rates than low-income respondents, and this is true even within any demographic subgroup you condition on. MNAR is the hardest case: standard methods including multiple imputation are not guaranteed to remove the bias, because the information you need to model the missingness is precisely the information that is missing.</p>
+    <p>The practical implication: before deciding how to handle missing data, form a substantive theory about why the values are missing. The mechanism cannot be verified from the data alone when the data are missing.</p>
+
+    <h2>Logical Consistency Checks</h2>
+    <p>Logical consistency checks catch problems that no statistical method can fix downstream. A few examples from the CES 2020 context:</p>
+    <ul>
+      <li>A respondent reports voting in the 2020 election but also reports being 17 years old at the time of the election.</li>
+      <li>A respondent reports being a Democrat and having voted for Trump, with no third-party affiliation.</li>
+      <li>A Likert item has a value of 8 on a 1-7 scale.</li>
+      <li>A continuous income variable has a value of 0 for a respondent who reports being employed full-time and owning a home.</li>
+    </ul>
+    <p>These are not subtle edge cases. They are structural errors. They arise from data entry problems, routing logic failures, or coding errors during file preparation. They will not produce visible anomalies in means or standard deviations if the affected cells are sparse. The only way to catch them is to write explicit checks: <code>assert age >= 18 if voted == 1</code>.</p>
+    <p>The advantage of coded assertions over manual review: if the underlying data file is re-extracted, re-versioned, or handed to a collaborator who applies different early-stage filters, the assertions re-run and either pass or loudly fail. Manual review done once provides no protection against re-introduction of errors.</p>
+
+    <h2>Outliers: Error vs. True Extreme Value</h2>
+    <p>An outlier is any observation that falls far from the bulk of the distribution. The important distinction is why.</p>
+    <p><strong>Data error outliers</strong> arise from entry mistakes, unit mismatches, or coding failures. A household income of $9,999,999 in a dataset of ordinary Americans is almost certainly someone who entered nine nines as a missing value placeholder. A 3-month-old who reports being married is almost certainly a miscoded age. These observations do not represent reality and should be corrected or removed.</p>
+    <p><strong>True extreme values</strong> are observations that accurately represent extreme cases in the population. A billionaire in a wealth survey is a legitimate outlier. A county that voted 95% for one party in a polarized state is a legitimate outlier. Removing these observations because they make your model's residuals look cleaner is a form of p-hacking. It changes your estimates to match your model's preferences rather than the world's properties.</p>
+    <p>The rule: never delete an outlier without a documented theoretical justification tied to the data-generating process. "It messes up my regression" is not a justification. "It is a known data entry error" or "it represents a fundamentally different data-generating process that is out of scope for my research question" are justifications.</p>
+    <p>Winsorizing (capping extreme values at a specified percentile) is a middle path that retains the observation while limiting its leverage. It is appropriate when you believe the true value is in the tail but the exact magnitude is unreliable.</p>
+
+    <h2>When Listwise Deletion Is Acceptable</h2>
+    <p>Listwise deletion is only unbiased under MCAR, and MCAR is rarely defensible by assumption alone. The practical test: compare the observed subsample to the full sample on all variables you have. If respondents with missing data on your key variable differ systematically from those without missing data on other observed characteristics (demographic, geographic, political), MAR is more plausible than MCAR and listwise deletion will bias your results.</p>
+    <p>Even when MCAR is plausible, listwise deletion reduces sample size and therefore reduces power. For small or moderate samples, the power loss alone can motivate multiple imputation.</p>
+    <p>The one genuinely safe use of listwise deletion: when the outcome variable is missing and you have no reasonable basis for imputing the outcome. Imputing the dependent variable from predictors risks circular reasoning and generally inflates apparent fit.</p>
+
+    <h2>Strengths, Weaknesses, and Alternatives</h2>
+    <table>
+      <thead>
+        <tr><th></th><th>Data Cleaning</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Strengths</strong></td><td>Catches errors no model can fix; reproducible if coded; protects against error re-introduction</td></tr>
+        <tr><td><strong>Weaknesses</strong></td><td>Time-intensive; requires domain knowledge to distinguish errors from true values; cleaning decisions are analytical decisions that affect results</td></tr>
+        <tr><td><strong>Alternatives</strong></td><td>There are no alternatives to cleaning. Multiple imputation (Module 10) handles missing data after cleaning. Nothing substitutes for verifying that the values you have are what they claim to be.</td></tr>
+      </tbody>
+    </table>
+    <p>The most important thing to internalize: cleaning decisions are researcher degrees of freedom. Dropping an "outlier," recoding a category, or treating a value as missing are all choices that affect your estimates. Document every choice, with the reason, in your code or a cleaning log. A regression is only as credible as the data that feeds it.</p>
+  </div>
+</body>
+</html>

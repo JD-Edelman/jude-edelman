@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Survey Weights — Intuition</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+  <style>
+    :root { --bg:#faf8f5; --text:#111111; --muted:#666666; --border:#d8d4ce; --accent:#7a3b2e; }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:var(--text);font-family:'EB Garamond',Georgia,serif;font-size:1.08rem;line-height:1.8;padding:48px 24px 96px;}
+    body::before{content:'';display:block;position:fixed;top:0;left:0;right:0;height:4px;background:var(--accent);z-index:100;}
+    .page{max-width:680px;margin:0 auto;}
+    .back{font-family:'Inter',sans-serif;font-size:0.78rem;color:var(--muted);text-decoration:none;display:inline-block;margin-bottom:40px;}
+    .back:hover{color:var(--accent);}
+    h1{font-size:1.75rem;font-weight:400;margin-bottom:6px;line-height:1.3;}
+    .subtitle{font-family:'Inter',sans-serif;font-size:0.72rem;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);margin-bottom:48px;}
+    h2{font-family:'Inter',sans-serif;font-size:0.72rem;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);margin:52px 0 18px;padding-top:52px;border-top:1px solid var(--border);}
+    h3{font-size:1.05rem;font-weight:500;margin:28px 0 10px;}
+    p{margin-bottom:16px;}
+    p:last-child{margin-bottom:0;}
+    .practice{border-left:3px solid var(--accent);padding-left:16px;color:var(--muted);font-size:0.95rem;margin:0 0 24px;font-style:italic;}
+    .eq{background:#f2ede7;border:1px solid var(--border);border-radius:4px;padding:20px 24px;margin:20px 0;overflow-x:auto;text-align:center;}
+    table{width:100%;border-collapse:collapse;font-size:0.92rem;margin-bottom:24px;}
+    th{font-family:'Inter',sans-serif;font-size:0.68rem;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);text-align:left;padding:8px 12px;border-bottom:1px solid var(--border);}
+    td{padding:8px 12px;border-bottom:1px solid var(--border);vertical-align:top;line-height:1.55;}
+    td:first-child{font-family:'Inter',sans-serif;font-size:0.85rem;white-space:nowrap;}
+    ul,ol{padding-left:1.4em;margin-bottom:16px;}
+    li{margin-bottom:6px;}
+    strong{font-weight:500;}
+    em{font-style:italic;}
+    code{font-family:'Inter',monospace;font-size:0.83rem;background:#ece8e2;padding:1px 5px;border-radius:3px;}
+    .katex-display{overflow-x:auto;}
+  </style>
+</head>
+<body>
+  <div class="page">
+    <a class="back" href="../../code-library.html">← Code Library</a>
+    <h1>Survey Weights</h1>
+    <div class="subtitle">Intuition</div>
+
+    <h2>1. What Problem Does This Solve?</h2>
+
+    <p>The CES 2020 survey did not select respondents by flipping a fair coin for every American adult. Some people were oversampled (e.g., minority groups, residents of certain states) and some were undersampled. On top of that, not everyone who was selected actually responded, and non-response is not random: people who are highly educated, politically engaged, or have landlines respond at higher rates than others.</p>
+
+    <p>The result is a sample that, taken at face value, does not look like the U.S. adult population. If you calculate the sample mean of any outcome, that raw average gives too much weight to overrepresented groups and too little to underrepresented ones. Survey weights exist to fix that: each respondent is assigned a number (their weight) that tells you how many people in the target population that respondent "stands in for." When you weight the analysis correctly, a respondent from an undersampled group counts more, and someone from an oversampled group counts less, so the resulting estimates match the population rather than the sample composition.</p>
+
+    <h2>2. When Would a Researcher Reach for It — and When Not?</h2>
+
+    <p><strong>Reach for weights when:</strong></p>
+    <ul>
+      <li>You want population-level estimates (means, proportions, totals) that are nationally or regionally representative.</li>
+      <li>Your outcome is correlated with the variables used to construct sampling strata or post-stratification cells (e.g., political attitudes, income, health). In that case, ignoring weights biases the estimate.</li>
+      <li>You are fitting a regression and the sampling probability is related to the outcome even after conditioning on your covariates. The coefficient estimates themselves will be biased without weights.</li>
+      <li>You are making claims about subpopulations (e.g., "among Black women aged 25-44...") where the sampling design may have intentionally or unintentionally over- or under-sampled that group.</li>
+    </ul>
+
+    <p><strong>Skip or downweight the importance of weights when:</strong></p>
+    <ul>
+      <li>The weight variable is independent of the outcome conditional on all your covariates. In that case, weighted and unweighted regression converge asymptotically, and you pay a variance cost for weighting without gaining anything in bias reduction.</li>
+      <li>You are doing purely internal, exploratory analysis and have no interest in population-level inference.</li>
+      <li>The design is a true simple random sample with 100% response. (This is essentially never true in practice for large social surveys.)</li>
+    </ul>
+
+    <h2>3. How the Mechanism Works in Plain Language</h2>
+
+    <p>Think of the weighted estimator as a correction ledger. The survey designer knows from Census data how many adults of each race, gender, age group, and region live in the U.S. After the survey is collected, the analyst compares those known population counts to the sample counts. If, say, Latino men aged 18-34 make up 4% of the U.S. adult population but only 2% of the sample, each Latino man in the sample gets a weight of roughly 2 -- his answers count twice. If white women 65+ make up 9% of the population but 14% of the sample, each of them gets a weight less than 1.</p>
+
+    <p>This rebalancing step is called post-stratification. After it, a simple weighted sum of responses looks like what you would have gotten if you had sampled everyone in the right proportions to begin with.</p>
+
+    <p>There is also an earlier source of non-representativeness: the sampling design itself. Some units (e.g., households in rural areas) may have been harder to reach and thus had a lower probability of being included in the sample at all. The basic design weight corrects for this by giving each respondent a base weight equal to 1 divided by their probability of selection. Post-stratification weights are then calibrated on top of those base weights.</p>
+
+    <p>The key idea in design-based inference is that randomness comes from the sampling process, not from a hypothetical data-generating model. You are not assuming anything about how $Y$ is distributed in the population; you are relying on the randomness of who was selected. This is different from model-based inference, which would instead specify a statistical model for $Y$ and use that model's assumptions to justify estimates.</p>
+
+    <h2>4. Honest Strengths vs. Weaknesses</h2>
+
+    <p><strong>Strengths:</strong></p>
+    <ul>
+      <li>Corrects for both unequal selection probabilities and differential non-response in a principled, tractable way.</li>
+      <li>Produces nationally representative estimates without requiring a random sample, as long as the weight construction used the right auxiliary variables.</li>
+      <li>Integrates naturally with stratified and clustered sample designs, which are the norm in large surveys.</li>
+      <li>When the sampling design is complex (stratified, clustered, multi-stage), design-aware variance estimation produces confidence intervals that are actually correct. Ignoring the design typically underestimates standard errors, leading to false precision.</li>
+    </ul>
+
+    <p><strong>Weaknesses and honest caveats:</strong></p>
+    <ul>
+      <li>Weights correct only for the variables used in their construction. If an unmeasured variable drives non-response (e.g., people with strong political opinions are more likely to complete a political survey), post-stratification cannot fix that bias, no matter how sophisticated the weighting scheme.</li>
+      <li>Weighting increases variance. Respondents with very large weights (because their group was severely undersampled) pull estimates around a lot. Effective sample size drops, sometimes dramatically.</li>
+      <li>The "when weights don't matter for regression" condition (weight ignorability conditional on covariates) is often plausible in practice but rarely verifiable. Analysts sometimes argue it to avoid weighting, and sometimes that argument is motivated reasoning.</li>
+      <li>Subpopulation analysis is a common trap. If you subset your data to, say, only Democratic respondents before applying the survey design, the software no longer knows that non-Democrats existed and will compute wrong standard errors. The correct approach is to define the subpopulation inside the survey design object and let the software handle it. In Stata, use the <code>subpop()</code> option with <code>svy:</code> commands rather than dropping observations before the <code>svyset</code> call.</li>
+    </ul>
+
+  </div>
+</body>
+</html>

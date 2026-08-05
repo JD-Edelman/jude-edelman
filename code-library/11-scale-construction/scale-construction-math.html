@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scale Construction — Math</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+  <style>
+    :root { --bg:#faf8f5; --text:#111111; --muted:#666666; --border:#d8d4ce; --accent:#7a3b2e; }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:var(--text);font-family:'EB Garamond',Georgia,serif;font-size:1.08rem;line-height:1.8;padding:48px 24px 96px;}
+    body::before{content:'';display:block;position:fixed;top:0;left:0;right:0;height:4px;background:var(--accent);z-index:100;}
+    .page{max-width:680px;margin:0 auto;}
+    .back{font-family:'Inter',sans-serif;font-size:0.78rem;color:var(--muted);text-decoration:none;display:inline-block;margin-bottom:40px;}
+    .back:hover{color:var(--accent);}
+    h1{font-size:1.75rem;font-weight:400;margin-bottom:6px;line-height:1.3;}
+    .subtitle{font-family:'Inter',sans-serif;font-size:0.72rem;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);margin-bottom:48px;}
+    h2{font-family:'Inter',sans-serif;font-size:0.72rem;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);margin:52px 0 18px;padding-top:52px;border-top:1px solid var(--border);}
+    h3{font-size:1.05rem;font-weight:500;margin:28px 0 10px;}
+    p{margin-bottom:16px;}
+    p:last-child{margin-bottom:0;}
+    .practice{border-left:3px solid var(--accent);padding-left:16px;color:var(--muted);font-size:0.95rem;margin:0 0 24px;font-style:italic;}
+    .eq{background:#f2ede7;border:1px solid var(--border);border-radius:4px;padding:20px 24px;margin:20px 0;overflow-x:auto;text-align:center;}
+    table{width:100%;border-collapse:collapse;font-size:0.92rem;margin-bottom:24px;}
+    th{font-family:'Inter',sans-serif;font-size:0.68rem;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);text-align:left;padding:8px 12px;border-bottom:1px solid var(--border);}
+    td{padding:8px 12px;border-bottom:1px solid var(--border);vertical-align:top;line-height:1.55;}
+    td:first-child{font-family:'Inter',sans-serif;font-size:0.85rem;white-space:nowrap;}
+    ul,ol{padding-left:1.4em;margin-bottom:16px;}
+    li{margin-bottom:6px;}
+    strong{font-weight:500;}
+    em{font-style:italic;}
+    code{font-family:'Inter',monospace;font-size:0.83rem;background:#ece8e2;padding:1px 5px;border-radius:3px;}
+    .katex-display{overflow-x:auto;}
+  </style>
+</head>
+<body>
+  <div class="page">
+    <a class="back" href="../../code-library.html">← Code Library</a>
+    <h1>Scale Construction</h1>
+    <div class="subtitle">Mathematical Derivation</div>
+
+    <h2>Symbols</h2>
+    <table>
+      <thead><tr><th>Symbol</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td>$X$</td><td>Observed item score</td></tr>
+        <tr><td>$T$</td><td>True score (unobserved latent construct value)</td></tr>
+        <tr><td>$E$</td><td>Measurement error</td></tr>
+        <tr><td>$\sigma^2_T$</td><td>Variance of true scores across persons</td></tr>
+        <tr><td>$\sigma^2_E$</td><td>Variance of measurement errors</td></tr>
+        <tr><td>$\rho$</td><td>Reliability coefficient</td></tr>
+        <tr><td>$k$</td><td>Number of items in the scale</td></tr>
+        <tr><td>$j, \ell$</td><td>Item indices</td></tr>
+        <tr><td>$\sigma^2_j$</td><td>Variance of item $j$</td></tr>
+        <tr><td>$\sigma^2_{Ej}$</td><td>Error variance of item $j$</td></tr>
+        <tr><td>$S$</td><td>Sum score: $S = X_1 + X_2 + \cdots + X_k$</td></tr>
+        <tr><td>$\sigma^2_{\text{total}}$</td><td>Variance of the sum score $S$</td></tr>
+        <tr><td>$\alpha$</td><td>Cronbach's alpha</td></tr>
+        <tr><td>$\mathbf{X}$</td><td>$p \times 1$ vector of observed item scores</td></tr>
+        <tr><td>$\Lambda$</td><td>$p \times m$ matrix of factor loadings ($p$ items, $m$ factors)</td></tr>
+        <tr><td>$\lambda_{jm}$</td><td>Loading of item $j$ on factor $m$</td></tr>
+        <tr><td>$\mathbf{f}$</td><td>$m \times 1$ vector of latent factor scores</td></tr>
+        <tr><td>$\varepsilon$</td><td>$p \times 1$ vector of unique factors</td></tr>
+        <tr><td>$\Sigma$</td><td>$p \times p$ model-implied covariance matrix of observed items</td></tr>
+        <tr><td>$\Psi$</td><td>$p \times p$ diagonal matrix of unique variances</td></tr>
+        <tr><td>$\psi_j$</td><td>Unique variance of item $j$</td></tr>
+        <tr><td>$h^2_j$</td><td>Communality of item $j$: proportion of variance explained by common factors</td></tr>
+        <tr><td>$R$</td><td>$p \times p$ correlation matrix of observed items</td></tr>
+        <tr><td>$Q$</td><td>$p \times p$ matrix of eigenvectors of $R$ (columns are eigenvectors)</td></tr>
+        <tr><td>$\lambda_k$</td><td>$k$-th eigenvalue of $R$ (distinct from factor loading $\lambda_{jm}$)</td></tr>
+        <tr><td>$I_m$</td><td>$m \times m$ identity matrix</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Part A — Classical Test Theory</h2>
+    <div class="practice">In practice: Classical Test Theory is the conceptual foundation for every reliability statistic you will encounter. Before computing Cronbach's alpha or fitting a factor model, CTT tells you what those statistics are actually measuring.</div>
+
+    <h3>The Basic Model</h3>
+    <p>Every observed item score $X$ decomposes into a true score $T$ and a measurement error $E$:</p>
+    <div class="eq">$$X = T + E$$</div>
+    <p>with three assumptions:</p>
+    <ol>
+      <li>$E[E] = 0$ (errors average to zero in the population)</li>
+      <li>$\text{Var}(E) = \sigma^2_E$ (errors have constant variance)</li>
+      <li>$\text{Cov}(T, E) = 0$ (the true score and the error are uncorrelated)</li>
+    </ol>
+    <p>Every survey item is a noisy measurement of an underlying construct. The noise has two sources: random response error (forgetting, misreading, clicking wrong) and systematic method effects (question wording, response scale format, interviewer presence).</p>
+
+    <h3>Deriving the Variance of X</h3>
+    <p>Since $X = T + E$ and $\text{Cov}(T, E) = 0$:</p>
+    <div class="eq">$$\begin{aligned} \text{Var}(X) &= \text{Var}(T + E) = \text{Var}(T) + \text{Var}(E) + 2\,\text{Cov}(T, E) \\ &= \sigma^2_T + \sigma^2_E \end{aligned}$$</div>
+    <p>Total observed variance is the sum of true-score variance and error variance. The two are not directly observable separately. CTT requires additional assumptions or parallel tests to estimate them separately.</p>
+
+    <h3>Reliability</h3>
+    <p><strong>Reliability</strong> $\rho$ is the proportion of observed variance attributable to true-score variance:</p>
+    <div class="eq">$$\rho = \frac{\sigma^2_T}{\text{Var}(X)} = \frac{\sigma^2_T}{\sigma^2_T + \sigma^2_E}$$</div>
+    <p>Equivalently:</p>
+    <div class="eq">$$\rho = 1 - \frac{\sigma^2_E}{\text{Var}(X)}$$</div>
+    <p>Reliability ranges from 0 (all variance is error) to 1 (no error at all). A reliability of 0.80 means 80% of the variability in item scores reflects true differences between people; 20% is noise.</p>
+    <p>A key implication: the correlation between an observed item and its true score equals $\sqrt{\rho}$. A reliability of 0.70 means the item correlates $\sqrt{0.70} \approx 0.84$ with the true construct. A reliability of 0.40 means it correlates only $\sqrt{0.40} \approx 0.63$, which is arguably too noisy to use as a standalone measure.</p>
+
+    <h2>Part B — Cronbach's Alpha</h2>
+    <div class="practice">In practice: Cronbach's alpha is the default reliability check before publishing a multi-item scale. Knowing its derivation tells you exactly what it does and does not measure, and why it can mislead if used uncritically.</div>
+
+    <h3>Setup</h3>
+    <p>Suppose you have $k$ items intended to measure the same construct. Each person receives a sum score:</p>
+    <div class="eq">$$S = X_1 + X_2 + \cdots + X_k$$</div>
+    <p>Let $\sigma^2_j = \text{Var}(X_j)$ and $\sigma^2_{\text{total}} = \text{Var}(S)$. Note that:</p>
+    <div class="eq">$$\sigma^2_{\text{total}} = \sum_j \sigma^2_j + 2\sum_{j < \ell} \text{Cov}(X_j, X_\ell)$$</div>
+    <p>The total score variance contains all item variances and all pairwise covariances.</p>
+
+    <h3>Tau-Equivalence Assumption</h3>
+    <p><strong>Tau-equivalence</strong> assumes every item measures the same true score $T$ with the same weight, though possibly with different error variances:</p>
+    <div class="eq">$$X_j = T + E_j \quad \text{for } j = 1, \ldots, k$$</div>
+    <p>Under this model:</p>
+    <div class="eq">$$\text{Cov}(X_j, X_\ell) = \text{Cov}(T + E_j,\, T + E_\ell) = \text{Var}(T) = \sigma^2_T$$</div>
+    <p>because errors are uncorrelated with each other and with $T$.</p>
+    <div class="eq">$$\text{Var}(X_j) = \sigma^2_T + \sigma^2_{Ej}$$</div>
+
+    <h3>Deriving Alpha</h3>
+    <p>The sum score $S = \sum_j X_j$. Expand its variance directly. There are $k$ diagonal terms (the item variances) and $k(k-1)$ off-diagonal terms (the pairwise covariances):</p>
+    <div class="eq">$$\begin{aligned} \sigma^2_{\text{total}} &= \sum_j \text{Var}(X_j) + \sum_{j \neq \ell} \text{Cov}(X_j, X_\ell) \\ &= \sum_j (\sigma^2_T + \sigma^2_{Ej}) + k(k-1)\,\sigma^2_T \\ &= k\,\sigma^2_T + \sum_j \sigma^2_{Ej} + k(k-1)\,\sigma^2_T \\ &= k^2\,\sigma^2_T + \sum_j \sigma^2_{Ej} \end{aligned}$$</div>
+    <p>The true-score variance of $S$ is $k^2\,\sigma^2_T$ (summing $k$ equal true scores multiplies the true score $k$-fold, and variance scales with the square of the multiplier). Reliability of $S$ under tau-equivalence:</p>
+    <div class="eq">$$\rho(S) = \frac{k^2\,\sigma^2_T}{\sigma^2_{\text{total}}}$$</div>
+    <p>We need to express this in terms of observable quantities. Note:</p>
+    <div class="eq">$$\sum_j \sigma^2_j = \sum_j (\sigma^2_T + \sigma^2_{Ej}) = k\,\sigma^2_T + \sum_j \sigma^2_{Ej}$$</div>
+    <p>Therefore:</p>
+    <div class="eq">$$\sum_j \sigma^2_{Ej} = \sum_j \sigma^2_j - k\,\sigma^2_T$$</div>
+    <p>Substituting into the expression for $\sigma^2_{\text{total}}$:</p>
+    <div class="eq">$$\begin{aligned} \sigma^2_{\text{total}} &= k^2\,\sigma^2_T + \sum_j \sigma^2_j - k\,\sigma^2_T \\ &= k(k-1)\,\sigma^2_T + \sum_j \sigma^2_j \end{aligned}$$</div>
+    <p>Solving for $k\,\sigma^2_T$:</p>
+    <div class="eq">$$k\,\sigma^2_T = \frac{\sigma^2_{\text{total}} - \sum_j \sigma^2_j}{k-1}$$</div>
+    <p>Then $k^2\,\sigma^2_T = k\cdot(\sigma^2_{\text{total}} - \sum_j \sigma^2_j)/(k-1)$. Substituting into $\rho(S)$:</p>
+    <div class="eq">$$\alpha = \rho(S) = \frac{k}{k-1} \cdot \frac{\sigma^2_{\text{total}} - \sum_j \sigma^2_j}{\sigma^2_{\text{total}}} = \frac{k}{k-1} \cdot \left(1 - \frac{\sum_j \sigma^2_j}{\sigma^2_{\text{total}}}\right)$$</div>
+    <p>This is <strong>Cronbach's alpha</strong>. It equals reliability exactly when tau-equivalence holds. When tau-equivalence is violated (items have different loadings on the true score, which is typical in practice), alpha underestimates the true reliability. Alpha is therefore a <strong>lower bound</strong> on reliability.</p>
+
+    <h3>Numerical Example</h3>
+    <p>If your 5-item immigration attitude scale has item variances averaging 0.22 and a total variance of 1.50:</p>
+    <div class="eq">$$\begin{aligned} \alpha &= \frac{5}{4} \cdot \left(1 - \frac{5 \times 0.22}{1.50}\right) \\ &= 1.25 \cdot \left(1 - \frac{1.10}{1.50}\right) \\ &= 1.25 \cdot (1 - 0.733) \\ &= 1.25 \times 0.267 \\ &= 0.33 \end{aligned}$$</div>
+    <p>That is very low. The items are barely correlated with each other, which means they are likely measuring different things (or are extremely noisy). Alpha below 0.60 typically means the scale needs revision.</p>
+
+    <h3>Alpha as a Lower Bound</h3>
+    <p>Alpha underestimates true reliability when items have different loadings on the construct, which is almost always the case. <strong>Omega</strong> ($\omega$) is a better estimate in that case, but it requires fitting the factor model and specifying how many factors you believe underlie the scale. When you have reason to believe items differ substantially in how well they measure the construct, report omega alongside alpha.</p>
+    <p>Alpha also increases mechanically as $k$ increases, even if the items are not more reliable. You can make alpha arbitrarily close to 1 by adding items, even poor-quality ones. Interpret alpha in context of $k$, not as an absolute indicator of quality. For $k = 20$ items, $\alpha = 0.70$ is consistent with very weak inter-item correlations.</p>
+
+    <h2>Part C — The Common Factor Model</h2>
+    <div class="practice">In practice: Factor analysis asks: how many underlying dimensions explain the correlations among your items? Every item is assumed to reflect a small number of latent constructs plus item-specific noise.</div>
+
+    <h3>The Model</h3>
+    <p>Let $\mathbf{X}$ be a $p \times 1$ vector of observed item scores. The <strong>common factor model</strong> specifies:</p>
+    <div class="eq">$$\mathbf{X} = \Lambda\,\mathbf{f} + \varepsilon$$</div>
+    <p>where:</p>
+    <ul>
+      <li>$\Lambda$ is a $p \times m$ matrix of <strong>factor loadings</strong> ($p$ items, $m$ factors)</li>
+      <li>$\mathbf{f}$ is an $m \times 1$ vector of <strong>common factor scores</strong>, with $E[\mathbf{f}] = 0$ and $\text{Var}(\mathbf{f}) = I_m$ (factors are standardized and assumed orthogonal in the initial solution)</li>
+      <li>$\varepsilon$ is a $p \times 1$ vector of <strong>unique factors</strong> (item-specific variance plus measurement error), with $E[\varepsilon] = 0$ and $\text{Cov}(\mathbf{f}, \varepsilon) = 0$</li>
+    </ul>
+
+    <h3>Implied Covariance Matrix</h3>
+    <p>The covariance matrix of $\mathbf{X}$ under the factor model:</p>
+    <div class="eq">$$\begin{aligned} \Sigma &= \text{Var}(\Lambda\,\mathbf{f} + \varepsilon) \\ &= \Lambda\,\text{Var}(\mathbf{f})\,\Lambda' + \text{Var}(\varepsilon) \\ &= \Lambda\,I_m\,\Lambda' + \Psi \\ &= \Lambda\Lambda' + \Psi \end{aligned}$$</div>
+    <p>where $\Psi = \text{diag}(\psi_1, \psi_2, \ldots, \psi_p)$ is a diagonal matrix of unique variances. The off-diagonal elements of $\Sigma$ (covariances between items) are fully explained by the common factors. The diagonal elements split into communality (explained by factors) and uniqueness (unexplained).</p>
+    <p>EFA estimates $\Lambda$ and $\Psi$ to make this implied $\Sigma$ match the observed correlation matrix as closely as possible. The residual difference between the implied and observed covariance matrices is the model's misfit, and a large residual signals that additional factors may be needed.</p>
+
+    <h3>Communality and Uniqueness</h3>
+    <p>The <strong>communality</strong> $h^2_j$ is the proportion of item $j$'s variance explained by the common factors. For orthogonal factors:</p>
+    <div class="eq">$$h^2_j = \sum_m \lambda^2_{jm}$$</div>
+    <p>Communality is the sum of squared loadings across all factors for item $j$.</p>
+    <p><strong>Uniqueness</strong> is the remainder:</p>
+    <div class="eq">$$\psi_j = 1 - h^2_j \quad \text{(for standardized items where } \text{Var}(X_j) = 1\text{)}$$</div>
+    <p>An item with communality $h^2 = 0.15$ has 85% of its variance unexplained by the common factors. That item is mostly noise from the factors' perspective. Consider dropping it or rewriting it so it better captures the shared construct.</p>
+
+    <h3>Factor Rotation</h3>
+    <p>The factor solution $\Lambda\Lambda'$ is not unique: for any orthogonal rotation matrix $R$ ($R'R = I$), the model $(\Lambda R)(\Lambda R)' = \Lambda RR'\Lambda' = \Lambda\Lambda'$ fits identically. Rotation chooses $R$ to make the solution more interpretable.</p>
+    <p><strong>Varimax</strong> rotation maximizes the variance of squared loadings within each factor, pushing loadings toward 0 or 1 and making each factor defined by a small number of high-loading items. <strong>Oblique rotations</strong> (Promax, Oblimin) allow factors to correlate, which is more realistic for social science constructs where attitudes about different topics are rarely truly orthogonal.</p>
+
+    <h2>Part D — PCA and Eigendecomposition</h2>
+    <div class="practice">In practice: PCA is often confused with factor analysis, but they have different goals. PCA summarizes all variance in the items; EFA models only the shared variance. For scale construction, EFA is usually the right tool.</div>
+
+    <h3>Eigendecomposition of the Correlation Matrix</h3>
+    <p>For a $p \times p$ correlation matrix $R$ of standardized items, the eigendecomposition is:</p>
+    <div class="eq">$$R = Q\,\Lambda_{\text{eig}}\,Q'$$</div>
+    <p>where:</p>
+    <ul>
+      <li>$Q = [q_1 \mid q_2 \mid \cdots \mid q_p]$ is a $p \times p$ orthogonal matrix whose columns are the eigenvectors of $R$</li>
+      <li>$\Lambda_{\text{eig}} = \text{diag}(\lambda_1, \lambda_2, \ldots, \lambda_p)$ is the diagonal matrix of eigenvalues, sorted $\lambda_1 \geq \lambda_2 \geq \cdots \geq \lambda_p \geq 0$</li>
+    </ul>
+    <p>The $k$-th <strong>principal component</strong> score for observation $i$:</p>
+    <div class="eq">$$\text{PC}_k = q_k'\,\mathbf{X}_i$$</div>
+    <p>where $q_k$ is the $k$-th eigenvector and $\mathbf{X}_i$ is the vector of standardized item scores for person $i$. Each PC is a linear combination of all items, with weights given by the eigenvector.</p>
+
+    <h3>Proportion of Variance Explained</h3>
+    <p>The total variance in a correlation matrix (sum of diagonal elements) equals $p$, since each standardized item has variance 1. The $k$-th eigenvalue $\lambda_k$ equals the variance of the $k$-th principal component across persons. Therefore:</p>
+    <div class="eq">$$\text{Proportion of variance explained by } \text{PC}_k = \frac{\lambda_k}{\sum_j \lambda_j} = \frac{\lambda_k}{p}$$</div>
+    <p>Cumulative proportion through the first $q$ components:</p>
+    <div class="eq">$$\text{Cumulative proportion} = \frac{\sum_{k=1}^{q} \lambda_k}{p}$$</div>
+
+    <h3>The Kaiser Criterion</h3>
+    <p>The <strong>Kaiser criterion</strong> retains components with $\lambda_k > 1$. The rationale: a standardized item explains exactly 1 unit of variance (its own). A component with eigenvalue $> 1$ explains more variance than a single original item and is worth retaining. A component with eigenvalue $< 1$ explains less than a single item.</p>
+    <p>A scree plot is more reliable than Kaiser for choosing the number of factors. Look for the "elbow" where eigenvalues stop dropping steeply. The components to the left of the elbow are the ones worth retaining. The Kaiser criterion tends to retain too many components in large item sets and too few in small ones. Parallel analysis (comparing observed eigenvalues to eigenvalues from random data of the same size) is the most rigorous guide available.</p>
+
+    <h3>PCA vs. Common Factor Analysis</h3>
+    <p>PCA and EFA differ fundamentally. PCA decomposes the full variance of the items, including unique variance, into orthogonal components. EFA explicitly models only the shared variance (communality) and separates it from unique variance. The factor model assumes a data-generating mechanism (latent constructs causing item responses); PCA assumes nothing. For scale construction where you want to understand what latent construct your items are measuring, EFA is the appropriate tool.</p>
+  </div>
+</body>
+</html>

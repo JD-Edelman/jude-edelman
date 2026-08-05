@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>String Manipulation — Math</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+  <style>
+    :root { --bg:#faf8f5; --text:#111111; --muted:#666666; --border:#d8d4ce; --accent:#7a3b2e; }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:var(--text);font-family:'EB Garamond',Georgia,serif;font-size:1.08rem;line-height:1.8;padding:48px 24px 96px;}
+    body::before{content:'';display:block;position:fixed;top:0;left:0;right:0;height:4px;background:var(--accent);z-index:100;}
+    .page{max-width:680px;margin:0 auto;}
+    .back{font-family:'Inter',sans-serif;font-size:0.78rem;color:var(--muted);text-decoration:none;display:inline-block;margin-bottom:40px;}
+    .back:hover{color:var(--accent);}
+    h1{font-size:1.75rem;font-weight:400;margin-bottom:6px;line-height:1.3;}
+    .subtitle{font-family:'Inter',sans-serif;font-size:0.72rem;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);margin-bottom:48px;}
+    h2{font-family:'Inter',sans-serif;font-size:0.72rem;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);margin:52px 0 18px;padding-top:52px;border-top:1px solid var(--border);}
+    h3{font-size:1.05rem;font-weight:500;margin:28px 0 10px;}
+    p{margin-bottom:16px;}
+    p:last-child{margin-bottom:0;}
+    .practice{border-left:3px solid var(--accent);padding-left:16px;color:var(--muted);font-size:0.95rem;margin:0 0 24px;font-style:italic;}
+    .eq{background:#f2ede7;border:1px solid var(--border);border-radius:4px;padding:20px 24px;margin:20px 0;overflow-x:auto;text-align:center;}
+    table{width:100%;border-collapse:collapse;font-size:0.92rem;margin-bottom:24px;}
+    th{font-family:'Inter',sans-serif;font-size:0.68rem;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);text-align:left;padding:8px 12px;border-bottom:1px solid var(--border);}
+    td{padding:8px 12px;border-bottom:1px solid var(--border);vertical-align:top;line-height:1.55;}
+    td:first-child{font-family:'Inter',sans-serif;font-size:0.85rem;white-space:nowrap;}
+    ul,ol{padding-left:1.4em;margin-bottom:16px;}
+    li{margin-bottom:6px;}
+    strong{font-weight:500;}
+    em{font-style:italic;}
+    code{font-family:'Inter',monospace;font-size:0.83rem;background:#ece8e2;padding:1px 5px;border-radius:3px;}
+    .katex-display{overflow-x:auto;}
+    .dp-table td{font-family:'Inter',monospace;font-size:0.85rem;text-align:center;padding:6px 10px;}
+    .dp-table th{text-align:center;padding:6px 10px;}
+  </style>
+</head>
+<body>
+  <div class="page">
+    <a class="back" href="../../code-library.html">← Code Library</a>
+    <h1>String Manipulation</h1>
+    <div class="subtitle">Mathematical Derivation</div>
+
+    <h2>Symbols</h2>
+    <table>
+      <thead><tr><th>Symbol</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td>$A, B$</td><td>String patterns (regular expressions)</td></tr>
+        <tr><td>$A \mid B$</td><td>Union: the set of strings matching $A$ or $B$</td></tr>
+        <tr><td>$A^*$</td><td>Kleene star: zero or more repetitions of $A$</td></tr>
+        <tr><td>$A^+$</td><td>One or more repetitions of $A$; shorthand for $AA^*$</td></tr>
+        <tr><td>$A?$</td><td>Zero or one occurrence of $A$</td></tr>
+        <tr><td>$A\{n\}$</td><td>Exactly $n$ repetitions of $A$</td></tr>
+        <tr><td>$A\{n,m\}$</td><td>Between $n$ and $m$ repetitions of $A$</td></tr>
+        <tr><td><code>[abc]</code></td><td>Character class: matches any one of a, b, or c</td></tr>
+        <tr><td><code>\d</code></td><td>Digit shorthand: <code>[0-9]</code></td></tr>
+        <tr><td><code>\w</code></td><td>Word character shorthand: <code>[a-zA-Z0-9_]</code></td></tr>
+        <tr><td><code>\s</code></td><td>Whitespace shorthand: space, tab, newline</td></tr>
+        <tr><td>$s, t$</td><td>Input strings for edit distance computation</td></tr>
+        <tr><td>$n, m$</td><td>Lengths of strings $s$ and $t$, respectively</td></tr>
+        <tr><td>$s_i$</td><td>The $i$-th character of string $s$</td></tr>
+        <tr><td>$t_j$</td><td>The $j$-th character of string $t$</td></tr>
+        <tr><td>$d(i,j)$</td><td>Edit distance between the first $i$ characters of $s$ and the first $j$ characters of $t$</td></tr>
+        <tr><td>$S$</td><td>Finite set of distinct string values a categorical variable takes</td></tr>
+        <tr><td>$K$</td><td>Number of distinct values in $S$</td></tr>
+        <tr><td>$D_k$</td><td>Binary dummy variable for the $k$-th category</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Part A — Regular Expression Formal Grammar</h2>
+
+    <div class="practice">In practice: When your data contains address fields, open-ended survey responses, or ID codes, you need a principled way to describe which strings count as valid and extract substrings of interest. Regular expressions give you that precision. Regex is worth learning when you need to apply the same pattern to thousands of strings; for one-off cleaning of three values, <code>str.replace()</code> is faster to write.</div>
+
+    <h3>The Five Base Operations</h3>
+
+    <p>A <strong>regular expression</strong> defines a formal language: the set of all strings that match the pattern. Every regex pattern is built by recursively combining five operations on an alphabet (the set of allowed characters).</p>
+
+    <p><strong>1. Concatenation</strong></p>
+    <p>If $A$ and $B$ are patterns, then $AB$ matches any string formed by joining a string from $A$ directly with a string from $B$.</p>
+    <div class="eq">$$L(AB) = \{ xy : x \in L(A),\; y \in L(B) \}$$</div>
+    <p>The pattern <code>cat</code> is the concatenation of the single-character patterns <code>c</code>, <code>a</code>, and <code>t</code>; it matches only the string "cat." Order matters: <code>ca</code> and <code>ac</code> define different sets.</p>
+
+    <p><strong>2. Union (Alternation)</strong></p>
+    <p><code>A|B</code> matches any string that matches $A$ or any string that matches $B$.</p>
+    <div class="eq">$$L(A \mid B) = L(A) \cup L(B)$$</div>
+    <p>The pattern <code>grey|gray</code> matches "grey" and "gray" and nothing else. Enclosing in parentheses, <code>(grey|gray)scale</code>, applies union only to that part, matching "greyscale" or "grayscale."</p>
+
+    <p><strong>3. Kleene Star</strong></p>
+    <p><code>A*</code> matches zero or more consecutive repetitions of $A$. The empty string always belongs to $L(A^*)$.</p>
+    <div class="eq">$$L(A^*) = \{ \varepsilon \} \cup L(A) \cup L(AA) \cup L(AAA) \cup \cdots$$</div>
+    <p>The pattern <code>ab*c</code> matches "ac" (zero b's), "abc" (one b), "abbc" (two b's), and so on. The star applies only to the immediately preceding element unless you use parentheses.</p>
+
+    <p><strong>4. Grouping with Parentheses</strong></p>
+    <p>Parentheses scope which sub-pattern an operator applies to. <code>(AB)*</code> means zero or more repetitions of the two-character sequence $AB$ together.</p>
+    <div class="eq">$$L((AB)^*) \neq L(A^* B^*)$$</div>
+    <p>The pattern <code>(ab)*c</code> matches "c", "abc", "ababc", but not "aabbc." Without grouping, <code>ab*c</code> means $a$, then zero or more $b$'s, then $c$.</p>
+
+    <p><strong>5. Character Classes</strong></p>
+    <p><code>[abc]</code> matches any single character in the listed set. <code>[a-z]</code> is shorthand for all 26 lowercase letters. <code>[^abc]</code> matches any character not in the set.</p>
+    <div class="eq">$$\begin{aligned} L([abc]) &= \{\ \text{"a"},\ \text{"b"},\ \text{"c"}\ \} \\ L([a\text{-}z]) &= \{\ \text{"a"},\ \text{"b"},\ \ldots,\ \text{"z"}\ \} \end{aligned}$$</div>
+
+    <p>Common shorthands derived from character classes:</p>
+    <div class="eq">$$\begin{aligned} \backslash\text{d} &= [0\text{-}9] \\ \backslash\text{w} &= [a\text{-}zA\text{-}Z0\text{-}9\_] \\ \backslash\text{s} &= [\ \backslash\text{t}\backslash\text{n}\backslash\text{r}] \\ . &= \text{any character except newline} \end{aligned}$$</div>
+
+    <p>Quantifiers derived from the base operations:</p>
+    <div class="eq">$$\begin{aligned} A^+ &= AA^* \quad \text{(one or more)} \\ A? &= (A \mid \varepsilon) \quad \text{(zero or one)} \\ A\{n\} &= A \text{ applied } n \text{ times exactly} \\ A\{n,m\} &= A \text{ applied between } n \text{ and } m \text{ times} \end{aligned}$$</div>
+
+    <h3>Worked Example: Matching a Date String</h3>
+
+    <div class="practice">In practice: Date fields are a constant pain point in survey data: some respondents write "05-20-2020," others write "5/20/20." The pattern below locks in one format and flags everything else as non-conforming before merging files.</div>
+
+    <p>The pattern <code>\d{2}-\d{2}-\d{4}</code> encodes the format MM-DD-YYYY with zero-padded month and day.</p>
+
+    <p>Breaking it down operation by operation:</p>
+    <div class="eq">$$\begin{aligned} \backslash\text{d} &\quad \text{matches any character in } \{0,1,2,3,4,5,6,7,8,9\} \\ \backslash\text{d}\{2\} &\quad \text{matches exactly 2 consecutive digits} \\ \text{-} &\quad \text{matches the literal hyphen character} \\ \backslash\text{d}\{2\}\text{-}\backslash\text{d}\{2\}\text{-}\backslash\text{d}\{4\} &= \text{(2 digits) concat (-) concat (2 digits) concat (-) concat (4 digits)} \end{aligned}$$</div>
+
+    <p>Test against "05-20-2020":</p>
+    <div class="eq">$$\begin{aligned} \backslash\text{d}\{2\} &\quad \text{matches "05" — check} \\ \text{-} &\quad \text{matches "-" — check} \\ \backslash\text{d}\{2\} &\quad \text{matches "20" — check} \\ \text{-} &\quad \text{matches "-" — check} \\ \backslash\text{d}\{4\} &\quad \text{matches "2020" — check} \\ &\quad \textbf{Result: MATCH} \end{aligned}$$</div>
+
+    <p>Test against "5-20-2020":</p>
+    <div class="eq">$$\backslash\text{d}\{2\} \text{ requires 2 digits; only "5" available before the hyphen} \quad \Rightarrow \quad \textbf{NO MATCH}$$</div>
+
+    <p>This pattern is strict: it rejects unpadded dates. To allow both padded and unpadded, use <code>\d{1,2}-\d{1,2}-\d{4}</code>. This small change expands the matched set to include "5-3-2020" and similar forms. The choice of which to use depends on whether your data source guarantees zero-padding.</p>
+
+    <p>To match date strings embedded inside longer strings rather than the whole string, use <code>re.search()</code> in Python or <code>regexm()</code> in Stata rather than anchored match functions; otherwise the pattern only fires when the entire field is the date.</p>
+
+    <h2>Part B — String Distance (Levenshtein)</h2>
+
+    <div class="practice">In practice: In record linkage, the same respondent or organization often appears with slightly different spellings across data sources. Edit distance gives you a single number that quantifies how different two strings are, making automated fuzzy matching possible at scale.</div>
+
+    <h3>Definition</h3>
+
+    <p>The <strong>Levenshtein distance</strong> $d(s, t)$ between strings $s$ and $t$ is the minimum number of single-character operations needed to transform $s$ into $t$. The three allowed operations are:</p>
+    <div class="eq">$$\begin{aligned} &\text{Insertion:} \quad \text{add one character anywhere in } s \\ &\text{Deletion:} \quad \text{remove one character from } s \\ &\text{Substitution:} \quad \text{replace one character of } s \text{ with a different character} \end{aligned}$$</div>
+    <p>Each operation costs 1. The distance is the minimum total cost over all possible sequences of operations. For example, $d(\text{"Florida"}, \text{"florida"}) = 1$ because one substitution (F to f) suffices.</p>
+
+    <h3>Dynamic Programming Recurrence</h3>
+
+    <p>Computing $d(s, t)$ by brute force (enumerating all edit sequences) is infeasible. The efficient approach uses dynamic programming. Define $d(i, j)$ as the edit distance between the first $i$ characters of $s$ and the first $j$ characters of $t$.</p>
+
+    <p><strong>Base cases</strong> (transforming to or from an empty string):</p>
+    <div class="eq">$$\begin{aligned} d(0, j) &= j \quad \text{for } j = 0, 1, \ldots, m \quad \text{($j$ insertions needed)} \\ d(i, 0) &= i \quad \text{for } i = 0, 1, \ldots, n \quad \text{($i$ deletions needed)} \end{aligned}$$</div>
+
+    <p><strong>Recurrence</strong> for $i \geq 1$ and $j \geq 1$:</p>
+    <div class="eq">$$d(i,j) = \min \begin{cases} d(i-1,\, j) + 1 & \text{delete } s_i \\ d(i,\, j-1) + 1 & \text{insert } t_j \\ d(i-1,\, j-1) + [s_i \neq t_j] & \text{substitute if characters differ; cost 0 if they match} \end{cases}$$</div>
+
+    <p>The indicator $[s_i \neq t_j]$ equals 1 when the characters differ (a substitution is needed) and 0 when they match (no operation needed at this position). The algorithm fills the table from top-left to bottom-right; $d(n, m)$ in the bottom-right cell is the answer.</p>
+
+    <h3>Worked Example: $d(\text{"cat"}, \text{"cut"})$</h3>
+
+    <p>$n = 3$ ($s =$ "cat"), $m = 3$ ($t =$ "cut"). Build the $4 \times 4$ table. Rows index positions in $s$ (0 = empty, 1 = c, 2 = a, 3 = t); columns index positions in $t$ (0 = empty, 1 = c, 2 = u, 3 = t).</p>
+
+    <p><strong>Initialize the borders:</strong></p>
+    <table class="dp-table">
+      <thead><tr><th></th><th>""</th><th>c</th><th>u</th><th>t</th></tr></thead>
+      <tbody>
+        <tr><td>""</td><td>0</td><td>1</td><td>2</td><td>3</td></tr>
+        <tr><td>c</td><td>1</td><td>?</td><td>?</td><td>?</td></tr>
+        <tr><td>a</td><td>2</td><td>?</td><td>?</td><td>?</td></tr>
+        <tr><td>t</td><td>3</td><td>?</td><td>?</td><td>?</td></tr>
+      </tbody>
+    </table>
+
+    <p><strong>Fill $D[1][1]$:</strong> $s_1 =$ 'c', $t_1 =$ 'c'. Characters match, so $[s_i \neq t_j] = 0$.</p>
+    <div class="eq">$$D[1][1] = \min(D[0][1]+1,\; D[1][0]+1,\; D[0][0]+0) = \min(2,\, 2,\, 0) = 0$$</div>
+
+    <p><strong>Fill $D[1][2]$:</strong> $s_1 =$ 'c', $t_2 =$ 'u'. Characters differ, cost $= 1$.</p>
+    <div class="eq">$$D[1][2] = \min(D[0][2]+1,\; D[1][1]+1,\; D[0][1]+1) = \min(3,\, 1,\, 2) = 1$$</div>
+
+    <p><strong>Fill $D[1][3]$:</strong> $s_1 =$ 'c', $t_3 =$ 't'. Differ, cost $= 1$.</p>
+    <div class="eq">$$D[1][3] = \min(D[0][3]+1,\; D[1][2]+1,\; D[0][2]+1) = \min(4,\, 2,\, 3) = 2$$</div>
+
+    <p><strong>Fill $D[2][1]$:</strong> $s_2 =$ 'a', $t_1 =$ 'c'. Differ, cost $= 1$.</p>
+    <div class="eq">$$D[2][1] = \min(D[1][1]+1,\; D[2][0]+1,\; D[1][0]+1) = \min(1,\, 3,\, 2) = 1$$</div>
+
+    <p><strong>Fill $D[2][2]$:</strong> $s_2 =$ 'a', $t_2 =$ 'u'. Differ, cost $= 1$.</p>
+    <div class="eq">$$D[2][2] = \min(D[1][2]+1,\; D[2][1]+1,\; D[1][1]+1) = \min(2,\, 2,\, 1) = 1$$</div>
+
+    <p><strong>Fill $D[2][3]$:</strong> $s_2 =$ 'a', $t_3 =$ 't'. Differ, cost $= 1$.</p>
+    <div class="eq">$$D[2][3] = \min(D[1][3]+1,\; D[2][2]+1,\; D[1][2]+1) = \min(3,\, 2,\, 2) = 2$$</div>
+
+    <p><strong>Fill $D[3][1]$:</strong> $s_3 =$ 't', $t_1 =$ 'c'. Differ, cost $= 1$.</p>
+    <div class="eq">$$D[3][1] = \min(D[2][1]+1,\; D[3][0]+1,\; D[2][0]+1) = \min(2,\, 4,\, 3) = 2$$</div>
+
+    <p><strong>Fill $D[3][2]$:</strong> $s_3 =$ 't', $t_2 =$ 'u'. Differ, cost $= 1$.</p>
+    <div class="eq">$$D[3][2] = \min(D[2][2]+1,\; D[3][1]+1,\; D[2][1]+1) = \min(2,\, 3,\, 2) = 2$$</div>
+
+    <p><strong>Fill $D[3][3]$:</strong> $s_3 =$ 't', $t_3 =$ 't'. Match, cost $= 0$.</p>
+    <div class="eq">$$D[3][3] = \min(D[2][3]+1,\; D[3][2]+1,\; D[2][2]+0) = \min(3,\, 3,\, 1) = 1$$</div>
+
+    <p><strong>Completed table:</strong></p>
+    <table class="dp-table">
+      <thead><tr><th></th><th>""</th><th>c</th><th>u</th><th>t</th></tr></thead>
+      <tbody>
+        <tr><td>""</td><td>0</td><td>1</td><td>2</td><td>3</td></tr>
+        <tr><td>c</td><td>1</td><td>0</td><td>1</td><td>2</td></tr>
+        <tr><td>a</td><td>2</td><td>1</td><td>1</td><td>2</td></tr>
+        <tr><td>t</td><td>3</td><td>2</td><td>2</td><td>1</td></tr>
+      </tbody>
+    </table>
+
+    <p><strong>Result: $d(\text{"cat"}, \text{"cut"}) = 1$.</strong> One substitution, 'a' to 'u', transforms "cat" into "cut." The table confirms this is the minimum.</p>
+
+    <p>Edit distance is the backbone of fuzzy merge tools (<code>fuzzyjoin</code> in R, <code>recordlinkage</code> in Python). A threshold of $d \leq 2$ catches most typos and spacing errors without generating too many false matches. Always pre-standardize strings (trim whitespace, lowercase) before computing edit distance; otherwise "Florida" and "florida" register as $d = 1$ when they should be treated as identical.</p>
+
+    <h2>Part C — Encoding Categorical Strings as Dummies</h2>
+
+    <div class="practice">In practice: Regression software needs numeric input. When a string variable like "party affiliation" or "region" enters the model, the encoding step converts it to numbers. Getting this wrong (including too many dummies) crashes the model; getting the reference category wrong does not change fitted values but does change how you narrate the results.</div>
+
+    <h3>From Strings to Dummies</h3>
+
+    <p>Suppose a string variable <code>party</code> takes values in the set $S = \{\text{"Democrat"}, \text{"Republican"}, \text{"Independent"}, \text{"Other"}\}$. There are $K = |S| = 4$ distinct values.</p>
+
+    <p>The standard encoding uses $K - 1 = 3$ <strong>dummy variables</strong>, omitting one category as the <strong>reference category</strong>. With "Democrat" as reference:</p>
+    <div class="eq">$$\begin{aligned} D_{\text{Rep}} &= 1 \text{ if party} = \text{"Republican"},\quad 0 \text{ otherwise} \\ D_{\text{Ind}} &= 1 \text{ if party} = \text{"Independent"},\quad 0 \text{ otherwise} \\ D_{\text{Oth}} &= 1 \text{ if party} = \text{"Other"},\quad 0 \text{ otherwise} \end{aligned}$$</div>
+
+    <p>A Democrat is encoded as $(D_{\text{Rep}} = 0, D_{\text{Ind}} = 0, D_{\text{Oth}} = 0)$: all dummies off. The regression model is:</p>
+    <div class="eq">$$Y = \beta_0 + \beta_1 D_{\text{Rep}} + \beta_2 D_{\text{Ind}} + \beta_3 D_{\text{Oth}} + \varepsilon$$</div>
+
+    <p>Here $\beta_0$ is the expected $Y$ for Democrats. Each coefficient $\beta_1, \beta_2, \beta_3$ is the difference in expected $Y$ between that party and Democrats.</p>
+
+    <h3>The Dummy Trap: Why You Cannot Include All $K$ Dummies</h3>
+
+    <p>Define a fourth dummy for the reference category:</p>
+    <div class="eq">$$D_{\text{Dem}} = 1 \text{ if party} = \text{"Democrat"},\quad 0 \text{ otherwise}$$</div>
+
+    <p>Every observation belongs to exactly one party, so the four dummies satisfy an exact linear constraint:</p>
+    <div class="eq">$$D_{\text{Dem}} + D_{\text{Rep}} + D_{\text{Ind}} + D_{\text{Oth}} = 1 \quad \text{for every observation}$$</div>
+
+    <p>This means $D_{\text{Dem}} = 1 - D_{\text{Rep}} - D_{\text{Ind}} - D_{\text{Oth}}$. In matrix form, let the design matrix $X$ have columns $[\mathbf{1} \mid D_{\text{Dem}} \mid D_{\text{Rep}} \mid D_{\text{Ind}} \mid D_{\text{Oth}}]$. The constant column (intercept) equals the sum of all four dummy columns:</p>
+    <div class="eq">$$\text{intercept column} = D_{\text{Dem}} + D_{\text{Rep}} + D_{\text{Ind}} + D_{\text{Oth}}$$</div>
+
+    <p>This is a <strong>perfect multicollinearity</strong>: one column is an exact linear combination of the others. The consequence is:</p>
+    <div class="eq">$$\begin{aligned} \text{rank}(X) &< \text{number of columns} \\ \Rightarrow\quad X'X &\text{ is singular} \\ \Rightarrow\quad (X'X)^{-1} &\text{ does not exist} \\ \Rightarrow\quad \text{OLS has no unique solution} \end{aligned}$$</div>
+
+    <p>No unique $\beta$ exists. Software will either throw an error or silently drop one column, depending on implementation.</p>
+
+    <p>The fix is always to drop any one of the $K$ dummies. The choice of which to drop (the reference category) does not change fitted values $\hat{Y}$, residuals, $R^2$, or any $F$-test. It only changes the interpretation of the intercept and slope coefficients. If you switch the reference from Democrats to Republicans, $\beta_0$ changes (now it represents Republicans) and the other coefficients represent distances from Republicans, but every predicted value for every observation stays the same.</p>
+
+    <p>In R, <code>factor()</code> and <code>as.factor()</code> handle this automatically. In Stata, <code>i.varname</code> does the same. Never manually create all $K$ dummies and include them together with an intercept.</p>
+  </div>
+</body>
+</html>

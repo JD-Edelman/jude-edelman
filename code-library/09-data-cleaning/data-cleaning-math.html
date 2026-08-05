@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Cleaning — Mathematical Derivation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+  <style>
+    :root { --bg:#faf8f5; --text:#111111; --muted:#666666; --border:#d8d4ce; --accent:#7a3b2e; }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:var(--text);font-family:'EB Garamond',Georgia,serif;font-size:1.08rem;line-height:1.8;padding:48px 24px 96px;}
+    body::before{content:'';display:block;position:fixed;top:0;left:0;right:0;height:4px;background:var(--accent);z-index:100;}
+    .page{max-width:680px;margin:0 auto;}
+    .back{font-family:'Inter',sans-serif;font-size:0.78rem;color:var(--muted);text-decoration:none;display:inline-block;margin-bottom:40px;}
+    .back:hover{color:var(--accent);}
+    h1{font-size:1.75rem;font-weight:400;margin-bottom:6px;line-height:1.3;}
+    .subtitle{font-family:'Inter',sans-serif;font-size:0.72rem;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);margin-bottom:48px;}
+    h2{font-family:'Inter',sans-serif;font-size:0.72rem;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);margin:52px 0 18px;padding-top:52px;border-top:1px solid var(--border);}
+    h3{font-size:1.05rem;font-weight:500;margin:28px 0 10px;}
+    p{margin-bottom:16px;}
+    p:last-child{margin-bottom:0;}
+    .practice{border-left:3px solid var(--accent);padding-left:16px;color:var(--muted);font-size:0.95rem;margin:0 0 24px;font-style:italic;}
+    .eq{background:#f2ede7;border:1px solid var(--border);border-radius:4px;padding:20px 24px;margin:20px 0;overflow-x:auto;text-align:center;}
+    table{width:100%;border-collapse:collapse;font-size:0.92rem;margin-bottom:24px;}
+    th{font-family:'Inter',sans-serif;font-size:0.68rem;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);text-align:left;padding:8px 12px;border-bottom:1px solid var(--border);}
+    td{padding:8px 12px;border-bottom:1px solid var(--border);vertical-align:top;line-height:1.55;}
+    td:first-child{font-family:'Inter',sans-serif;font-size:0.85rem;white-space:nowrap;}
+    ul,ol{padding-left:1.4em;margin-bottom:16px;}
+    li{margin-bottom:6px;}
+    strong{font-weight:500;}
+    em{font-style:italic;}
+    code{font-family:'Inter',monospace;font-size:0.83rem;background:#ece8e2;padding:1px 5px;border-radius:3px;}
+    .katex-display{overflow-x:auto;}
+  </style>
+</head>
+<body>
+  <div class="page">
+    <a class="back" href="../../code-library.html">← Code Library</a>
+    <h1>Data Cleaning</h1>
+    <div class="subtitle">Mathematical Derivation</div>
+
+    <h2>Symbols</h2>
+    <table>
+      <thead><tr><th>Symbol</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td>$X$</td><td>Variable of interest, possibly with missing values</td></tr>
+        <tr><td>$Z$</td><td>Set of fully observed covariates</td></tr>
+        <tr><td>$R$</td><td>Missingness indicator: $R = 1$ if $X$ is observed, $R = 0$ if $X$ is missing</td></tr>
+        <tr><td>$\theta$</td><td>Any population parameter (mean, regression coefficient, etc.)</td></tr>
+        <tr><td>$\hat{\theta}_{\text{obs}}$</td><td>Estimator of $\theta$ computed on observed (complete) cases only</td></tr>
+        <tr><td>$\bar{x}$</td><td>Sample mean of $X$ over observed values</td></tr>
+        <tr><td>$s$</td><td>Sample standard deviation of $X$</td></tr>
+        <tr><td>$x_i$</td><td>The $i$-th observation of $X$</td></tr>
+        <tr><td>$n$</td><td>Total sample size</td></tr>
+        <tr><td>$z_i$</td><td>Standardized (z-score) for observation $i$</td></tr>
+        <tr><td>$k$</td><td>Threshold for z-score outlier flagging</td></tr>
+        <tr><td>$Q_1, Q_3$</td><td>25th and 75th sample percentiles</td></tr>
+        <tr><td>$IQR$</td><td>Interquartile range: $IQR = Q_3 - Q_1$</td></tr>
+        <tr><td>$\Phi$</td><td>Standard normal cumulative distribution function</td></tr>
+        <tr><td>$\sigma^2$</td><td>Population variance</td></tr>
+        <tr><td>$\sigma$</td><td>Population standard deviation</td></tr>
+        <tr><td>$\mu$</td><td>Population mean</td></tr>
+        <tr><td>$s^2$</td><td>Sample variance (Bessel-corrected)</td></tr>
+        <tr><td>$\hat{\sigma}^2_{\text{naive}}$</td><td>Naive (biased) sample variance dividing by $n$</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Part A — The Three Missing Data Mechanisms</h2>
+    <div class="practice">In practice: Before running any analysis, classify why your data are missing. The answer determines whether you can safely drop missing rows, whether multiple imputation will help, and how much of a caveat you need to report.</div>
+
+    <p>Let $X$ be a variable with some missing values. Define a binary indicator $R$ where $R = 1$ if the observation is present and $R = 0$ if it is absent. The <strong>mechanism of missingness</strong> is a statement about how $R$ relates to $X$ and to other observed variables $Z$.</p>
+
+    <h3>MCAR: Missing Completely at Random</h3>
+    <p>The simplest mechanism. Missingness is a coin flip unrelated to anything.</p>
+    <div class="eq">$$P(R = 0 \mid X, Z) = P(R = 0)$$</div>
+    <p>The probability of being missing is a constant, regardless of what $X$ equals or what $Z$ equals. Missingness is statistically independent of all data, observed and unobserved. Under MCAR, the observed rows are a simple random sample of the full dataset, so any estimator computed on them is unbiased:</p>
+    <div class="eq">$$E[\hat{\theta}_{\text{obs}}] = \theta$$</div>
+    <p>The observed cases are a random draw from the same distribution as the full data, so nothing is systematically distorted.</p>
+    <p>You can test this crudely by regressing a missingness indicator on observed covariates. If nothing predicts missingness, MCAR is plausible, though you can never prove MCAR, only fail to disprove it.</p>
+
+    <h3>MAR: Missing at Random</h3>
+    <p>After accounting for observed variables $Z$, the missingness no longer depends on the unobserved value of $X$ itself.</p>
+    <div class="eq">$$P(R = 0 \mid X, Z) = P(R = 0 \mid Z)$$</div>
+    <p>Missingness may be related to $X$, but only through $Z$. For example: high-income respondents may be more likely to skip an income question, but if you know their education and occupation (both in $Z$), the probability of skipping no longer varies with their actual income level. The association between missingness and income runs entirely through education and occupation.</p>
+    <p>MAR is the assumption that justifies multiple imputation. If older respondents are more likely to skip the ideology question, but age is in your dataset, the missingness is MAR and MI will correct for it.</p>
+
+    <h3>MNAR: Missing Not at Random</h3>
+    <p>The worst case: missingness depends on the unobserved value of $X$ even after conditioning on everything observed.</p>
+    <div class="eq">$$P(R = 0 \mid X, Z) \text{ depends on } X \text{ even after conditioning on } Z$$</div>
+    <p>No set of observed covariates renders missingness independent of the missing value itself. MNAR means the people who skip a question do so because of the answer they would have given.</p>
+    <p>If people with very liberal or very conservative ideology are more likely to skip the ideology question, no amount of imputation fully fixes the bias. You would need a <strong>selection model</strong> that jointly estimates the outcome and the missingness mechanism, which requires untestable assumptions.</p>
+
+    <h2>Part B — Bias of Listwise Deletion Under MAR</h2>
+    <div class="practice">In practice: Most researchers drop missing rows without thinking carefully about the consequences. Under MCAR this is harmless; under MAR it introduces systematic bias in a predictable direction.</div>
+
+    <h3>Why the Complete-Case Mean Is Biased</h3>
+    <p>Under MAR, the probability of being observed depends on $Z$. Let's trace through what the complete-case mean actually estimates.</p>
+    <p>Define the complete-case mean as the average of $X$ restricted to observed rows ($R = 1$):</p>
+    <div class="eq">$$E[X \mid R = 1] = \sum_z E[X \mid R = 1,\, Z = z] \cdot P(Z = z \mid R = 1)$$</div>
+    <p>Under MAR, within any stratum defined by $Z$, missingness is random, so:</p>
+    <div class="eq">$$E[X \mid R = 1,\, Z = z] = E[X \mid Z = z]$$</div>
+    <p>But the distribution of $Z$ among the observed is not the same as in the full population:</p>
+    <div class="eq">$$P(Z = z \mid R = 1) \neq P(Z = z)$$</div>
+    <p>because $Z$ predicts missingness. The observed sample overweights strata with low missingness. The complete-case mean is a distorted weighted average of the population mean.</p>
+
+    <h3>Numerical Example</h3>
+    <p>Suppose you have two education groups with the following income data and response rates:</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Group</th>
+          <th>True mean income</th>
+          <th>Fraction of population</th>
+          <th>Response rate</th>
+          <th>Fraction of observed</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Low education</td><td>$40,000</td><td>60%</td><td>80%</td><td>53%</td></tr>
+        <tr><td>High education</td><td>$70,000</td><td>40%</td><td>50%</td><td>47%</td></tr>
+      </tbody>
+    </table>
+    <p>True population mean income:</p>
+    <div class="eq">$$\mu = 0.60 \cdot 40{,}000 + 0.40 \cdot 70{,}000 = 24{,}000 + 28{,}000 = \$52{,}000$$</div>
+    <p>But lower-education respondents have an 80% response rate and high-education respondents have only a 50% rate. In the observed sample, the shares shift. The observed fraction in the low-education group is:</p>
+    <div class="eq">$$P(\text{low edu} \mid R=1) = \frac{0.60 \cdot 0.80}{0.60 \cdot 0.80 + 0.40 \cdot 0.50} = \frac{0.48}{0.48 + 0.20} = \frac{0.48}{0.68} \approx 0.706$$</div>
+    <p>And the high-education fraction in observed data is approximately 0.294. The complete-case mean:</p>
+    <div class="eq">$$\begin{aligned} E[X \mid R=1] &= 0.706 \cdot 40{,}000 + 0.294 \cdot 70{,}000 \\ &= 28{,}240 + 20{,}580 \\ &= \$48{,}820 \end{aligned}$$</div>
+    <p>Listwise deletion underestimates population mean income by about $3,180. The direction makes intuitive sense: higher-income (high-education) respondents are harder to reach, so they are underrepresented in the observed sample, pulling the mean down. The bias is predictable once you know which groups are underrepresented.</p>
+
+    <h2>Part C — Outlier Detection: Z-Score and IQR Methods</h2>
+    <div class="practice">In practice: Outlier detection is not about automatically dropping observations. It is about flagging values that warrant inspection. Most real outliers in social science data are data entry errors, miscoded values, or genuine extreme cases that are theoretically interesting.</div>
+
+    <h3>Z-Score Method</h3>
+    <p>The <strong>z-score</strong> for observation $i$ standardizes its distance from the sample mean in units of standard deviations.</p>
+    <div class="eq">$$z_i = \frac{x_i - \bar{x}}{s}$$</div>
+    <p>where:</p>
+    <div class="eq">$$\bar{x} = \frac{1}{n} \sum_i x_i$$</div>
+    <div class="eq">$$s = \sqrt{\frac{1}{n-1} \sum_i (x_i - \bar{x})^2}$$</div>
+    <p>Flag observation $i$ as a potential outlier when:</p>
+    <div class="eq">$$|z_i| > k$$</div>
+    <p>where $k = 3$ is conventional for moderate sample sizes and $k = 4$ is common for large surveys ($n > 100{,}000$).</p>
+
+    <h3>Expected False Flags Under Normality</h3>
+    <p>For a normally distributed variable, what fraction of observations will be flagged purely by chance? A single observation from a standard normal distribution exceeds the threshold in either tail with probability:</p>
+    <div class="eq">$$P(|Z| > k) = 2 \cdot [1 - \Phi(k)]$$</div>
+    <p>Across a sample of $n$ observations, the expected number of innocent flags is:</p>
+    <div class="eq">$$\text{Expected false flags} = 2n \cdot [1 - \Phi(k)]$$</div>
+    <p>For $k = 3$: $\Phi(3) \approx 0.9987$, so $P(|Z| > 3) \approx 0.0027$. You expect about 27 false flags per 10,000 observations.</p>
+    <p>For $k = 4$: $\Phi(4) \approx 0.99997$, so $P(|Z| > 4) \approx 0.000063$. You expect about 1.3 false flags per 10,000 observations.</p>
+    <p>For $n = 10{,}000$ and a normal distribution, you expect $2 \cdot 10{,}000 \cdot (1 - \Phi(4)) \approx 1.3$ false flags at $k = 4$. For $k = 3$ you would expect about 27 false flags. Choose $k$ based on how many false positives you can tolerate and how large your sample is.</p>
+    <p><strong>Limitation of z-scores:</strong> The z-score uses the sample mean and standard deviation, which are themselves sensitive to outliers. A very extreme outlier inflates $s$, shrinking $|z_i|$ for that outlier and potentially masking it. The IQR method avoids this problem by using robust statistics.</p>
+
+    <h3>IQR (Tukey Fences) Method</h3>
+    <p>The <strong>IQR method</strong> uses the interquartile range, which is insensitive to extreme values.</p>
+    <p>Compute $Q_1$ (the 25th sample percentile) and $Q_3$ (the 75th sample percentile). Define:</p>
+    <div class="eq">$$IQR = Q_3 - Q_1$$</div>
+    <p>Flag observation $i$ as a potential outlier if it falls outside the <strong>Tukey fences</strong>:</p>
+    <div class="eq">$$x_i < Q_1 - 1.5 \cdot IQR \quad \text{or} \quad x_i > Q_3 + 1.5 \cdot IQR$$</div>
+
+    <h3>Deriving the Fence Location for a Normal Distribution</h3>
+    <p>For $X \sim N(\mu, \sigma^2)$, the theoretical quartiles are:</p>
+    <div class="eq">$$Q_1 = \mu - 0.6745\sigma \qquad Q_3 = \mu + 0.6745\sigma$$</div>
+    <p>These follow from $\Phi(0.6745) = 0.75$, placing $Q_3$ at the 75th percentile. Therefore:</p>
+    <div class="eq">$$IQR = Q_3 - Q_1 = 2 \cdot 0.6745\sigma = 1.349\sigma$$</div>
+    <p>Substituting into the upper fence:</p>
+    <div class="eq">$$\begin{aligned} Q_3 + 1.5 \cdot IQR &= (\mu + 0.6745\sigma) + 1.5 \cdot (1.349\sigma) \\ &= \mu + 0.6745\sigma + 2.0235\sigma \\ &= \mu + 2.698\sigma \\ &\approx \mu + 2.7\sigma \end{aligned}$$</div>
+    <p>The probability of exceeding this fence in the upper tail of a normal distribution:</p>
+    <div class="eq">$$P(Z > 2.7) \approx 0.0035$$</div>
+    <p>Both tails together: about 0.7% of observations would be flagged in a perfectly normal sample.</p>
+    <p>For a normal distribution, $Q_3 + 1.5 \cdot IQR \approx \mu + 2.7\sigma$. So the $1.5 \cdot IQR$ rule is roughly equivalent to a 2.7-sigma rule, catching about 0.7% of a normal distribution as "outliers." This is a slightly more lenient filter than $k = 3$ (0.27%), but uses robust statistics ($Q_1$, $Q_3$) that are not distorted by the outliers themselves.</p>
+
+    <h2>Part D — Bessel's Correction</h2>
+    <div class="practice">In practice: Every statistical package divides by $n-1$, not $n$, when computing a sample variance. This section explains why, and when the difference actually matters.</div>
+
+    <h3>The Bias of the Naive Variance Estimator</h3>
+    <p>The naive estimator divides by $n$:</p>
+    <div class="eq">$$\hat{\sigma}^2_{\text{naive}} = \frac{1}{n} \sum_i (x_i - \bar{x})^2$$</div>
+    <p><strong>Claim:</strong> $E[\hat{\sigma}^2_{\text{naive}}] = \sigma^2(n-1)/n$, which is strictly less than $\sigma^2$.</p>
+
+    <h3>Derivation</h3>
+    <p>Write $x_i - \bar{x} = (x_i - \mu) - (\bar{x} - \mu)$. Squaring both sides:</p>
+    <div class="eq">$$\begin{aligned} (x_i - \bar{x})^2 &= [(x_i - \mu) - (\bar{x} - \mu)]^2 \\ &= (x_i - \mu)^2 - 2(x_i - \mu)(\bar{x} - \mu) + (\bar{x} - \mu)^2 \end{aligned}$$</div>
+    <p>Summing over all $i$:</p>
+    <div class="eq">$$\sum_i (x_i - \bar{x})^2 = \sum_i (x_i - \mu)^2 - 2(\bar{x} - \mu)\sum_i (x_i - \mu) + n(\bar{x} - \mu)^2$$</div>
+    <p>Since $\sum_i (x_i - \mu) = n(\bar{x} - \mu)$, the middle term simplifies:</p>
+    <div class="eq">$$\begin{aligned} \sum_i (x_i - \bar{x})^2 &= \sum_i (x_i - \mu)^2 - 2n(\bar{x} - \mu)^2 + n(\bar{x} - \mu)^2 \\ &= \sum_i (x_i - \mu)^2 - n(\bar{x} - \mu)^2 \end{aligned}$$</div>
+    <p>Now take expectations. Since $E[(x_i - \mu)^2] = \sigma^2$ for all $i$:</p>
+    <div class="eq">$$E\!\left[\sum_i (x_i - \mu)^2\right] = n\sigma^2$$</div>
+    <p>Since $\text{Var}(\bar{x}) = \sigma^2/n$:</p>
+    <div class="eq">$$E\!\left[n(\bar{x} - \mu)^2\right] = n \cdot \frac{\sigma^2}{n} = \sigma^2$$</div>
+    <p>Combining:</p>
+    <div class="eq">$$E\!\left[\sum_i (x_i - \bar{x})^2\right] = n\sigma^2 - \sigma^2 = (n-1)\sigma^2$$</div>
+    <p>Therefore:</p>
+    <div class="eq">$$E[\hat{\sigma}^2_{\text{naive}}] = \frac{1}{n} \cdot (n-1)\sigma^2 = \frac{(n-1)\sigma^2}{n} < \sigma^2$$</div>
+    <p>The naive estimator underestimates the true variance because $\bar{x}$ is computed from the same data, pulling the deviations artificially toward zero. The sample mean "uses up" one <strong>degree of freedom</strong>.</p>
+
+    <h3>Bessel's Corrected Estimator</h3>
+    <p>Dividing by $(n-1)$ removes the bias:</p>
+    <div class="eq">$$s^2 = \frac{1}{n-1} \sum_i (x_i - \bar{x})^2$$</div>
+    <div class="eq">$$E[s^2] = \frac{1}{n-1} \cdot (n-1)\sigma^2 = \sigma^2$$</div>
+    <p>This is why Stata's <code>summarize</code> and R's <code>var()</code> both default to $n-1$ in the denominator. For $n = 1{,}000$, the bias from using $n$ is only 0.1%. For $n = 10$, using $n$ understates the variance by 10%. The correction matters most in small samples.</p>
+  </div>
+</body>
+</html>

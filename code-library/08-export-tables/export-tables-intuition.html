@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Export Tables — Intuition</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+  <style>
+    :root { --bg:#faf8f5; --text:#111111; --muted:#666666; --border:#d8d4ce; --accent:#7a3b2e; }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:var(--text);font-family:'EB Garamond',Georgia,serif;font-size:1.08rem;line-height:1.8;padding:48px 24px 96px;}
+    body::before{content:'';display:block;position:fixed;top:0;left:0;right:0;height:4px;background:var(--accent);z-index:100;}
+    .page{max-width:680px;margin:0 auto;}
+    .back{font-family:'Inter',sans-serif;font-size:0.78rem;color:var(--muted);text-decoration:none;display:inline-block;margin-bottom:40px;}
+    .back:hover{color:var(--accent);}
+    h1{font-size:1.75rem;font-weight:400;margin-bottom:6px;line-height:1.3;}
+    .subtitle{font-family:'Inter',sans-serif;font-size:0.72rem;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);margin-bottom:48px;}
+    h2{font-family:'Inter',sans-serif;font-size:0.72rem;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);margin:52px 0 18px;padding-top:52px;border-top:1px solid var(--border);}
+    h3{font-size:1.05rem;font-weight:500;margin:28px 0 10px;}
+    p{margin-bottom:16px;}
+    p:last-child{margin-bottom:0;}
+    .practice{border-left:3px solid var(--accent);padding-left:16px;color:var(--muted);font-size:0.95rem;margin:0 0 24px;font-style:italic;}
+    .eq{background:#f2ede7;border:1px solid var(--border);border-radius:4px;padding:20px 24px;margin:20px 0;overflow-x:auto;text-align:center;}
+    table{width:100%;border-collapse:collapse;font-size:0.92rem;margin-bottom:24px;}
+    th{font-family:'Inter',sans-serif;font-size:0.68rem;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);text-align:left;padding:8px 12px;border-bottom:1px solid var(--border);}
+    td{padding:8px 12px;border-bottom:1px solid var(--border);vertical-align:top;line-height:1.55;}
+    td:first-child{font-family:'Inter',sans-serif;font-size:0.85rem;white-space:nowrap;}
+    ul,ol{padding-left:1.4em;margin-bottom:16px;}
+    li{margin-bottom:6px;}
+    strong{font-weight:500;}
+    em{font-style:italic;}
+    code{font-family:'Inter',monospace;font-size:0.83rem;background:#ece8e2;padding:1px 5px;border-radius:3px;}
+    .katex-display{overflow-x:auto;}
+  </style>
+</head>
+<body>
+  <div class="page">
+    <a class="back" href="../../code-library.html">← Code Library</a>
+    <h1>Export Tables</h1>
+    <div class="subtitle">Intuition</div>
+
+    <h2>1. What Problem Does This Solve?</h2>
+    <p>You have fit a regression. The software gives you a block of output in the console: coefficients, standard errors, t-statistics, p-values, $R^2$, sample size. That output is not a publication table. It is formatted for the analyst, not the reader. It includes things a reader does not need (intermediate iteration output from maximum likelihood), omits things they do need (notes about how SEs were computed), and cannot be dropped into a Word document or LaTeX file without manual retyping.</p>
+    <p>Export table tools (esttab and estout in Stata, modelsummary in R) solve two problems at once. First, they format regression output into a table that meets disciplinary and journal conventions. Second, they automate the transfer from software to document, eliminating the transcription errors that occur when you type numbers by hand. A single typo in a coefficient is invisible to reviewers but embarrassing if caught, and manual retyping of 16 regression models with 12 covariates each is a realistic path to errors.</p>
+
+    <h2>2. What Belongs in a Regression Table and Why</h2>
+    <p><strong>Coefficients.</strong> The core quantity of interest. Readers need them to assess direction, magnitude, and substantive importance.</p>
+    <p><strong>Standard errors (in parentheses below the coefficient) or confidence intervals.</strong> The reader needs to understand the precision of the estimate, not just its direction. SEs allow any reader to reconstruct a t-statistic or confidence interval. Parenthetical SEs are the discipline standard in sociology and political science. The alternative, parenthetical t-statistics, is rarely used in applied social science because t-statistics scale with sample size in a way that hides whether an effect is precisely estimated or just based on a huge sample.</p>
+    <p><strong>Significance indicators.</strong> Stars at conventional thresholds ($p < .05$, $p < .01$, $p < .001$) are a shorthand that experienced readers scan quickly. They do not replace exact p-values, but they provide an at-a-glance signal. The debate over stars is real (see below), but they are still expected in most sociology journals.</p>
+    <p><strong>Sample size (N).</strong> Always. The reader needs this to assess whether the analysis is adequately powered and to understand the scope of inference.</p>
+    <p><strong>Model fit statistic.</strong> For OLS: $R^2$ (or adjusted $R^2$ if the table shows multiple nested models). For logit: pseudo-$R^2$, AIC, or BIC. For survey-weighted models: some adjusted fit measure. These help the reader assess how much variance the model explains and how models compare.</p>
+    <p><strong>Footnotes.</strong> Indicate what the parenthetical values are (SEs? CIs? robust SEs? cluster-robust SEs?). Note survey weights if used. Note the reference category for categorical predictors. None of this fits in the table body but all of it matters for interpretation.</p>
+
+    <h2>3. The Stars Debate</h2>
+    <p>Significance stars have been criticized (accurately) on these grounds:</p>
+    <ul>
+      <li>They collapse a continuous quantity (the p-value) into a three-level categorical variable, discarding information.</li>
+      <li>A coefficient with $p = .049$ gets a star; one with $p = .051$ does not, even though there is essentially no difference in evidence.</li>
+      <li>Stars focus attention on whether an effect exists rather than on its size, which is usually the more important question.</li>
+      <li>Large samples produce tiny p-values for trivial effects; small samples produce large p-values for large effects. Stars conflate these.</li>
+    </ul>
+    <p>Despite this, most sociology journals still expect stars, and reviewers notice their absence. A practical resolution: always report exact p-values alongside stars (e.g., in a footnote or in a supplementary table), report effect sizes with context (what does a one-unit change mean substantively?), and note in the text when a "non-significant" coefficient has a confidence interval that rules out meaningful effects vs. one that is just underpowered.</p>
+
+    <h2>4. Table Design for a Methods Paper vs. an Applied Paper</h2>
+    <p><strong>Methods paper</strong>: the audience wants to evaluate the estimation procedure. Show everything: all coefficients including controls, the covariance structure if relevant, model diagnostics. Completeness matters more than elegance.</p>
+    <p><strong>Applied paper</strong>: the audience wants to understand your argument. Show the coefficients that directly test your hypotheses prominently. Move control variable coefficients to an appendix or collapse them into a single row labeled "Controls included: yes." Readers who care about the controls can find them; readers following your argument should not have to scan past 12 demographic coefficients to find the one number that tests your hypothesis.</p>
+
+    <h2>5. Log-Odds vs. Odds Ratios</h2>
+    <p>Logistic regression coefficients are log-odds: the additive change in the log-odds of the outcome for a one-unit change in the predictor. Log-odds are directly interpretable in terms of sign (positive = higher probability) and comparison across models (log-odds are comparable across nested models in a way odds ratios are not), but their magnitude is hard to interpret without conversion.</p>
+    <p>Odds ratios ($OR = \exp(\beta)$) are multiplicative and easier for many audiences: an OR of 1.5 means the odds of the outcome are 1.5 times as high for a one-unit increase in the predictor. But ORs cannot be directly averaged or compared across groups with different baseline probabilities.</p>
+    <p>The choice depends on audience. For a methods audience, log-odds. For a clinical or policy audience, odds ratios. For a general sociology audience, either, as long as you explain what you are showing. Never report both in the same table without clear labeling.</p>
+
+    <h2>6. Why Automated Table Generation Is Better Than Manual Transcription</h2>
+    <p>When you type a table by hand:</p>
+    <ul>
+      <li>A single digit transposition (0.382 becomes 0.832) passes silently.</li>
+      <li>You may copy from an intermediate model run rather than the final one.</li>
+      <li>Rerunning the model with a slightly different sample requires retyping the whole table.</li>
+      <li>Collaboration requires coordinating which model is "final."</li>
+    </ul>
+    <p>When you use esttab or modelsummary:</p>
+    <ul>
+      <li>The table is generated programmatically from the stored estimates object.</li>
+      <li>Rerunning the model and the table script updates everything automatically.</li>
+      <li>The table reflects whatever is in the stored estimate, which is definitionally the model you ran.</li>
+      <li>Version control on the script records every change to the table's inputs.</li>
+    </ul>
+    <p>The cost is learning the syntax, which is nontrivial but fixed. The benefit compounds across every paper you write.</p>
+  </div>
+</body>
+</html>

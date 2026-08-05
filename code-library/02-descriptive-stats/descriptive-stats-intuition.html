@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Descriptive Statistics — Intuition</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+  <style>
+    :root { --bg:#faf8f5; --text:#111111; --muted:#666666; --border:#d8d4ce; --accent:#7a3b2e; }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:var(--text);font-family:'EB Garamond',Georgia,serif;font-size:1.08rem;line-height:1.8;padding:48px 24px 96px;}
+    body::before{content:'';display:block;position:fixed;top:0;left:0;right:0;height:4px;background:var(--accent);z-index:100;}
+    .page{max-width:680px;margin:0 auto;}
+    .back{font-family:'Inter',sans-serif;font-size:0.78rem;color:var(--muted);text-decoration:none;display:inline-block;margin-bottom:40px;}
+    .back:hover{color:var(--accent);}
+    h1{font-size:1.75rem;font-weight:400;margin-bottom:6px;line-height:1.3;}
+    .subtitle{font-family:'Inter',sans-serif;font-size:0.72rem;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);margin-bottom:48px;}
+    h2{font-family:'Inter',sans-serif;font-size:0.72rem;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);margin:52px 0 18px;padding-top:52px;border-top:1px solid var(--border);}
+    h3{font-size:1.05rem;font-weight:500;margin:28px 0 10px;}
+    p{margin-bottom:16px;}
+    p:last-child{margin-bottom:0;}
+    .practice{border-left:3px solid var(--accent);padding-left:16px;color:var(--muted);font-size:0.95rem;margin:0 0 24px;font-style:italic;}
+    .eq{background:#f2ede7;border:1px solid var(--border);border-radius:4px;padding:20px 24px;margin:20px 0;overflow-x:auto;text-align:center;}
+    table{width:100%;border-collapse:collapse;font-size:0.92rem;margin-bottom:24px;}
+    th{font-family:'Inter',sans-serif;font-size:0.68rem;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);text-align:left;padding:8px 12px;border-bottom:1px solid var(--border);}
+    td{padding:8px 12px;border-bottom:1px solid var(--border);vertical-align:top;line-height:1.55;}
+    td:first-child{font-family:'Inter',sans-serif;font-size:0.85rem;white-space:nowrap;}
+    ul,ol{padding-left:1.4em;margin-bottom:16px;}
+    li{margin-bottom:6px;}
+    strong{font-weight:500;}
+    em{font-style:italic;}
+    code{font-family:'Inter',monospace;font-size:0.83rem;background:#ece8e2;padding:1px 5px;border-radius:3px;}
+    .katex-display{overflow-x:auto;}
+  </style>
+</head>
+<body>
+  <div class="page">
+    <a class="back" href="../../code-library.html">← Code Library</a>
+    <h1>Descriptive Statistics</h1>
+    <div class="subtitle">Intuition</div>
+
+    <h2>What Problem Does This Solve?</h2>
+
+    <p>Before any model, before any hypothesis test, you need to know what your data actually look like. Descriptive statistics answer a deceptively simple question: what is going on in this sample? They compress thousands of observations into a small number of summaries that reveal the shape, center, spread, and relationships in your data.</p>
+
+    <p>In the CES 2020 dataset you have hundreds of variables and tens of thousands of respondents. No one can read a column of 60,000 vote-choice responses. But a mean, a distribution, a cross-tabulation, and a handful of conditional comparisons let you hold the structure of that data in your head, catch errors in your coding, and decide what inferential questions are even worth asking.</p>
+
+    <p>Skipping descriptives is how researchers end up presenting regression coefficients that are artifacts of coding errors, outliers, or bizarre distributions.</p>
+
+    <h2>Central Tendency vs. Spread: Why You Need Both</h2>
+
+    <p>Central tendency asks: where is the middle of this distribution? Spread asks: how much do observations vary around that middle?</p>
+
+    <p>A researcher who reports only the mean is telling you where the distribution is centered but not how widely it fans out. Consider two hypothetical income distributions: both have a mean of $55,000, but one has a standard deviation of $5,000 (nearly everyone is close to the mean) and the other has a standard deviation of $40,000 (enormous inequality). These are fundamentally different social realities, but identical means.</p>
+
+    <p>Conversely, reporting only spread without center is equally incomplete. Always report both.</p>
+
+    <h2>Mean vs. Median for Skewed Distributions</h2>
+
+    <p>The mean is the arithmetic center of mass: every observation pulls it proportionally to its distance from zero. This makes the mean sensitive to extreme values. In a right-skewed distribution (a long upper tail, which is the shape of virtually every income, wealth, and consumption variable in survey data), a small number of very high values drag the mean upward, well above the point where most respondents actually cluster.</p>
+
+    <p>The median is the value that splits the distribution in half: 50% of observations fall below it and 50% above. Extreme values in the tail have no influence on the median beyond the fact of being above it. For right-skewed distributions, the median is almost always lower than the mean and more representative of the "typical" respondent.</p>
+
+    <p>When the mean and median diverge sharply, that divergence is itself a substantive finding: it tells you the distribution is skewed, which may affect your choice of model (log transformation, quantile regression) and how you communicate results to a policy audience.</p>
+
+    <h2>What Variance Actually Is</h2>
+
+    <p>Variance is the average squared distance from the mean. The squaring serves two purposes: it makes all deviations positive (so negative and positive deviations do not cancel), and it penalizes large deviations disproportionately relative to small ones.</p>
+
+    <p>The intuition is that variance asks: if I pick a random observation, how far away from the mean should I expect it to be? (More precisely, it asks about the expected squared distance, and the standard deviation recovers the expected distance by taking the square root.) A variable with low variance is one where nearly all respondents gave similar answers. A variable with high variance is one where respondents were spread all over the scale. A variable with zero variance is a constant: useless for any model because it cannot covary with anything.</p>
+
+    <h2>The Purpose of a Cross-Tabulation</h2>
+
+    <p>A cross-tabulation (crosstab) counts how many observations fall into each cell defined by the combination of two categorical variables. It is the descriptive workhorse for asking: do these two categorical things go together?</p>
+
+    <p>In the CES 2020 context, a crosstab of party identification by presidential vote choice shows you exactly how many self-identified Republicans voted for Biden, how many Democrats voted for Trump, and so on. The raw cell counts become more interpretable as row or column percentages, which answer: conditional on being a Democrat, what fraction voted for each candidate?</p>
+
+    <p>A chi-square test of independence is the standard inferential test applied to crosstabs: it asks whether the pattern of cell counts differs from what you would expect if the two variables were completely unrelated. The descriptive and inferential functions are complementary. The crosstab shows you the pattern; the chi-square test assesses whether the pattern is likely to reflect something real in the population or could plausibly be sampling noise.</p>
+
+    <h2>T-test vs. Regression: When to Use Each</h2>
+
+    <p>A t-test compares the means of a continuous variable between two groups. It is the right tool when your research question is exactly: does the average value of Y differ between group A and group B?</p>
+
+    <p>An OLS regression is the right tool when you want to compare group means while holding other variables constant, or when you have more than one predictor, or when at least one predictor is continuous rather than binary.</p>
+
+    <p>An independent-samples t-test of Y by a binary group indicator G is mathematically equivalent to a bivariate regression of Y on G (the t-statistic equals the regression t-statistic exactly). But regression generalizes immediately to multiple controls, interaction terms, and continuous predictors, while the t-test does not.</p>
+
+    <p>The practical guidance: use a t-test when your question is genuinely simple and you have a single binary grouping. Use regression when you need to control for anything, have multiple predictors, or want to produce conditional estimates.</p>
+
+    <h2>Survey Weights and Why Unweighted Means Are Biased</h2>
+
+    <p>Complex probability surveys like CES 2020 do not sample respondents with equal probability. Some groups (racial minorities, rural residents, low-education households) are deliberately oversampled to ensure enough observations for subgroup analysis. Others may be underrepresented due to nonresponse patterns that correlate with the variables you are studying.</p>
+
+    <p>If you compute an unweighted mean of political knowledge scores across all 60,000 CES respondents, you are implicitly treating each respondent as equally representative of the U.S. adult population. But an oversampled rural resident counts once in your mean and once in the population, while an undersampled urban resident also counts once in your mean but represents many people in the population. The unweighted mean does not estimate the population mean; it estimates the sample mean, which is a biased estimate of the population quantity.</p>
+
+    <p>Survey weights correct this. Each respondent is assigned a weight $w_i$ that reflects how many population members they represent. A respondent with weight 3.2 should count 3.2 times as much as a respondent with weight 1.0 when estimating population quantities. The weighted mean, computed as the sum of (weight &times; value) divided by the sum of weights, is a consistent estimator of the population mean under standard survey sampling theory.</p>
+
+    <p>For descriptive tables in a sociology paper using CES 2020, always weight your means, proportions, and cross-tabulations. The exception is when you are explicitly describing your sample rather than making population-level claims, which is a different and rarer goal.</p>
+
+  </div>
+</body>
+</html>

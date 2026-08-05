@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>String Manipulation — Intuition</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+  <style>
+    :root { --bg:#faf8f5; --text:#111111; --muted:#666666; --border:#d8d4ce; --accent:#7a3b2e; }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:var(--text);font-family:'EB Garamond',Georgia,serif;font-size:1.08rem;line-height:1.8;padding:48px 24px 96px;}
+    body::before{content:'';display:block;position:fixed;top:0;left:0;right:0;height:4px;background:var(--accent);z-index:100;}
+    .page{max-width:680px;margin:0 auto;}
+    .back{font-family:'Inter',sans-serif;font-size:0.78rem;color:var(--muted);text-decoration:none;display:inline-block;margin-bottom:40px;}
+    .back:hover{color:var(--accent);}
+    h1{font-size:1.75rem;font-weight:400;margin-bottom:6px;line-height:1.3;}
+    .subtitle{font-family:'Inter',sans-serif;font-size:0.72rem;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);margin-bottom:48px;}
+    h2{font-family:'Inter',sans-serif;font-size:0.72rem;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);margin:52px 0 18px;padding-top:52px;border-top:1px solid var(--border);}
+    h3{font-size:1.05rem;font-weight:500;margin:28px 0 10px;}
+    p{margin-bottom:16px;}
+    p:last-child{margin-bottom:0;}
+    .practice{border-left:3px solid var(--accent);padding-left:16px;color:var(--muted);font-size:0.95rem;margin:0 0 24px;font-style:italic;}
+    .eq{background:#f2ede7;border:1px solid var(--border);border-radius:4px;padding:20px 24px;margin:20px 0;overflow-x:auto;text-align:center;}
+    table{width:100%;border-collapse:collapse;font-size:0.92rem;margin-bottom:24px;}
+    th{font-family:'Inter',sans-serif;font-size:0.68rem;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);text-align:left;padding:8px 12px;border-bottom:1px solid var(--border);}
+    td{padding:8px 12px;border-bottom:1px solid var(--border);vertical-align:top;line-height:1.55;}
+    td:first-child{font-family:'Inter',sans-serif;font-size:0.85rem;white-space:nowrap;}
+    ul,ol{padding-left:1.4em;margin-bottom:16px;}
+    li{margin-bottom:6px;}
+    strong{font-weight:500;}
+    em{font-style:italic;}
+    code{font-family:'Inter',monospace;font-size:0.83rem;background:#ece8e2;padding:1px 5px;border-radius:3px;}
+    .katex-display{overflow-x:auto;}
+  </style>
+</head>
+<body>
+  <div class="page">
+    <a class="back" href="../../code-library.html">← Code Library</a>
+    <h1>String Manipulation</h1>
+    <div class="subtitle">Intuition</div>
+
+    <h2>What Problem Does This Technique Solve?</h2>
+
+    <p>Survey data, administrative records, and scraped text all contain variables stored as character strings rather than numbers. Names, open-ended responses, geographic identifiers, dates stored as "January 2020," and race/ethnicity categories that vary in phrasing across datasets all arrive as strings. Before you can analyze them, count them, or merge datasets on them, you have to deal with the fact that strings do not behave like numbers.</p>
+
+    <p>Numbers have natural ordering, arithmetic, and a unique representation: 42 is exactly 42. The string "Democrat" is not the same as "democrat," "Democrat " (with a trailing space), "Dem.", or "democratic party." All five might represent the same concept, but a computer's equality check returns false for all five pairwise comparisons. Every one of those discrepancies is a potential merge failure or miscounted category.</p>
+
+    <p>The CES 2020 is largely pre-coded, but the moment you merge it with an external file (congressional district records, Census geographic identifiers, state names from a policy database), string inconsistencies become a practical problem. Open-ended "other, specify" items are entirely string-based.</p>
+
+    <h2>Why String Data Is Harder Than Numeric Data</h2>
+
+    <p><strong>No arithmetic.</strong> You cannot compute the mean of a list of names or interpolate between "Alaska" and "Alabama." String operations are categorical operations.</p>
+
+    <p><strong>No canonical ordering.</strong> Alphabetic ordering is a convention, not an inherent property. It does not correspond to any sociological ordering.</p>
+
+    <p><strong>Multiple representations of the same value.</strong> This is the central practical problem. Inconsistent capitalization, extra whitespace, abbreviations, alternate spellings, and encoding artifacts (curly quotes vs. straight quotes, em dashes vs. hyphens) all make string equality fail silently. A merge failure because one dataset has "North Carolina" and another has "North Carolina " (one extra space) will produce a blank merged dataset with no error message.</p>
+
+    <p><strong>Encoding issues.</strong> Non-ASCII characters (accented letters, non-Latin scripts) may be stored in different encodings depending on the software that created the file. An accent that displays correctly in one context becomes a garbled character in another, breaking any string comparison that depends on exact matching.</p>
+
+    <h2>The Most Common Sources of Merge Failures</h2>
+
+    <p><strong>Leading and trailing whitespace.</strong> The most common cause of failed string merges. <code>"Alabama"</code> and <code>"Alabama "</code> (one trailing space) are not equal. Always trim whitespace before any merge.</p>
+
+    <p><strong>Mixed case.</strong> <code>"Democrat"</code> is not <code>"democrat"</code>. Convert to a single case (usually lowercase) before comparing.</p>
+
+    <p><strong>Numeric-stored-as-string.</strong> A FIPS code stored as the string <code>"01"</code> is not the same as the number <code>1</code>. If one dataset has string FIPS codes and another has numeric FIPS codes, the merge fails. You need to either convert both to the same type or ensure string formatting is consistent (zero-padded or not, consistently).</p>
+
+    <p><strong>Inconsistent abbreviations.</strong> <code>"FL"</code> vs. <code>"Florida"</code> vs. <code>"Fla."</code> are three representations of the same state. Standardize to one format before merging.</p>
+
+    <p><strong>Encoding artifacts.</strong> Copied-from-PDF text often contains non-breaking spaces (character 160 in ASCII) rather than ordinary spaces (character 32). They look identical on screen but are not equal in string comparison.</p>
+
+    <h2>Regular Expressions: When and When Not to Use Them</h2>
+
+    <p>A regular expression (regex) is a pattern language for matching strings. It lets you ask questions like: "Find all strings that start with a two-digit number, then a hyphen, then four letters" or "Find all strings that contain the word 'county' anywhere, case-insensitively."</p>
+
+    <p><strong>Use regex when:</strong></p>
+    <ul>
+      <li>You need to find or extract patterns across many strings where the exact string varies but the structure is consistent. Dates in inconsistent formats ("Jan 5, 2020" vs. "1/5/2020") can be captured with separate patterns.</li>
+      <li>You need to validate string format (does this look like a valid FIPS code?).</li>
+      <li>You need to extract a substring with a consistent structure from a longer, messier string.</li>
+      <li>You are working with open-ended text and need to flag responses that mention a key term.</li>
+    </ul>
+
+    <p><strong>Do not use regex when:</strong></p>
+    <ul>
+      <li>You know the exact string you are looking for. A simple <code>contains(var, "Florida")</code> or <code>== "Florida"</code> is faster, clearer, and harder to get wrong.</li>
+      <li>The pattern is so complex that the regex is unreadable without extensive comments. At that point, parsing in steps is more maintainable.</li>
+      <li>You are matching against a lookup table of allowed values. Use a merge or a lookup table, not a long alternation pattern.</li>
+    </ul>
+
+    <p>Regex is powerful but not always the right tool. A regex that almost works is worse than no regex: it silently misclassifies observations.</p>
+
+    <h2>The Risk of Over-Cleaning</h2>
+
+    <p>String cleaning has a failure mode in the opposite direction from under-cleaning: you can strip meaningful variation from the strings.</p>
+
+    <p>If you standardize all racial/ethnic category labels to match a lookup table, make sure your lookup table preserves the distinctions you care about. Collapsing "Mexican American," "Puerto Rican," and "Cuban American" into "Hispanic/Latino" for the sake of standardization discards information that may matter for your analysis.</p>
+
+    <p>If you strip punctuation to make string comparisons easier, make sure punctuation is not meaningful. Stripping periods from "Dr." vs. "Mr." collapses titles that may be relevant.</p>
+
+    <p>The principle: clean just enough to make your specific operation work. Do not apply blanket transformations without checking what gets collapsed.</p>
+
+    <h2>Why Standardize Before Merging, Never After</h2>
+
+    <p>String standardization must happen before merges, not after. If you merge two datasets on a string variable that has not been standardized, mismatches create non-merged rows: they disappear from the merged file rather than appearing with merge errors. You will not know they are missing unless you check the merge count against expectations.</p>
+
+    <p>If you try to standardize after the merge, you are standardizing a variable that already has missing rows baked into it. The records that did not merge are gone. You cannot recover them by cleaning the string in the merged file.</p>
+
+    <p>The workflow: (1) clean and standardize all merge key variables in each source file; (2) verify that values in the key variable have the expected distribution; (3) merge; (4) check the merge count and inspect unmatched rows.</p>
+
+    <h2>Parsing vs. Matching</h2>
+
+    <p><strong>Parsing</strong> extracts structure from within a string. "January 5, 2020" can be parsed into a month, day, and year. A full name "Smith, John A." can be parsed into last name, first name, and middle initial. Parsing imposes a schema on unstructured text.</p>
+
+    <p><strong>Matching</strong> determines whether two strings refer to the same thing. Exact matching requires character-for-character equality. Fuzzy matching (using edit distance or other string similarity metrics) allows for small differences in spelling. Fuzzy matching is appropriate when you expect typos or minor formatting inconsistencies; exact matching is appropriate when strings have been standardized and you expect precision.</p>
+
+    <p>The two operations require different tools and different thinking. Parsing is about extracting structure; matching is about asserting identity.</p>
+
+    <h2>Strengths, Weaknesses, and Alternatives</h2>
+
+    <table>
+      <thead><tr><th></th><th>String Manipulation</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Strengths</strong></td><td>Enables merges and categorization that would otherwise fail; regular expressions scale to large text data; standardization is reproducible and verifiable</td></tr>
+        <tr><td><strong>Weaknesses</strong></td><td>Easy to introduce subtle bugs (regex with off-by-one errors; overcleaning that collapses distinct values); requires domain knowledge to know which standardizations are appropriate</td></tr>
+        <tr><td><strong>Alternatives</strong></td><td>For large-scale text classification (sentiment, topic), machine learning approaches (bag-of-words, embeddings) outperform manual string manipulation. For fuzzy record linkage across datasets, probabilistic record linkage algorithms (Fellegi-Sunter model) are more principled than ad-hoc edit-distance cutoffs.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

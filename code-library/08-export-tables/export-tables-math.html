@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Export Tables — Mathematical Derivation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+  <style>
+    :root { --bg:#faf8f5; --text:#111111; --muted:#666666; --border:#d8d4ce; --accent:#7a3b2e; }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:var(--text);font-family:'EB Garamond',Georgia,serif;font-size:1.08rem;line-height:1.8;padding:48px 24px 96px;}
+    body::before{content:'';display:block;position:fixed;top:0;left:0;right:0;height:4px;background:var(--accent);z-index:100;}
+    .page{max-width:680px;margin:0 auto;}
+    .back{font-family:'Inter',sans-serif;font-size:0.78rem;color:var(--muted);text-decoration:none;display:inline-block;margin-bottom:40px;}
+    .back:hover{color:var(--accent);}
+    h1{font-size:1.75rem;font-weight:400;margin-bottom:6px;line-height:1.3;}
+    .subtitle{font-family:'Inter',sans-serif;font-size:0.72rem;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);margin-bottom:48px;}
+    h2{font-family:'Inter',sans-serif;font-size:0.72rem;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);margin:52px 0 18px;padding-top:52px;border-top:1px solid var(--border);}
+    h3{font-size:1.05rem;font-weight:500;margin:28px 0 10px;}
+    p{margin-bottom:16px;}
+    p:last-child{margin-bottom:0;}
+    .practice{border-left:3px solid var(--accent);padding-left:16px;color:var(--muted);font-size:0.95rem;margin:0 0 24px;font-style:italic;}
+    .eq{background:#f2ede7;border:1px solid var(--border);border-radius:4px;padding:20px 24px;margin:20px 0;overflow-x:auto;text-align:center;}
+    table{width:100%;border-collapse:collapse;font-size:0.92rem;margin-bottom:24px;}
+    th{font-family:'Inter',sans-serif;font-size:0.68rem;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);text-align:left;padding:8px 12px;border-bottom:1px solid var(--border);}
+    td{padding:8px 12px;border-bottom:1px solid var(--border);vertical-align:top;line-height:1.55;}
+    td:first-child{font-family:'Inter',sans-serif;font-size:0.85rem;white-space:nowrap;}
+    ul,ol{padding-left:1.4em;margin-bottom:16px;}
+    li{margin-bottom:6px;}
+    strong{font-weight:500;}
+    em{font-style:italic;}
+    code{font-family:'Inter',monospace;font-size:0.83rem;background:#ece8e2;padding:1px 5px;border-radius:3px;}
+    .katex-display{overflow-x:auto;}
+  </style>
+</head>
+<body>
+  <div class="page">
+    <a class="back" href="../../code-library.html">← Code Library</a>
+    <h1>Export Tables</h1>
+    <div class="subtitle">Mathematical Derivation</div>
+
+    <h2>Symbols</h2>
+    <table>
+      <thead><tr><th>Symbol</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td>$Y$</td><td>$n \times 1$ outcome vector</td></tr>
+        <tr><td>$X$</td><td>$n \times p$ design matrix (includes intercept column)</td></tr>
+        <tr><td>$\beta$</td><td>$p \times 1$ true coefficient vector</td></tr>
+        <tr><td>$\hat{\beta}$</td><td>OLS estimator: $\hat{\beta} = (X^\top X)^{-1} X^\top Y$</td></tr>
+        <tr><td>$\varepsilon$</td><td>$n \times 1$ error vector</td></tr>
+        <tr><td>$\hat{\varepsilon}$</td><td>$n \times 1$ residual vector: $\hat{\varepsilon} = Y - X\hat{\beta}$</td></tr>
+        <tr><td>$n$</td><td>Number of observations</td></tr>
+        <tr><td>$p$</td><td>Number of parameters (including intercept)</td></tr>
+        <tr><td>$SSR$</td><td>Residual sum of squares: $\hat{\varepsilon}^\top \hat{\varepsilon} = \sum_i \hat{\varepsilon}_i^2$</td></tr>
+        <tr><td>$SST$</td><td>Total sum of squares: $\sum_i (y_i - \bar{y})^2$</td></tr>
+        <tr><td>$SSM$</td><td>Model sum of squares: $SST - SSR$</td></tr>
+        <tr><td>$\sigma^2$</td><td>True error variance</td></tr>
+        <tr><td>$\hat{\sigma}^2$</td><td>Estimated error variance: $SSR/(n-p)$</td></tr>
+        <tr><td>$\sigma_k$</td><td>True standard deviation of $\hat{\beta}_k$</td></tr>
+        <tr><td>$SE(\hat{\beta}_k)$</td><td>Estimated standard error of $\hat{\beta}_k$</td></tr>
+        <tr><td>$t$</td><td>$t$-statistic for testing $H_0: \beta_k = 0$</td></tr>
+        <tr><td>$t_{\alpha/2,\, n-p}$</td><td>$t$ critical value with $n-p$ degrees of freedom</td></tr>
+        <tr><td>$R^2$</td><td>Coefficient of determination</td></tr>
+        <tr><td>$R^2_{\text{adj}}$</td><td>Adjusted $R^2$</td></tr>
+        <tr><td>$\hat{\ell}$</td><td>Maximized log-likelihood</td></tr>
+        <tr><td>$\hat{p}_i$</td><td>Predicted probability in logistic regression</td></tr>
+        <tr><td>$AIC$</td><td>Akaike Information Criterion</td></tr>
+        <tr><td>$BIC$</td><td>Bayesian Information Criterion (Schwarz criterion)</td></tr>
+        <tr><td>$MDE$</td><td>Minimum detectable effect</td></tr>
+        <tr><td>$z_{\alpha/2}$</td><td>Standard normal critical value at tail probability $\alpha/2$</td></tr>
+        <tr><td>$z_\gamma$</td><td>Standard normal critical value for power $1 - \gamma$</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Part A — The t-Statistic and p-Value</h2>
+    <div class="practice">In practice: Every regression output you will ever read contains t-statistics and p-values. Understanding the derivation tells you exactly what assumptions are required for those numbers to be valid, and when to be skeptical of them.</div>
+
+    <h3>Setup</h3>
+    <p>We have fit the OLS model $Y = X\beta + \varepsilon$ where $Y$ is an $n \times 1$ outcome vector, $X$ is an $n \times p$ design matrix (including the intercept column), $\beta$ is a $p \times 1$ coefficient vector, and $\varepsilon$ is an $n \times 1$ error vector.</p>
+    <p>The OLS estimator is:</p>
+    <div class="eq">$$\hat{\beta} = (X^\top X)^{-1} X^\top Y$$</div>
+    <p>Under the OLS assumptions ($X$ is full rank; $\varepsilon \sim N(0, \sigma^2 I)$), the distribution of $\hat{\beta}$ is:</p>
+    <div class="eq">$$\hat{\beta} \sim N\!\left(\beta,\; \sigma^2 (X^\top X)^{-1}\right)$$</div>
+    <p>For a single coefficient $\hat{\beta}_k$:</p>
+    <div class="eq">$$\hat{\beta}_k \sim N\!\left(\beta_k,\; \sigma^2 \cdot [(X^\top X)^{-1}]_{kk}\right)$$</div>
+    <p>Standardizing:</p>
+    <div class="eq">$$\frac{\hat{\beta}_k - \beta_k}{\sigma_k} \sim N(0, 1)$$</div>
+    <p>where $\sigma_k = \sigma \cdot \sqrt{[(X^\top X)^{-1}]_{kk}}$.</p>
+
+    <h3>Deriving the t-Statistic</h3>
+    <p>We don't know $\sigma$, so replace it with $\hat{\sigma} = \sqrt{SSR/(n-p)}$. The <strong>estimated standard error</strong> is:</p>
+    <div class="eq">$$SE(\hat{\beta}_k) = \hat{\sigma} \cdot \sqrt{[(X^\top X)^{-1}]_{kk}}$$</div>
+    <p>Under the null hypothesis $H_0: \beta_k = 0$, the ratio:</p>
+    <div class="eq">$$t = \frac{\hat{\beta}_k}{SE(\hat{\beta}_k)}$$</div>
+    <p>follows a $t$-distribution with $n - p$ degrees of freedom. This requires two facts:</p>
+    <ol>
+      <li>$(\hat{\beta}_k - 0) / \sigma_k \sim N(0, 1)$</li>
+      <li>$(n-p)\hat{\sigma}^2 / \sigma^2 \sim \chi^2_{n-p}$, and this quantity is independent of $\hat{\beta}_k$</li>
+    </ol>
+    <p>The ratio of a standard normal to the square root of a $\chi^2_{n-p}/(n-p)$ quantity is, by definition, a $t_{n-p}$ random variable.</p>
+    <p>In Stata output this $t$-statistic appears in the "t" column. In R's <code>summary()</code>, it is labeled "t value". The $p$-value in the next column is $2 \cdot P(T > |t|)$.</p>
+
+    <h3>Two-Sided p-Value</h3>
+    <p>The two-sided $p$-value for observed test statistic $t_{\text{obs}}$ is:</p>
+    <div class="eq">$$p = 2 \cdot P\!\left(T > |t_{\text{obs}}| \mid H_0\right)$$</div>
+    <p>where $T \sim t_{n-p}$. The factor of 2 accounts for both tails of the symmetric distribution. We reject $H_0$ at level $\alpha$ when $p < \alpha$, equivalently when $|t_{\text{obs}}| > t_{\alpha/2,\, n-p}$. As $n$ grows large relative to $p$, the $t_{n-p}$ distribution converges to $N(0,1)$, which is why large-sample work uses $z = 1.96$ as the 95% critical value.</p>
+
+    <h2>Part B — Confidence Intervals</h2>
+    <div class="practice">In practice: A regression table without confidence intervals forces readers to do mental arithmetic from $\hat{\beta}$ and SE to recover the interval. Most journals now require or strongly prefer CIs. Reporting them also subtly shifts attention from significance to magnitude.</div>
+
+    <h3>Deriving the CI from the Pivot Quantity</h3>
+    <p>The key is the <strong>pivot quantity</strong>: a function of the data and the parameter whose distribution does not depend on any unknown parameter.</p>
+    <div class="eq">$$\frac{\hat{\beta}_k - \beta_k}{SE(\hat{\beta}_k)} \sim t_{n-p}$$</div>
+    <p>We know this distribution exactly ($t_{n-p}$ under normality assumptions). Define $t_{\alpha/2,\, n-p}$ as the critical value such that $P(|T| \leq t_{\alpha/2,\, n-p}) = 1 - \alpha$.</p>
+    <p>Start from the probability statement:</p>
+    <div class="eq">$$P\!\left(-t_{\alpha/2,\,n-p} \leq \frac{\hat{\beta}_k - \beta_k}{SE(\hat{\beta}_k)} \leq t_{\alpha/2,\,n-p}\right) = 1 - \alpha$$</div>
+    <p>Multiply all parts by $SE(\hat{\beta}_k)$ (positive, so inequality direction preserved):</p>
+    <div class="eq">$$P\!\left(-t_{\alpha/2,\,n-p} \cdot SE(\hat{\beta}_k) \leq \hat{\beta}_k - \beta_k \leq t_{\alpha/2,\,n-p} \cdot SE(\hat{\beta}_k)\right) = 1 - \alpha$$</div>
+    <p>Subtract $\hat{\beta}_k$ and multiply by $-1$ (flip inequalities):</p>
+    <div class="eq">$$P\!\left(\hat{\beta}_k - t_{\alpha/2,\,n-p} \cdot SE(\hat{\beta}_k) \leq \beta_k \leq \hat{\beta}_k + t_{\alpha/2,\,n-p} \cdot SE(\hat{\beta}_k)\right) = 1 - \alpha$$</div>
+    <p>The <strong>$(1-\alpha)$ confidence interval</strong> is:</p>
+    <div class="eq">$$\hat{\beta}_k \pm t_{\alpha/2,\,n-p} \cdot SE(\hat{\beta}_k)$$</div>
+    <p>For $\alpha = 0.05$ and large $n$: $t_{0.025,\, n-p} \approx 1.96$. For small samples ($n - p < 30$), the exact $t$ critical value is noticeably larger, making the interval wider to reflect the additional uncertainty from estimating $\sigma$.</p>
+    <p>A 95% CI of [0.12, 0.48] means: in repeated sampling, 95% of such intervals would contain the true $\beta$. It does <em>not</em> mean "there is a 95% chance $\beta$ is in this interval." The true $\beta$ is fixed, not random. The interval is the random object here, varying from sample to sample.</p>
+
+    <h2>Part C — R² and Adjusted R²</h2>
+    <div class="practice">In practice: $R^2$ is the first thing many readers look at in a regression table. Understanding when it is informative and when it is not will prevent you from both over-trusting and under-trusting reported model fit.</div>
+
+    <h3>Decomposition of Variance</h3>
+    <p>Define:</p>
+    <div class="eq">$$\begin{aligned} SST &= \sum_i (y_i - \bar{y})^2 \quad \text{(total variation in } Y \text{ around its mean)} \\ SSR &= \sum_i \hat{\varepsilon}_i^2 \quad \text{(residual variation unexplained by the model)} \\ SSM &= SST - SSR \quad \text{(variation explained by the model)} \end{aligned}$$</div>
+    <p>$R^2$ is the proportion of variance in $Y$ explained by the model:</p>
+    <div class="eq">$$R^2 = \frac{SSM}{SST} = 1 - \frac{SSR}{SST}$$</div>
+    <p>An $R^2$ of 0.35 in a cross-sectional sociology study is typical and reasonable. An $R^2$ of 0.95 in the same context should raise suspicion of collinearity, overfitting, or a conceptual problem like predicting a variable with itself.</p>
+
+    <h3>Why R² Cannot Decrease When a Variable Is Added</h3>
+    <p>Adding a predictor gives the OLS estimator more degrees of freedom to minimize $SSR$. The unconstrained minimizer over a larger parameter space can only do as well as or better than the constrained minimizer over the smaller space.</p>
+    <p>Formally: let $\hat{\beta}$ be the OLS estimates with $p$ parameters, and let $\hat{\beta}^*$ be the OLS estimates with $p+1$ parameters. Setting the new variable's coefficient to zero in the expanded model recovers the original model exactly, achieving the same $SSR$. Since OLS minimizes $SSR$, the expanded model achieves:</p>
+    <div class="eq">$$SSR^* \leq SSR$$</div>
+    <p>Therefore:</p>
+    <div class="eq">$$R^{2*} = 1 - \frac{SSR^*}{SST} \geq 1 - \frac{SSR}{SST} = R^2$$</div>
+    <p>$R^2$ is a non-decreasing function of the number of predictors. A model with 20 random noise variables will have higher $R^2$ than the same model with 10 of them, even though the extra 10 predict nothing. This is why you should never compare models by raw $R^2$ alone when they have different numbers of predictors.</p>
+
+    <h3>Adjusted R²</h3>
+    <p><strong>Adjusted $R^2$</strong> penalizes for added parameters by adjusting both $SSR$ and $SST$ by their respective degrees of freedom:</p>
+    <div class="eq">$$R^2_{\text{adj}} = 1 - \frac{SSR / (n - p)}{SST / (n - 1)}$$</div>
+    <p>Expanding:</p>
+    <div class="eq">$$\begin{aligned} R^2_{\text{adj}} &= 1 - \frac{SSR \cdot (n - 1)}{SST \cdot (n - p)} \\ &= 1 - (1 - R^2) \cdot \frac{n - 1}{n - p} \end{aligned}$$</div>
+    <p>When a new variable is added, $p$ increases by 1 and the denominator $(n - p)$ decreases. This makes the penalty term $(1 - R^2)(n-1)/(n-p)$ larger, reducing $R^2_{\text{adj}}$ unless the new variable reduces $SSR$ enough to compensate. A variable that explains nothing increases $SSR/(n-p)$ because the denominator shrinks while the numerator is nearly unchanged. Adjusted $R^2$ can therefore decrease when an uninformative variable is added, which is the desirable property for model comparison.</p>
+
+    <h2>Part D — AIC and BIC for Likelihood-Based Models</h2>
+    <div class="practice">In practice: AIC and BIC are the workhorse model-selection criteria for logistic regression, mixed models, and survival models, where $R^2$ has no clean interpretation. They give you a principled way to compare models with different numbers of predictors.</div>
+
+    <h3>Likelihood Setup</h3>
+    <p>Logistic regression estimates parameters $\beta$ by maximizing the <strong>log-likelihood</strong>. With binary outcome $Y_i \in \{0,1\}$ and predicted probability $\hat{p}_i = 1/(1 + \exp(-X_i\beta))$:</p>
+    <div class="eq">$$\ell(\beta) = \sum_i \left[Y_i \log(\hat{p}_i) + (1 - Y_i)\log(1 - \hat{p}_i)\right]$$</div>
+    <p>Let $\hat{\ell} = \ell(\hat{\beta})$ be the <strong>maximized log-likelihood</strong> (evaluated at the MLE). Higher $\hat{\ell}$ means better fit. Adding parameters always weakly increases $\hat{\ell}$, for the same reason $R^2$ cannot decrease; so raw likelihood cannot serve as a model-selection criterion.</p>
+
+    <h3>AIC</h3>
+    <p>The <strong>Akaike Information Criterion</strong> is:</p>
+    <div class="eq">$$AIC = -2\hat{\ell} + 2p$$</div>
+    <p>where $p$ is the number of estimated parameters. The term $-2\hat{\ell}$ is the <strong>deviance</strong> (lower is better fit); the term $2p$ is the penalty for complexity. AIC is on a scale where lower is better.</p>
+    <p>The factor of 2 is conventional and derives from Akaike's asymptotic result: the expected difference in log-likelihood between a fitted model and a new dataset from the same process is approximately $p$ (the number of parameters). Multiplying by $-2$ puts AIC on the deviance scale.</p>
+
+    <h3>BIC</h3>
+    <p>The <strong>Bayesian Information Criterion</strong> (also called the Schwarz criterion) is:</p>
+    <div class="eq">$$BIC = -2\hat{\ell} + p \cdot \ln(n)$$</div>
+    <p>The penalty is now $p \cdot \ln(n)$ instead of $2p$. For $n > e^2 \approx 7.4$, we have $\ln(n) > 2$, so BIC penalizes complexity more severely than AIC. For $n = 1{,}000$ (a modest survey sample), $\ln(1000) \approx 6.9$, so BIC penalizes each parameter roughly 3.5 times more heavily than AIC. For $n = 60{,}000$ (roughly the CES 2020 sample), $\ln(60{,}000) \approx 11.0$, making BIC extremely conservative about adding parameters.</p>
+
+    <h3>Worked Comparison</h3>
+    <p>Suppose you fit two logistic regression models on the same outcome:</p>
+    <div class="eq">$$\begin{aligned} \text{Model 1:} &\quad AIC = 1420,\quad p = 8 \text{ parameters} \\ \text{Model 2:} &\quad AIC = 1404,\quad p = 10 \text{ parameters} \end{aligned}$$</div>
+    <p>Model 2 is preferred. The lower-AIC model is preferred. The difference of 16 is large by conventional standards (a difference greater than 10 is considered strong evidence against the higher-AIC model). Note that Model 2 has more parameters but still wins, because its improved fit (lower deviance) more than compensates for the added complexity penalty.</p>
+    <p>The practical consequence of the AIC/BIC tradeoff: in large samples, AIC tends to prefer more complex models (it rewards fit gains from adding predictors), while BIC tends to prefer simpler models (its large-$n$ penalty overwhelms modest fit improvements). For applied social science where parsimony and interpretability matter, BIC's conservatism is often appropriate. For prediction tasks where fit matters more, AIC is often preferred.</p>
+
+    <h2>Part E — What Significance Stars Hide</h2>
+    <div class="practice">In practice: Significance stars are ubiquitous in sociology tables, but they compress continuous p-values into a three-level categorical variable. Understanding what they hide is essential for correctly reading other people's work and for deciding how much information your own tables communicate.</div>
+
+    <h3>What Stars Are</h3>
+    <p>Stars encode the $p$-value into three categories:</p>
+    <div class="eq">$$\begin{aligned} * &\quad \text{denotes } p < .05 \\ ** &\quad \text{denotes } p < .01 \\ *** &\quad \text{denotes } p < .001 \end{aligned}$$</div>
+    <p>These correspond to the null rejection region for one of three pre-specified thresholds. They are decision rules built into the reporting format.</p>
+    <p>A coefficient with $p = 0.048$ and a coefficient with $p = 0.002$ both get one star in most schemes. They are telling very different stories about the evidence.</p>
+
+    <h3>The Power-Versus-Sample-Size Tradeoff</h3>
+    <p>Consider a true population effect $\beta = 0.10$ (substantively small but nonzero) in a two-sided $t$-test. The $t$-statistic is:</p>
+    <div class="eq">$$t = \frac{\hat{\beta}}{SE(\hat{\beta})} = \frac{\hat{\beta}}{\sigma / \sqrt{n}}$$</div>
+    <p>As $n$ grows, $SE \to 0$ and $t \to \infty$. For any fixed nonzero effect $\beta$, there exists $n$ large enough that $t$ exceeds 1.96 with probability approaching 1. A survey of 60,000 respondents will produce statistically significant results for effects that are trivially small in substantive terms.</p>
+    <p>Now consider a small study ($n = 200$) with a large true effect $\beta = 0.50$. The $t$-statistic may still fall below 1.96 because $SE = \sigma/\sqrt{200}$ is large. The estimate will not earn a star despite the large effect.</p>
+
+    <h3>Minimum Detectable Effect</h3>
+    <p>At the 5% level with power $1-\gamma$, the <strong>minimum detectable effect</strong> (MDE) satisfies:</p>
+    <div class="eq">$$MDE = (z_{\alpha/2} + z_\gamma) \cdot SE = (1.96 + z_\gamma) \cdot \frac{\sigma}{\sqrt{n}}$$</div>
+    <p>For 80% power: $z_{0.20} = 0.84$, so:</p>
+    <div class="eq">$$MDE = 2.80 \cdot \frac{\sigma}{\sqrt{n}}$$</div>
+    <p>As $n$ doubles, MDE shrinks by $\sqrt{2} \approx 1.41$. A study with four times the sample size can detect effects half as large. Stars tell you nothing about where the study sits on this curve. A *** result in a very large sample may be a negligible effect; a blank in a small study may be a large effect the study lacked power to detect.</p>
+
+    <h3>Why Reporting Both p-Values and Effect Sizes Is More Informative</h3>
+    <p>The full information content of a hypothesis test is captured by reporting:</p>
+    <ol>
+      <li>$\hat{\beta}$ (the point estimate, giving direction and magnitude)</li>
+      <li>$SE(\hat{\beta})$ or the 95% CI (giving precision)</li>
+      <li>The exact $p$-value (giving the probability of the observed $|t|$ or larger under $H_0$)</li>
+      <li>A substantive interpretation of $\hat{\beta}$ (what does a one-unit change mean in context?)</li>
+    </ol>
+    <p>Stars contribute only to point 3, and only in a coarsened form. They are useful as a quick scan for readers, but they are not a substitute for the quantities above. Reporting "$\hat{\beta} = 0.03$, $SE = 0.01$, $p = .003$ ***" gives more information than "$\hat{\beta} = 0.03$ ***", and incomparably more than "***" alone.</p>
+  </div>
+</body>
+</html>
