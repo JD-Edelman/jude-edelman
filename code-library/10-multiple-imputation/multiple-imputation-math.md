@@ -1,106 +1,161 @@
-# Module 10 — Multiple Imputation: Math
+# Multiple Imputation: Mathematical Derivation
 
-## Symbols Used in This File
+## Symbols
 
 | Symbol | Meaning |
-|---|---|
+|--------|---------|
 | M | Number of imputed datasets |
 | m | Index over imputed datasets, m = 1, ..., M |
-| Q̂_m | Point estimate of parameter Q from imputed dataset m |
-| Û_m | Within-imputation variance (= squared SE) from dataset m |
-| Q̄ | Pooled point estimate across M datasets |
+| Q | True population parameter of interest (e.g., a regression coefficient) |
+| Q̂_m | Point estimate of Q from the analysis of imputed dataset m |
+| Û_m | Within-imputation variance (squared SE) from imputed dataset m |
+| Q̄ | Pooled point estimate across M datasets (Rubin's Rules) |
 | Ū | Average within-imputation variance |
 | B | Between-imputation variance |
-| T | Total variance of pooled estimate |
+| T | Total variance of the pooled estimate |
 | λ | Fraction of missing information (FMI) |
-| ν | Degrees of freedom for pooled test |
+| ν | Degrees of freedom for the pooled t-test |
 | Xⱼ | The j-th variable being imputed |
 | X₋ⱼ | All variables except Xⱼ |
+| Mⱼ | Set of row indices where Xⱼ is originally missing |
+| x̃ⱼᵢ | Current imputed value of Xⱼ for observation i |
+| x̄ⱼ | Column mean of Xⱼ over observed rows |
 | p | Number of variables with missing values |
-| T_iter | Number of MICE iterations |
-| α, σ²_Z, σ²_ε | Parameters in a linear model used for variance derivation |
+| T_iter | Number of MICE Gibbs sampler iterations |
+| β̂, σ̂² | OLS coefficient estimate and residual variance from the imputation model |
+| β* , σ²* | Posterior draws of imputation model parameters |
+| α | True coefficient in the data-generating process for the variance derivation |
+| σ²_Z | Variance of the predictor Z in the variance derivation |
+| σ²_ε | Residual variance in the data-generating process |
+| n_obs | Number of observed rows for variable Xⱼ in the current MICE step |
 
 ---
 
 ## Part A — Rubin's Rules
 
-After creating M complete imputed datasets and running the analysis on each, you have M sets of estimates. Rubin's rules combine them into a single inferential statement.
+**In practice:** You run your regression (or whatever analysis) on each of the M completed datasets separately, producing M sets of estimates. Rubin's Rules tell you how to combine them into a single publishable result: one coefficient, one standard error, one p-value.
 
 ### Step 1: Pool the Point Estimates
 
-The pooled estimate is the simple average across M imputed datasets:
+The pooled estimate is the simple average of the M estimates:
 
+```
 Q̄ = (1/M) Σₘ₌₁ᴹ Q̂_m
+```
 
-This is unbiased for the true population parameter Q under MAR, because each Q̂_m is an unbiased estimate and the averaging over M datasets averages over the imputation uncertainty.
+This is unbiased for the true population parameter Q under MAR, because each Q̂_m is an unbiased estimate and averaging over M datasets averages out the imputation uncertainty.
+
+If your 20 imputed datasets give education coefficients of 0.31, 0.28, 0.33, and so on, the pooled estimate is their average: roughly 0.30. This is a weighted average of the information in each complete dataset.
 
 ### Step 2: Compute the Within-Imputation Variance
 
-Let Û_m = [SE(Q̂_m)]² be the estimated variance of Q̂_m from imputed dataset m. The average within-imputation variance is:
+Let Û_m = [SE(Q̂_m)]² be the estimated variance of Q̂_m from imputed dataset m. Average these across all M datasets:
 
+```
 Ū = (1/M) Σₘ₌₁ᴹ Û_m
+```
 
-This captures the ordinary sampling variability you would have with complete data: how much the estimate would vary across samples of the same size from the population.
+This is the uncertainty you would have even if there were no missing data. It is the ordinary sampling variability, reflecting how much the estimate would bounce around across different samples of the same size from the population.
 
 ### Step 3: Compute the Between-Imputation Variance
 
-The between-imputation variance captures how much the estimates vary across the M datasets due to uncertainty about the missing values:
+The between-imputation variance captures how much the M point estimates differ from each other due to uncertainty about the missing values:
 
+```
 B = [1/(M-1)] Σₘ₌₁ᴹ (Q̂_m - Q̄)²
+```
 
-This is just the sample variance of the M point estimates. If the missing data contribute little uncertainty (few missing values, strong predictors), B will be small. If the missing data are informative for Q, B will be large.
+This is the sample variance of the M point estimates. If the missing data contribute little uncertainty (few missing values, or strong predictors in the imputation model), B will be small. If the missing data are informative for Q, B will be large.
+
+If B is large relative to Ū, your missing data are informative for the parameter of interest and you need more imputations (larger M) to stabilize the estimate.
 
 ### Step 4: Total Variance
 
-The total variance combines both sources with a finite-M correction:
+The total variance of the pooled estimate combines both sources with a finite-M correction:
 
+```
 T = Ū + (1 + 1/M) · B
+```
 
-The factor (1 + 1/M) accounts for the fact that Q̄ is itself estimated from a finite number M of imputed datasets rather than from infinitely many. If M → ∞, the factor approaches 1 and T = Ū + B. For finite M, the between-imputation variance is slightly inflated.
+The factor (1 + 1/M) accounts for the fact that Q̄ is estimated from a finite number M of imputed datasets rather than infinitely many. If M → ∞, the factor approaches 1 and T = Ū + B. The extra 1/M term is the **Monte Carlo error** in Q̄ from using only M draws: the variance of Q̄ as a Monte Carlo estimator of the posterior mean contributes B/M to the total variance.
 
-**Why (1 + 1/M) and not (1)?**
+With M = 5 imputations and λ = 0.30, your SE is inflated by about 30% relative to a complete dataset. With M = 20, the Monte Carlo error in that inflation is negligible.
 
-If you had an infinite number of imputations, the average Q̄ would converge to the true posterior mean of Q given the observed data, and B would equal the true posterior variance B_∞. With only M imputations, the estimator Q̄ has an additional source of variability: the Monte Carlo error from using M draws instead of ∞. The variance of this Monte Carlo error is B_∞/M ≈ B/M. Adding this to B_∞ ≈ B gives B + B/M = (1 + 1/M)B.
+### Step 5: Pooled Inference
 
-### Step 5: Pooled Standard Error and Inference
+The pooled standard error:
 
-The pooled standard error is:
-
+```
 SE_pooled = √T
+```
 
-The pooled test statistic for H₀: Q = 0 is:
+The pooled test statistic for H₀: Q = 0:
 
+```
 t = Q̄ / √T
+```
 
-which is referred to a t-distribution with ν degrees of freedom (see Part B).
+This t-statistic is referred to a t-distribution with ν degrees of freedom, derived in Part B below.
 
 ---
 
-## Part B — Degrees of Freedom: The Barnard-Rubin Formula
+## Part B — Degrees of Freedom and the Fraction of Missing Information
 
-### Fraction of Missing Information
+**In practice:** FMI and degrees of freedom tell you how much the missing data are costing you. A high FMI means your missing data substantially inflate your standard errors and reduce the power of your tests.
 
-The FMI λ quantifies how much of the total variance T is attributable to the missing data:
+### Fraction of Missing Information (FMI)
 
+The **FMI** λ quantifies what proportion of the total variance T is attributable to the missing data rather than to ordinary sampling variability:
+
+```
 λ = (1 + 1/M) · B / T
+```
 
-When λ = 0, all uncertainty comes from sampling variability (no information lost to missingness). When λ = 1, all uncertainty comes from the imputation (the data provide essentially no information about Q).
+When λ = 0, all uncertainty comes from sampling variability (no information is lost to missingness). When λ = 1, all uncertainty comes from the imputation (the data provide essentially no information about Q).
+
+An FMI of 0.05 means the missing data cost you about 5% efficiency, which is essentially nothing. An FMI of 0.40 means your effective sample size is about 60% of what it would be with complete data.
 
 ### Adjusted Degrees of Freedom
 
-For a complete dataset of size n with k regression coefficients, degrees of freedom for a t-test would be n - k. With imputed data, the effective degrees of freedom depend on both M and λ:
+The **Barnard-Rubin** degrees-of-freedom formula for imputed data is:
 
+```
 ν = (M - 1) / λ²
+```
 
-This is the large-sample (Barnard-Rubin) formula. The original Rubin (1987) formula is slightly different; software typically implements a modified version that also accounts for the complete-data degrees of freedom. The key behavior:
+The key behavior:
 
-- When λ is small (few missing data), ν is large, and the t-distribution approaches normal. The missing data impose little penalty.
-- When λ is large (severe missingness), ν is small, giving a heavy-tailed t-distribution and wide confidence intervals. This is correct: severe missing data genuinely reduce what you can conclude.
-- When M is small, ν is also constrained by M - 1, penalizing for having too few imputed datasets. This is why older practice (M = 5) with high FMI (λ = 0.4) gave only ν = (5-1)/0.16 = 25 degrees of freedom even for large n. Increasing M to 20 gives ν = 19/0.16 = 119, much closer to the complete-data degrees of freedom.
+- When λ is small (little missing data), ν is large and the t-distribution approaches the normal. The missing data impose little penalty.
+- When λ is large (severe missingness), ν is small, giving a heavy-tailed t-distribution and wide confidence intervals. This is appropriate: severe missing data genuinely reduce what you can conclude.
+- When M is small, ν is also constrained by M - 1, penalizing you for having too few imputed datasets.
+
+### Numerical Example
+
+Suppose λ = 0.20 (20% of the variance is due to missing data).
+
+With M = 20 imputations:
+
+```
+ν = (20 - 1) / (0.20)²
+  = 19 / 0.04
+  = 475
+```
+
+With M = 5 imputations and the same λ:
+
+```
+ν = (5 - 1) / (0.20)²
+  = 4 / 0.04
+  = 100
+```
+
+More imputations give you more degrees of freedom for the test, producing less conservative inference. With M = 5, you are using a t(100) distribution; with M = 20, you are nearly at the normal (t(475) ≈ z). The old default of M = 5 imputations was adequate only when FMI was very small. For FMI around 0.20 or higher, M = 20 or more is advisable.
 
 ---
 
 ## Part C — The MICE Algorithm
+
+**In practice:** MICE (Multivariate Imputation by Chained Equations) is how modern software (R's `mice`, Stata's `mi impute chained`) actually generates the imputed datasets. It handles mixed variable types and complex missingness patterns by iterating through one variable at a time.
 
 ### Setup
 
@@ -108,81 +163,103 @@ Let there be p variables X₁, X₂, ..., Xₚ each with some missing values, on
 
 **Initialization:** Replace all missing values with column means:
 
+```
 x̃ⱼᵢ ← x̄ⱼ   for all i where Xⱼ is missing
+```
 
-These initial values are rough. Their only purpose is to provide a starting point for the iterative procedure.
+These initial values are rough placeholders. Their only purpose is to give the iterative procedure somewhere to start.
 
 ### One MICE Iteration
 
 For each variable j = 1, 2, ..., p in turn:
 
-1. **Set aside current imputations for Xⱼ.** Identify the set Mⱼ = {i : Xⱼᵢ is originally missing}. For these rows, the current value of x̃ⱼᵢ is a working imputation, not observed data.
+**Step 1: Identify missing rows.** Let Mⱼ = {i : Xⱼᵢ is originally missing}. For these rows, x̃ⱼᵢ is a working imputation, not real data.
 
-2. **Fit the imputation model.** Using only the observed rows of Xⱼ (all i not in Mⱼ), fit a regression:
+**Step 2: Fit the imputation model.** Using only the observed rows of Xⱼ (all i not in Mⱼ), fit a regression:
 
-   Xⱼ = β₀ + X₋ⱼ β + ε
+```
+Xⱼ = β₀ + X₋ⱼ β + ε
+```
 
-   where X₋ⱼ is the matrix of all other variables (using their currently imputed values for any rows where they were missing). Obtain coefficient estimates β̂ and residual variance estimate σ̂².
+where X₋ⱼ is the matrix of all other variables, using their currently imputed values for any rows where they were missing. Obtain coefficient estimates β̂ and residual variance estimate σ̂².
 
-3. **Draw from the posterior.** Draw new coefficient values from their posterior distribution:
+**Step 3: Draw from the posterior.** Rather than using β̂ directly, draw new parameter values from the posterior distribution:
 
-   σ²* ~ [Scaled Inverse-χ² with n_obs - p degrees of freedom and scale σ̂²]
-   β* ~ N(β̂, σ²* (X'_obs X_obs)⁻¹)
+```
+σ²* ~ [Scaled Inverse-χ² with n_obs - p degrees of freedom and scale σ̂²]
+β*  ~ N(β̂,  σ²* (X'_obs X_obs)⁻¹)
+```
 
-   where n_obs is the number of observed rows for Xⱼ and X_obs is the predictor matrix on those rows.
+This step injects uncertainty about the imputation model itself. It is essential for preserving variance (see Part D).
 
-4. **Generate imputed values.** For each row i in Mⱼ, draw:
+**Step 4: Generate imputed values.** For each row i in Mⱼ, draw:
 
-   x̃ⱼᵢ ~ N(x_{-j,i} β*, σ²*)
+```
+x̃ⱼᵢ ~ N(x_{-j,i} β*,  σ²*)
+```
 
-   This replaces the previous imputed value with a new draw from the posterior predictive distribution.
+This replaces the previous imputed value with a draw from the **posterior predictive distribution**: a value that is plausible given the data and uncertain given the parameters.
 
-After cycling through all j, one iteration is complete.
+After cycling through all p variables, one iteration is complete.
 
 ### Convergence
 
-Run the cycle for T_iter iterations. Convergence means the distribution of the imputed values has stabilized. In practice, check convergence by plotting the mean and variance of each imputed variable across iterations. These traces should appear stationary (no trend, mixing freely around a stable level) by roughly iteration 10-20.
+Run the cycle for T_iter iterations. Convergence means the distribution of imputed values has stabilized. In practice: run 10 to 20 iterations and plot the mean and SD of each imputed variable across iterations. If the traces look like white noise around a stable level, the chain has converged. A trace that is still trending upward or downward at iteration 20 indicates the chain has not mixed and you should run more iterations.
 
-**Theoretical justification:** Each pass through the p conditional distributions constitutes one sweep of a Gibbs sampler. Under regularity conditions (proper conditional posteriors, a proper joint posterior), the Gibbs sampler converges in distribution to the joint posterior p(X_missing | X_observed). This is the theoretically correct target: draws from this posterior predictive distribution represent M plausible complete datasets given the observed data.
+**Theoretical justification:** Each pass through the p conditional distributions constitutes one sweep of a **Gibbs sampler**. Under regularity conditions (proper conditional posteriors, a proper joint posterior), the Gibbs sampler converges in distribution to the joint posterior p(X_missing | X_observed). Draws from this posterior predictive distribution represent M plausible complete datasets given the observed data, which is exactly what Rubin's Rules require.
 
-After T_iter iterations, extract M complete datasets at evenly-spaced iteration points (or run M independent chains from different starting values). These are the M imputed datasets fed into Rubin's rules.
+After T_iter burn-in iterations, extract M complete datasets at evenly-spaced iteration points (or run M independent chains from different starting values). These are the M imputed datasets that feed into Rubin's Rules.
 
 ---
 
-## Part D — Why the Posterior Draw Preserves Variance
+## Part D — Why Posterior Draws Preserve Variance
 
-**Claim:** Imputing the conditional mean E[Xⱼ | X₋ⱼ] instead of drawing from the posterior reduces the variance of the imputed variable below the true variance σ²_Xⱼ.
+**In practice:** Some older imputation approaches replace missing values with the regression prediction (the conditional mean). This section shows why that deflates variance and biases downstream analyses, and why the posterior draw in MICE fixes the problem.
 
-**Derivation:**
+**Claim:** Imputing the conditional mean E[Xⱼ | X₋ⱼ] instead of drawing from the posterior reduces the variance of the imputed variable below its true variance.
+
+### Derivation
 
 Suppose the true data-generating process is:
 
+```
 X = αZ + ε
+```
 
-where Z is a scalar predictor, ε ~ N(0, σ²_ε), and Z and ε are independent.
+where Z is a scalar predictor, ε ~ N(0, σ²_ε), and Z and ε are independent. The true variance of X:
 
-The true variance of X is:
-
+```
 Var(X) = α² Var(Z) + σ²_ε = α²σ²_Z + σ²_ε
+```
 
 Now suppose we impute missing values of X by the conditional mean:
 
+```
 x̃ = E[X | Z] = αZ
+```
 
-The variance of the imputed variable is:
+The variance of these imputed values:
 
+```
 Var(x̃) = α² Var(Z) = α²σ²_Z
+```
 
-Since σ²_ε > 0, we have:
+Comparing:
 
-Var(x̃) = α²σ²_Z < α²σ²_Z + σ²_ε = Var(X)
+```
+Var(x̃) = α²σ²_Z  <  α²σ²_Z + σ²_ε = Var(X)
+```
 
-The imputed variable is less variable than the true variable. This is not a matter of degree; it is guaranteed whenever any residual variance exists in the true model (i.e., whenever prediction is not perfect).
+The imputed variable is less variable than the real variable. This is not a matter of degree; it is guaranteed whenever any residual variance σ²_ε > 0 exists in the true model, meaning whenever prediction is imperfect.
 
-**Consequence:** If X appears as a predictor in your outcome model, attenuating Var(X) reduces the variance of X in the dataset. The regression coefficient on X in the outcome model is:
+**Why this harms downstream analysis:** If X appears as a predictor in your outcome model, the regression coefficient on X depends on Var(X):
 
+```
 β̂_X = Cov(X, Y) / Var(X)
+```
 
-If Var(X) is shrunk artificially toward zero while Cov(X, Y) is shrunk less or unchanged, β̂_X will be biased. The direction depends on the specific model, but in practice conditional mean imputation attenuates (shrinks toward zero) the correlation between X and Y, mimicking measurement error attenuation.
+Artificially shrinking Var(X) while Cov(X, Y) is shrunk less (or not at all) biases β̂_X. The direction depends on the specific model, but in practice **conditional mean imputation** attenuates the correlation between X and Y, mimicking classical measurement error attenuation.
 
-**The fix:** draw x̃ ~ N(αZ, σ²_ε) rather than setting x̃ = αZ. The draw adds back the residual noise, restoring Var(x̃) ≈ Var(X) in expectation. This is exactly what the posterior predictive draw in the MICE algorithm does at Step 4 of each variable's imputation.
+**The fix:** draw x̃ ~ N(αZ, σ²_ε) rather than setting x̃ = αZ. The draw adds back the residual noise, restoring Var(x̃) ≈ Var(X) in expectation. This is exactly what Step 4 of the MICE algorithm does.
+
+Conditional mean imputation is like replacing every missing value with the regression prediction. It makes the imputed variable look like a perfect linear function of the predictors, which is never true of real data.

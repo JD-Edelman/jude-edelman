@@ -1,283 +1,389 @@
-# Module 14: Multilevel Models -- Math Reference
+# Multilevel Models: Mathematical Derivation
+
+## Symbols
+
+| Symbol | Meaning |
+|--------|---------|
+| i | Individual (level-1 unit), i = 1, ..., n_j |
+| j | Group (level-2 unit), j = 1, ..., J |
+| Y_ij | Outcome for individual i in group j |
+| X_ij | Individual-level predictor for individual i in group j |
+| W_j | Group-level predictor for group j |
+| β₀j | Group-specific intercept for group j |
+| β₁j | Group-specific slope for group j (random slope model) |
+| γ₀₀ | Grand intercept: population average baseline |
+| γ₁₀ | Average slope of X across all groups |
+| γ₁₁ | Cross-level interaction coefficient |
+| u₀j | Random intercept deviation for group j |
+| u₁j | Random slope deviation for group j |
+| ε_ij | Individual-level residual for person i in group j |
+| τ²₀₀ | Variance of random intercepts (between-group variance in baselines) |
+| τ²₁₁ | Variance of random slopes (between-group variance in X effects) |
+| τ₀₁ | Covariance between random intercepts and random slopes |
+| σ² | Variance of level-1 residuals (within-group variance) |
+| T | 2x2 covariance matrix of the random effects vector (u₀j, u₁j) |
+| ICC | Intraclass correlation coefficient |
+| n_j | Number of individuals in group j |
+| n̄ | Average group size across all groups |
+| DEFF | Design effect due to clustering |
+| Ȳ_j | Observed mean outcome for group j |
+| γ̂₀₀ | Estimated grand intercept |
+| ũ₀j | Empirical Bayes (shrunken) estimate of u₀j |
+| λ_j | Shrinkage weight for group j |
+| V_j | Marginal covariance matrix of outcomes for group j |
+| Z_j | Design matrix for random effects in group j |
 
 ---
 
-## Notation and index conventions
+## Part A — The Random Intercept Model
 
-- i: individual (level-1 unit), i = 1, ..., n_j
-- j: group (level-2 unit), j = 1, ..., J
-- Y_ij: outcome for individual i in group j
-- X_ij: individual-level predictor for individual i in group j
-- W_j: group-level predictor for group j
-- γ (gamma): fixed effects (population-average coefficients, analogous to β in OLS)
-- u (lowercase): random effects (group-specific deviations)
-- ε (epsilon): individual-level residual
-- τ² (tau-squared): variance of random effects (between-group variance)
-- σ² (sigma-squared): variance of level-1 residuals (within-group variance)
-- T: covariance matrix of a vector of random effects
+**In practice:** You have survey respondents nested in states, students nested in schools, or workers nested in organizations. The random intercept model lets each group have its own baseline level of the outcome while still estimating a single slope for individual-level predictors. It is the minimal multilevel specification and the right starting point before adding complexity.
 
----
-
-## Part A: The random intercept model
-
-### Level-1 equation
+### Level-1 Equation
 
 For individual i in group j:
 
-Y_ij = β₀ⱼ + β₁X_ij + ε_ij
+```
+Y_ij = β₀j + β₁ X_ij + ε_ij
+```
 
-The intercept β₀ⱼ carries a j subscript, meaning each group gets its own baseline. The slope β₁ is the same for all groups (it is fixed). The residual ε_ij ~ N(0, σ²) is the unexplained individual-level deviation.
+The subscript j on β₀j means each group gets its own intercept, not a fixed dummy, but a draw from a distribution. The slope β₁ is the same across all groups (fixed). The residual ε_ij ~ N(0, σ²) is individual-level noise unexplained by X or group membership.
 
-### Level-2 equation
+i indexes individuals; j indexes groups (states, schools, organizations). The level-2 subscript j on β₀j is the defining feature: each group gets its own intercept rather than a shared one.
 
-The group intercept itself is modeled as a function of a grand mean plus a group-specific deviation:
+### Level-2 Equation
 
-β₀ⱼ = γ₀₀ + u₀ⱼ
+The group intercept β₀j is itself modeled as a grand mean plus a group-specific deviation:
 
-where:
-- γ₀₀ is the grand intercept (average baseline across all groups)
-- u₀ⱼ is the random effect for group j, assumed u₀ⱼ ~ N(0, τ²₀₀)
+```
+β₀j = γ₀₀ + u₀j
+```
 
-The distribution N(0, τ²₀₀) expresses the assumption that group baselines are draws from a normal distribution. τ²₀₀ is the parameter that tells you how spread out those group baselines are. If τ²₀₀ = 0, all groups have the same intercept and multilevel modeling adds nothing over OLS.
+where γ₀₀ is the grand intercept (the average baseline across all groups) and u₀j is the **random effect** for group j, assumed:
 
-### Combined (reduced-form) equation
+```
+u₀j ~ N(0, τ²₀₀)
+```
+
+The variance τ²₀₀ controls how spread out the group baselines are. If τ²₀₀ = 0, all groups share the same intercept and a standard OLS regression is sufficient.
+
+### Combined (Reduced-Form) Equation
 
 Substitute the level-2 equation into the level-1 equation:
 
-Y_ij = (γ₀₀ + u₀ⱼ) + β₁X_ij + ε_ij
+```
+Y_ij = (γ₀₀ + u₀j) + β₁ X_ij + ε_ij
+Y_ij = γ₀₀ + β₁ X_ij + u₀j + ε_ij
+```
 
-Y_ij = γ₀₀ + β₁X_ij + u₀ⱼ + ε_ij
+The composite error u₀j + ε_ij has two parts: the group-level deviation (shared by everyone in group j) and individual-level noise. This is why treating grouped observations as independent observations is wrong: they share u₀j, creating within-group correlation that OLS does not account for.
 
-This is called the combined or reduced-form equation. It looks like an OLS regression with an additional error term u₀ⱼ that is shared by all individuals in the same group. The total error for individual i in group j is (u₀ⱼ + ε_ij).
+### Implied Variance
 
-### Implied variance of Y_ij
+Because u₀j and ε_ij are independent by assumption:
 
-Because u₀ⱼ and ε_ij are independent (by assumption):
+```
+Var(Y_ij) = Var(u₀j) + Var(ε_ij) = τ²₀₀ + σ²
+```
 
-Var(Y_ij) = Var(u₀ⱼ + ε_ij) = Var(u₀ⱼ) + Var(ε_ij) = τ²₀₀ + σ²
-
-Total variance partitions cleanly into between-group variance (τ²₀₀) and within-group variance (σ²). This partition is the foundation of the ICC.
+Total variance partitions cleanly into between-group variance (τ²₀₀) and within-group variance (σ²). This partition is the foundation of the ICC derived in Part B.
 
 ---
 
-## Part B: The intraclass correlation coefficient (ICC)
+## Part B — Variance Decomposition and ICC
 
-### Derivation
+**In practice:** Before estimating any multilevel model, compute the ICC from a null model (no predictors). It tells you how much of the outcome's variance is between groups. Even a moderate ICC has large consequences for inference when group sizes are substantial.
 
-Take two individuals i and i' from the same group j (i ≠ i'). Their combined errors are:
+### Deriving the ICC from Within-Group Correlation
 
-e_ij  = u₀ⱼ + ε_ij
-e_i'j = u₀ⱼ + ε_i'j
+Take two different individuals i and i' from the same group j. Their composite errors are:
 
-Compute their covariance. Since ε_ij and ε_i'j are independent of each other and of u₀ⱼ:
+```
+e_ij  = u₀j + ε_ij
+e_i'j = u₀j + ε_i'j
+```
 
-Cov(e_ij, e_i'j) = Cov(u₀ⱼ + ε_ij, u₀ⱼ + ε_i'j)
-                 = Var(u₀ⱼ) + Cov(u₀ⱼ, ε_i'j) + Cov(ε_ij, u₀ⱼ) + Cov(ε_ij, ε_i'j)
-                 = τ²₀₀ + 0 + 0 + 0
+Compute their covariance. Since ε_ij and ε_i'j are independent of each other and of u₀j:
+
+```
+Cov(e_ij, e_i'j) = Cov(u₀j + ε_ij, u₀j + ε_i'j)
+                 = Var(u₀j) + 0 + 0 + 0
                  = τ²₀₀
+```
 
-The correlation between two observations from the same group is:
+The correlation between two people from the same group is:
 
-Corr(Y_ij, Y_i'j) = Cov(Y_ij, Y_i'j) / Var(Y_ij)
-                   = τ²₀₀ / (τ²₀₀ + σ²)
+```
+Corr(Y_ij, Y_i'j) = Cov(Y_ij, Y_i'j) / Var(Y_ij) = τ²₀₀ / (τ²₀₀ + σ²)
+```
 
 This ratio is the **intraclass correlation coefficient**:
 
+```
 ICC = τ²₀₀ / (τ²₀₀ + σ²)
+```
 
-### Interpretation
+The ICC is simultaneously: (1) the proportion of total variance that is between groups, and (2) the correlation between two randomly chosen people from the same group.
 
-ICC ∈ [0, 1].
+### Worked Example
 
-- ICC = 0: all the variance is within groups; knowing the group membership tells you nothing about the outcome.
-- ICC = 0.20: 20% of total outcome variance is attributable to group membership. Two randomly chosen people from the same group have a correlation of 0.20 in their outcomes, before conditioning on any predictors.
-- High ICC means clustering is severe and ignoring it in OLS would badly underestimate standard errors.
+If τ²₀₀ = 0.15 and σ² = 0.85:
 
-### Effective sample size
+```
+ICC = 0.15 / (0.15 + 0.85) = 0.15 / 1.00 = 0.15
+```
 
-The "design effect" due to clustering is approximately:
+15% of variance in the outcome is between states; 85% is within states. An ICC of 0.10 sounds small but it implies that treating observations as independent inflates your false positive rate substantially. Even ICC = 0.05 with cluster size 20 gives a design effect close to 2.
 
+### Design Effect
+
+The **design effect** (DEFF) quantifies how much clustering inflates the variance of estimates compared to a simple random sample of the same size:
+
+```
 DEFF ≈ 1 + (n̄ - 1) · ICC
+```
 
-where n̄ is the average group size. The effective sample size is N / DEFF. If ICC = 0.15 and average group size is 50, DEFF ≈ 1 + 49 × 0.15 = 8.35. Your 5,000-person sample has the inferential power of roughly 599 independent observations. Ignoring this inflates your t-statistics by a factor of √8.35 ≈ 2.9.
+The effective sample size is N / DEFF. If ICC = 0.15 and average group size is 50:
+
+```
+DEFF = 1 + (50 - 1) × 0.15 = 1 + 7.35 = 8.35
+```
+
+A 5,000-person sample has the inferential power of roughly 5000/8.35 = 599 independent observations. Ignoring this inflates t-statistics by a factor of √8.35 ≈ 2.9. See Module 05 for more on design effects.
 
 ---
 
-## Part C: The random slope model
+## Part C — Random Slope Extension
 
-### Level-1 equation
+**In practice:** If you have reason to believe the effect of your predictor (say, education) varies across groups (states), add a random slope. The key question before doing so: do you have enough groups and enough observations per group to estimate the additional variance component τ²₁₁ reliably? As a rough rule, you need at least 30 groups for stable random slope estimation.
 
-Y_ij = β₀ⱼ + β₁ⱼ X_ij + ε_ij
+### Level-1 Equation
 
-Both the intercept β₀ⱼ and the slope β₁ⱼ now carry a j subscript. The effect of X on Y is allowed to vary across groups.
+Both the intercept and the slope now carry a j subscript:
 
-### Level-2 equations
+```
+Y_ij = β₀j + β₁j X_ij + ε_ij
+```
 
-β₀ⱼ = γ₀₀ + u₀ⱼ
-β₁ⱼ = γ₁₀ + u₁ⱼ
+### Level-2 Equations
 
-where:
-- γ₀₀ is the grand intercept (average baseline)
-- γ₁₀ is the average slope of X across groups
-- u₀ⱼ is the group deviation in the intercept
-- u₁ⱼ is the group deviation in the slope
+```
+β₀j = γ₀₀ + u₀j
+β₁j = γ₁₀ + u₁j
+```
+
+where γ₀₀ is the grand intercept, γ₁₀ is the average slope of X across groups, u₀j is the group deviation in the intercept, and u₁j is the group deviation in the slope.
 
 The two random effects are jointly distributed as multivariate normal:
 
-(u₀ⱼ, u₁ⱼ) ~ MVN(0, T)
+```
+(u₀j, u₁j) ~ MVN(0, T)
+```
 
-where T is the 2×2 covariance matrix:
+where T is the 2x2 covariance matrix:
 
-T = | τ²₀₀   τ₀₁ |
+```
+T = | τ²₀₀   τ₀₁  |
     | τ₀₁    τ²₁₁ |
+```
 
-- τ²₀₀: variance of group intercepts (same as before)
-- τ²₁₁: variance of group slopes. How much does the slope of X vary across groups? Large τ²₁₁ means the relationship between X and Y is genuinely different across contexts.
-- τ₀₁: covariance between intercepts and slopes. Positive τ₀₁ means groups that start high on the outcome also tend to show stronger effects of X. Negative τ₀₁ means high-baseline groups show weaker (or reversed) slopes.
+τ²₁₁ > 0 means the effect of education on ideology varies across states: some states show a strong education-ideology relationship, others show almost none. τ₀₁ < 0 would mean states with high average ideology have a weaker education effect.
 
-### Combined equation
+### Combined Equation
 
 Substitute both level-2 equations into the level-1 equation:
 
-Y_ij = (γ₀₀ + u₀ⱼ) + (γ₁₀ + u₁ⱼ) X_ij + ε_ij
+```
+Y_ij = (γ₀₀ + u₀j) + (γ₁₀ + u₁j) X_ij + ε_ij
+Y_ij = γ₀₀ + γ₁₀ X_ij + u₀j + u₁j X_ij + ε_ij
+```
 
-Y_ij = γ₀₀ + γ₁₀ X_ij + u₀ⱼ + u₁ⱼ X_ij + ε_ij
+The term u₁j X_ij is a group-by-predictor interaction embedded in the error structure. This is what makes the model "mixed": it has fixed effects (γ₀₀, γ₁₀) and random effects (u₀j, u₁j) that interact with predictors.
 
-The term u₁ⱼ X_ij is a group-by-variable interaction embedded in the error structure. This is what makes the model "mixed" -- it has both fixed effects (γ₀₀, γ₁₀) and random effects (u₀ⱼ, u₁ⱼ) that interact with predictors.
+### Implied Variance (Random Slope Model)
 
-### Implied variance of Y_ij (random slope model)
-
+```
 Var(Y_ij) = τ²₀₀ + 2τ₀₁ X_ij + τ²₁₁ X²_ij + σ²
+```
 
-This variance is no longer constant across individuals: it depends on X_ij. Groups with extreme values of X contribute more to the heteroscedasticity if τ²₁₁ > 0. This is a key diagnostic: heteroscedasticity in the residuals can indicate omitted random slopes.
+Variance is no longer constant across individuals: it depends on X_ij. Groups with extreme values of X contribute more heteroscedasticity when τ²₁₁ > 0. Heteroscedasticity in the residuals can therefore be a diagnostic signal for an omitted random slope.
 
 ---
 
-## Part D: Cross-level interaction
+## Part D — Cross-Level Interaction
+
+**In practice:** Cross-level interactions are the main substantive reason to use MLM over fixed-effects regression when you have level-2 predictors. Fixed effects absorb the group-level variable entirely and cannot estimate γ₁₁. MLM models it directly and provides a standard error for it.
 
 ### Setup
 
-A cross-level interaction uses a group-level variable W_j to explain variation in the slope of X across groups. Extend the level-2 equation for β₁ⱼ:
+Extend the level-2 equation for β₁j to include a group-level predictor W_j:
 
-β₁ⱼ = γ₁₀ + γ₁₁ W_j + u₁ⱼ
+```
+β₁j = γ₁₀ + γ₁₁ W_j + u₁j
+```
 
 The coefficient γ₁₁ answers: "For a one-unit increase in the group-level variable W_j, how much does the slope of X on Y change?"
 
-### Combined equation with cross-level interaction
+### Combined Equation with Cross-Level Interaction
 
 Substitute into the level-1 equation:
 
-Y_ij = γ₀₀ + (γ₁₀ + γ₁₁ W_j + u₁ⱼ) X_ij + u₀ⱼ + ε_ij
+```
+Y_ij = γ₀₀ + (γ₁₀ + γ₁₁ W_j + u₁j) X_ij + u₀j + ε_ij
+Y_ij = γ₀₀ + γ₁₀ X_ij + γ₁₁ W_j X_ij + u₀j + u₁j X_ij + ε_ij
+```
 
-Y_ij = γ₀₀ + γ₁₀ X_ij + γ₁₁ W_j X_ij + u₀ⱼ + u₁ⱼ X_ij + ε_ij
+The term γ₁₁ W_j X_ij is the **cross-level interaction** in the fixed-effects part: a product of a level-2 variable and a level-1 variable. You should typically also include W_j as a main effect (to model the effect of group context on intercepts) unless you have a specific theoretical reason to exclude it.
 
-The term γ₁₁ W_j X_ij is the cross-level interaction in the fixed-effects part of the model. It is a product of a level-2 variable and a level-1 variable. You would not include W_j alone in this equation unless you also want to estimate the main effect of the group context on the outcome intercept (which usually makes sense to do).
-
-### Interpretation
-
-γ₁₁ tells you how much the slope of X changes for each unit increase in W. If W is a state-level variable (e.g., Republican vote share) and X is respondent education, then γ₁₁ captures whether education's effect on the outcome is stronger or weaker in more Republican states.
-
-Adding the cross-level interaction often substantially reduces τ²₁₁ (the residual variance of slopes), because W_j is now explaining part of that between-group variation in slopes. The ratio (τ²₁₁_reduced / τ²₁₁_null) is sometimes called the pseudo-R² for the slope variance.
+Adding the cross-level interaction often substantially reduces τ²₁₁ because W_j now explains part of the between-group variation in slopes. The ratio (τ²₁₁_reduced / τ²₁₁_null) is sometimes called the pseudo-R² for the slope variance.
 
 ---
 
-## Part E: REML vs. full ML estimation
+## Part E — REML vs. Full ML
 
-### Why OLS doesn't work here
+**In practice:** You will see both "REML" and "ML" as options in lme4 (R) and mixed (Stata). The choice matters when comparing models. The short version: use REML for estimation and reporting, use ML for likelihood ratio tests comparing models with different fixed effects.
 
-The combined equation Y_ij = γ₀₀ + γ₁₀ X_ij + u₀ⱼ + u₁ⱼ X_ij + ε_ij has a composite error structure in which observations from the same group are correlated. OLS assumes all errors are independent, so its estimates of γ are consistent but its variance estimates are wrong (the model doesn't account for the structure in the errors).
+### Why OLS Fails
 
-Multilevel models are estimated by maximizing a likelihood function that correctly specifies this error covariance structure.
+The combined equation has a composite error structure in which observations from the same group are correlated through the shared u₀j term. OLS assumes all errors are independent. Its γ estimates remain consistent but its variance estimates are wrong because the error covariance structure is misspecified.
 
-### Full maximum likelihood (ML)
+### Full Maximum Likelihood (ML)
 
-Full ML jointly maximizes the likelihood over both the fixed effects γ and the variance components (τ², σ²). The likelihood is:
+Full ML jointly maximizes the likelihood of all parameters, fixed effects and variance components together:
 
+```
 L(γ, T, σ² | Y) = ∏_j f(Y_j | γ, T, σ²)
+```
 
-where f(Y_j | ...) is the marginal likelihood for group j, obtained by integrating out the random effects:
+The marginal likelihood for group j integrates out the random effects:
 
+```
 f(Y_j | γ, T, σ²) = ∫ f(Y_j | u_j, γ, σ²) · f(u_j | T) du_j
+```
 
-This integral is tractable under the normality assumptions because the product of two normals is normal. The result is a multivariate normal marginal distribution for Y_j.
+Under normality, this integral is tractable. The result is a multivariate normal marginal distribution for Y_j. Full ML yields slightly biased variance component estimates because it does not account for the degrees of freedom spent estimating fixed effects, analogous to dividing by n instead of n - k when estimating σ² in OLS.
 
-Full ML yields slightly biased variance component estimates (τ², σ²) because it doesn't account for the degrees of freedom used estimating the fixed effects -- analogous to dividing by n instead of n-k when estimating σ² in OLS.
+### Restricted Maximum Likelihood (REML)
 
-### Restricted maximum likelihood (REML)
+REML maximizes a modified likelihood computed from linear combinations of Y that are orthogonal to the fixed-effects design matrix. Intuitively: REML projects out the fixed effects first, then estimates variance components from the residuals. This is the multilevel analog of OLS's division by n - k rather than n.
 
-REML maximizes a modified likelihood that is computed from linear combinations of Y that are orthogonal to the fixed-effects design matrix X. Intuitively: REML first projects out the fixed effects, then estimates the variance components from the residuals. This is analogous to the OLS correction of dividing by n-k rather than n.
+```
+REML likelihood = likelihood of (Y projected onto the null space of X)
+```
 
-REML variance component estimates are less biased than ML estimates, especially with small samples and few groups. **Use REML as the default** for estimating and reporting variance components and random effects.
+REML variance component estimates are less biased than ML estimates, especially with small samples and few groups. Use REML as the default for estimating, interpreting, and reporting.
 
-**Critical caveat:** REML likelihoods for two models are not comparable unless the models have identical fixed-effects specifications. To compare models with different fixed effects via a likelihood ratio test (LRT), you must refit both models with full ML first.
+Critical caveat: REML likelihoods from two models are not comparable unless the models have identical fixed-effects specifications. To compare models with different fixed effects via a likelihood ratio test, refit both with full ML first. In lme4, calling `anova()` on two `lmer` objects with different fixed parts automatically switches to ML.
 
 Rule of thumb:
-- Use REML for estimating, interpreting, and reporting.
-- Use ML for LRT comparisons involving different fixed-effect structures.
+
+```
+Estimation and reporting => use REML
+LRT comparing models with different fixed effects => use full ML
+```
 
 ---
 
-## Part F: Shrinkage and partial pooling
+## Part F — Empirical Bayes Shrinkage
 
-### The empirical Bayes estimator
+**In practice:** The group-specific estimates produced by MLM are not the raw group means. They are "shrunken" toward the grand mean, with the amount of shrinkage depending on the group's sample size. This is a feature, not a bug: small groups have noisy means, and shrinking them toward the global average reduces mean squared error.
 
-The observed group mean Ȳ_j is an unbiased but noisy estimate of the true group effect (γ₀₀ + u₀ⱼ). For small groups, this noise can be substantial. The multilevel model produces a **shrunken** estimate of the random effect u₀ⱼ that blends the group's own data with information from the overall distribution of group effects.
+### The Empirical Bayes Estimator
 
-The empirical Bayes (EB) estimate of u₀ⱼ is:
+The observed group mean Ȳ_j is unbiased but noisy, especially for small n_j. The MLM's **empirical Bayes** estimate of u₀j blends the group's own data with the overall distribution of group effects:
 
-ũ₀ⱼ = λ_j · (Ȳ_j - γ̂₀₀)
+```
+ũ₀j = λ_j · (Ȳ_j - γ̂₀₀)
+```
 
-where the shrinkage weight λ_j is:
+where the **shrinkage weight** λ_j is:
 
+```
 λ_j = (n_j · τ²₀₀) / (n_j · τ²₀₀ + σ²)
+```
 
-### Understanding the weight
+The weight in brackets is the reliability of group j's mean as an estimate of u₀j. A high weight means the model trusts that group's data; a low weight means it pulls the estimate toward zero (the grand mean).
 
-Rewrite the denominator:
+### Behavior at the Extremes
 
-λ_j = n_j · τ²₀₀ / (n_j · τ²₀₀ + σ²)
+As n_j approaches infinity:
 
-As n_j → ∞: λ_j → 1. Large groups get no shrinkage; the model trusts their observed mean.
+```
+λ_j => 1    (large groups: trust the observed mean, no shrinkage)
+```
 
-As n_j → 0: λ_j → 0. Tiny groups are pulled entirely to the grand mean γ̂₀₀.
+As n_j approaches 0:
 
-For moderate n_j, the weight depends on the ratio ICC / (1 - ICC) scaled by group size. When ICC is high (τ²₀₀ is large relative to σ²), even moderately sized groups get substantial weight. When ICC is low (between-group variance is small), almost all information comes from the group mean.
+```
+λ_j => 0    (tiny groups: ignore the observed mean, collapse to grand mean)
+```
 
-### Connection to Bayes
+### Worked Example
 
-The EB estimate is formally the posterior mean of u₀ⱼ under a normal prior N(0, τ²₀₀) and normal likelihood for Ȳ_j. The multilevel model is doing Bayesian inference on the random effects, using the empirical distribution of effects (estimated from the data) as the prior. This is why multilevel models are sometimes described as "empirical Bayes."
+Suppose τ²₀₀ = 0.2 and σ² = 0.8.
 
-The practical consequence: in a CES analysis, a small state like Wyoming (few respondents) will have its estimated random effect pulled substantially toward zero. A large state like California will be barely moved. This is not bias -- it is statistically optimal weighting of information.
+For a small group with n_j = 5:
+
+```
+λ_j = (5 × 0.2) / (5 × 0.2 + 0.8) = 1.0 / 1.8 ≈ 0.56
+```
+
+The group's observed deviation from the grand mean is shrunk 44% toward zero.
+
+For a large group with n_j = 50:
+
+```
+λ_j = (50 × 0.2) / (50 × 0.2 + 0.8) = 10.0 / 10.8 ≈ 0.93
+```
+
+Barely any shrinkage: the model almost fully trusts this group's observed mean. Small groups get pulled toward the grand mean; large groups are trusted more. In a survey with Wyoming (few respondents) and California (many respondents), Wyoming's estimated random effect will be pulled substantially toward zero, while California's will barely move. This is not bias; it is statistically optimal weighting of information.
 
 ---
 
-## Part G: Matrix representation (for reference)
+## Part G — Matrix Representation
+
+**In practice:** The matrix form is what software actually implements. You do not need to work with it by hand, but understanding it clarifies why MLM reports a covariance matrix V_j and why the log-likelihood takes the form it does.
 
 For group j with n_j individuals, define:
 
-Y_j = n_j × 1 vector of outcomes
-X_j = n_j × p matrix of fixed-effect predictors
-Z_j = n_j × q matrix of random-effect predictors (e.g., just a column of 1s for random intercept)
-u_j = q × 1 vector of random effects for group j
+```
+Y_j  = n_j x 1 vector of outcomes
+X_j  = n_j x p matrix of fixed-effect predictors
+Z_j  = n_j x q matrix of random-effect predictors
+u_j  = q x 1 vector of random effects for group j
+ε_j  = n_j x 1 vector of individual residuals
+```
 
 The model for group j:
 
+```
 Y_j = X_j γ + Z_j u_j + ε_j
+```
 
-Marginal distribution (integrating out u_j):
+Integrating out u_j gives the marginal distribution:
 
+```
 Y_j ~ MVN(X_j γ, V_j)
+```
 
-where V_j = Z_j T Z_j' + σ² I_nj
+where the marginal covariance matrix is:
 
-V_j is the n_j × n_j marginal covariance matrix of the outcomes for group j. For the random intercept model with Z_j = 1_nj (column of ones):
+```
+V_j = Z_j T Z_j' + σ² I_nj
+```
 
+For the random intercept model, Z_j is a column of ones and:
+
+```
 V_j = τ²₀₀ · (1_nj)(1_nj)' + σ² I_nj
+```
 
-This is a compound-symmetric matrix: variance τ²₀₀ + σ² on the diagonal, covariance τ²₀₀ off-diagonal -- exactly the structure that gives rise to the ICC.
+This is a **compound-symmetric** matrix: variance τ²₀₀ + σ² on the diagonal, covariance τ²₀₀ off-diagonal. The off-diagonal τ²₀₀ is exactly what produces the ICC.
 
 The full log-likelihood across all J groups:
 
+```
 log L = -½ Σ_j [ n_j log(2π) + log|V_j| + (Y_j - X_j γ)' V_j⁻¹ (Y_j - X_j γ) ]
+```
 
-Maximizing this over γ, T, and σ² yields the ML estimates. REML modifies this to remove the contribution of γ from the curvature of the likelihood before optimizing variance components.
+Maximizing this over γ, T, and σ² yields ML estimates. REML modifies the likelihood to remove the contribution of γ before optimizing the variance components, producing less-biased estimates of T and σ².

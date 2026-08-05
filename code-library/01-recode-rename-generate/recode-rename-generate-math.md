@@ -1,167 +1,239 @@
-# Module 01 — Recode, Rename, Generate: Math
+# Recode, Rename, Generate: Mathematical Derivation
+
+## Symbols
+
+| Symbol | Meaning |
+|--------|---------|
+| C | A categorical variable taking K distinct values |
+| K | Number of categories in C |
+| D_k | Indicator (dummy) variable for category k; equals 1 if observation belongs to category k, 0 otherwise |
+| X | Design matrix (n × p), including intercept column and predictor columns |
+| X' | Transpose of X |
+| β̂ | OLS coefficient vector estimate |
+| β₀ | Intercept coefficient |
+| β₁ | Slope or group-difference coefficient |
+| ȳ₁, ȳ₀ | Sample means of the outcome in the group where D=1 and D=0 respectively |
+| y | n×1 vector of observed outcomes |
+| Z | Linearly transformed version of predictor X |
+| a | Multiplicative scaling constant in the linear transformation Z = aX + b |
+| b | Additive shift constant in the linear transformation Z = aX + b |
+| μ | Population mean of X |
+| σ² | Population variance of X |
+| E[·] | Expectation operator |
+| Var(·) | Variance operator |
+| R_i | Missingness indicator: 1 if observation i is observed, 0 if missing |
+| p | Proportion of observations that are observed (non-missing) |
+| s | Sentinel (missing) code value (e.g., 9 or 99) |
+| x̄_true | True mean of the variable among observed cases |
+| x̄_cont | Contaminated mean computed when sentinel codes are left as valid values |
+| f_mis | Fraction of observations that are missing |
 
 ---
 
-## Part A: Indicator (Dummy) Variable Algebra
+## Part A — Indicator (Dummy) Variable Algebra
 
-### The K-category expansion
+**In practice:** When you recode a categorical variable like race or region into dummies in Stata, software creates K−1 new columns. Understanding the algebra behind this choice helps you interpret intercepts correctly and avoid the perfect multicollinearity trap.
 
-Let C be a categorical variable taking K distinct values, labeled c₁, c₂, ..., c_K. To enter C into a linear model we cannot use the raw integer codes directly: those codes carry implicit ordinal or ratio information that the categories do not actually possess (the difference between "Democrat" coded 1 and "Republican" coded 2 is not meaningful as a quantity).
+### Why K−1 dummies, not K
 
-The standard encoding creates K-1 binary indicator variables. Define:
-
-  D_k(i) = 1  if observation i belongs to category c_k
-  D_k(i) = 0  otherwise
-
-for k = 1, 2, ..., K-1. Category c_K is the **reference category**, left out of the model.
-
-Why K-1 and not K? Because D₁ + D₂ + ... + D_K = 1 for every observation (each unit belongs to exactly one category). If you included all K dummies, this column of ones would be a perfect linear combination of the other K-1 columns and of the intercept column, making the design matrix X rank-deficient. The system X'X would be singular and have no inverse; the OLS estimator (X'X)⁻¹X'y would be undefined.
-
-### The design matrix with dummies
-
-Suppose n = 5 observations, K = 3 categories (c₁, c₂, c₃), and c₃ is the reference. The observations belong to categories: c₁, c₂, c₁, c₃, c₂.
-
-The design matrix X (intercept + 2 dummies + one continuous predictor z) is:
+We need to understand what goes wrong when all K dummies are included. Each observation belongs to exactly one category, so the sum of all K indicator variables equals 1 for every row. That means the sum of all K dummy columns equals the intercept column, which is also all ones.
 
 ```
-     1   D₁  D₂   z
-  [  1    1   0   z₁ ]
-  [  1    0   1   z₂ ]
-  [  1    1   0   z₃ ]
-  [  1    0   0   z₄ ]
-  [  1    0   1   z₅ ]
+D₁ + D₂ + ... + D_K = 1   (for every observation i)
+```
+
+This is an exact linear dependency among the columns of X. When columns of X are perfectly collinear, the matrix X'X is singular (its determinant is zero) and the inverse (X'X)⁻¹ does not exist. OLS has no unique solution. Dropping one category, the **reference category**, removes this dependency and makes the system solvable.
+
+The reference category determines what the intercept means: β₀ is the predicted outcome for an observation in the reference group, holding all other predictors at zero. Changing the reference category changes the numeric value of β₀ and of the remaining dummy coefficients, but does not change fitted values or model fit in any way.
+
+### The design matrix for a 3-category variable
+
+Suppose race has three categories: White (reference), Black, and Other. We include two dummies: D_Black and D_Other. Consider four example observations:
+
+```
+Observation   Race      D_Black   D_Other
+     1        White        0         0
+     2        Black        1         0
+     3        Other        0         1
+     4        Black        1         0
+```
+
+With an intercept column prepended, the design matrix X for these four rows looks like:
+
+```
+     Intercept   D_Black   D_Other
+  [     1           0         0    ]   <- White
+  [     1           1         0    ]   <- Black
+  [     1           0         1    ]   <- Other
+  [     1           1         0    ]   <- Black
 ```
 
 The model is:
 
-  y = β₀ + β₁D₁ + β₂D₂ + γz + ε
+```
+y = β₀ + β₁·D_Black + β₂·D_Other + ε
+```
 
-**Interpretation of coefficients:**
+β₀ is the expected outcome for White respondents. β₁ is the mean difference between Black and White respondents, holding other predictors fixed. β₂ is the mean difference between Other and White respondents. No coefficient directly compares Black to Other, but that comparison can be computed as β₁ − β₂.
 
-- β₀ = expected y for an observation in category c₃ (the reference) with z = 0.
-- β₁ = expected difference in y between category c₁ and category c₃, holding z fixed.
-- β₂ = expected difference in y between category c₂ and category c₃, holding z fixed.
-- γ = expected change in y per one-unit increase in z, within any category.
+### The OLS coefficient on a single dummy equals a mean difference
 
-The choice of reference category changes the numeric values of β₀, β₁, and β₂ but does not change fitted values or model fit. The reference category should be the substantively meaningful baseline (usually the largest or most theoretically central group).
+For the simple case of one dummy D ∈ {0,1} and an intercept, the design matrix is:
+
+```
+X = [ 1   D₁  ]
+    [ 1   D₂  ]
+    [ ...      ]
+    [ 1   Dₙ  ]
+```
+
+Compute X'X and X'y:
+
+```
+X'X = [ n       n₁      ]
+      [ n₁      n₁      ]
+```
+
+where n₁ = Σ Dᵢ is the count of observations with D=1 and n₀ = n − n₁ is the count with D=0. Similarly:
+
+```
+X'y = [ Σ yᵢ        ]
+      [ Σ Dᵢ yᵢ     ]
+```
+
+Inverting X'X and multiplying by X'y yields:
+
+```
+β̂₀ = ȳ₀   (mean of y among D=0 group)
+β̂₁ = ȳ₁ − ȳ₀   (difference in means)
+```
+
+The OLS coefficient on a dummy variable is exactly the difference in group means. This confirms that regression with a single binary predictor and an intercept reproduces a two-sample comparison of means. If you add covariates, β̂₁ becomes the mean difference adjusted for those covariates rather than the raw difference.
 
 ---
 
-## Part B: Linear Transformations of Variables
+## Part B — Linear Transformations and What They Do to Regression Coefficients
 
-### Setup
+**In practice:** Researchers frequently rescale variables for interpretability: converting income from dollars to thousands, centering age at its mean, or standardizing a scale score. The math below shows exactly how those choices ripple through coefficient estimates.
 
-Let X be a random variable with mean μ_X and variance σ²_X. Define a linearly transformed variable:
+### How a linear transformation changes means and variances
 
-  Z = aX + b
+Let X be a variable with mean μ and variance σ². Define a new variable:
 
-where a ≠ 0 and b are constants.
+```
+Z = aX + b
+```
 
-### Effect on the mean
+where a ≠ 0 and b are constants. The expected value of Z follows from linearity of expectation:
 
-The expected value operator is linear:
+```
+E[Z] = E[aX + b] = a·E[X] + b = aμ + b
+```
 
-  E[Z] = E[aX + b]
-       = aE[X] + b
-       = aμ_X + b
+Adding b shifts the mean by b; multiplying by a scales it by a. For the variance, additive shifts disappear because variance measures spread around the center, not the center itself:
 
-So adding a constant b shifts the mean by b, and multiplying by a scales the mean by a.
-
-### Effect on the variance
-
-Variance measures spread around the mean, so additive shifts vanish:
-
-  Var(Z) = Var(aX + b)
-          = E[(aX + b - E[aX + b])²]
-          = E[(aX + b - aμ_X - b)²]
-          = E[(a(X - μ_X))²]
-          = a²E[(X - μ_X)²]
-          = a²σ²_X
+```
+Var(Z) = Var(aX + b)
+       = E[(aX + b − (aμ + b))²]
+       = E[(a(X − μ))²]
+       = a²·E[(X − μ)²]
+       = a²σ²
+```
 
 The standard deviation transforms as:
 
-  σ_Z = |a| · σ_X
+```
+σ_Z = |a| · σ_X
+```
 
-Adding a constant has no effect on spread. Multiplying by a scales the standard deviation by |a|.
+Two special cases matter most in practice. **Mean-centering** sets b = −X̄ and a = 1, so the new variable has mean zero but identical variance and the regression coefficient is unchanged; only the intercept shifts to the predicted value at the mean of X. **Standardizing** sets a = 1/s_X and b = −X̄/s_X, producing a variable with mean 0 and standard deviation 1; the coefficient on the standardized variable is interpretable as the change in y per one-standard-deviation increase in X.
 
-### Effect on a regression coefficient
+### How a linear transformation changes a regression coefficient
 
-Suppose the regression model is:
+Suppose the true regression model is:
 
-  y = α + βX + ε
+```
+y = β₀ + β₁·X + ε
+```
 
-and you replace X with Z = aX + b. Substituting X = (Z - b)/a:
+Now replace X with Z = aX + b. To see what happens to the coefficient, substitute X = (Z − b)/a:
 
-  y = α + β · (Z - b)/a + ε
-    = (α - βb/a) + (β/a)Z + ε
+```
+y = β₀ + β₁·(Z − b)/a + ε
+  = (β₀ − β₁b/a) + (β₁/a)·Z + ε
+```
 
-So the new coefficient on Z is β/a, and the new intercept is α - βb/a.
+The new coefficient on Z is:
 
-Practical consequences:
+```
+β̂₁_new = β̂₁ / a
+```
 
-- *Centering (b = -X̄, a = 1):* the coefficient is unchanged; only the intercept changes to reflect the new zero point.
-- *Standardizing (b = -X̄, a = 1/s_X):* the coefficient becomes β · s_X, interpretable as the change in y per one-standard-deviation increase in X.
-- *Rescaling for interpretability (e.g., a = 1/1000 to convert dollars to thousands):* the coefficient becomes β · 1000, i.e., it grows by the inverse of the scaling factor.
+and the new intercept is β₀ − β₁b/a. The slope rescales by the inverse of a. If you double the unit of X (a = 2, say converting years to half-years), the coefficient halves. If you divide X by 1000 (converting dollars to thousands, so a = 1/1000), the coefficient multiplies by 1000. This is why coefficients on age in years and age in decades cannot be compared numerically without rescaling; the underlying relationship is the same, but the unit of measurement differs by a factor of 10.
 
-This means that renaming or rescaling a variable to make it human-readable does not distort your estimates; it changes only the numeric representation of the coefficient, not the underlying relationship.
+Predictions are unaffected: for any observation, β̂₀ + β̂₁·x = (β₀ − β₁b/a) + (β₁/a)·(ax+b), and these simplify to the same number. Rescaling is always a representational choice, not a substantive one.
 
 ---
 
-## Part C: Missing Value Propagation
+## Part C — Missing Value Propagation and Bias from Sentinel Codes
 
-### Formal definition
+**In practice:** Survey datasets routinely encode "refused," "don't know," and "not applicable" with numeric sentinel codes like 7, 8, 9, 97, 98, 99. If you forget to recode these before computing means or running regressions, you will silently contaminate every downstream statistic. The math below makes the size of that contamination precise.
 
-Let X be a variable for observation i. Define the missing indicator:
+### Setup: observed and missing cases
 
-  M_i = 1  if X_i is missing (not observed)
-  M_i = 0  if X_i is observed
+Let X be a variable for n total observations. Define the **missingness indicator**:
 
-In software, a missing value is represented by a special token (NaN in Python/R, `.` in Stata). The propagation rule for arithmetic is:
+```
+R_i = 1   if observation i is observed (valid)
+R_i = 0   if observation i is missing
+```
 
-  If M_i = 1, then f(X_i) = NaN for any function f.
+Let p = (1/n)Σ R_i be the proportion observed, so 1−p is the missing fraction. The true mean among observed cases is:
 
-Concretely: NaN + 3 = NaN, NaN × 5 = NaN, max(NaN, 2) = NaN (in most implementations). Missing-ness is contagious within an expression.
+```
+x̄_true = (1 / Σ R_i) · Σ R_i · x_i
+```
 
-### The bias from treating sentinel codes as valid values
+### Contaminated mean when the sentinel code is treated as valid
 
-Suppose the true distribution of X has N_obs observed values x₁, ..., x_{n_obs} and N_mis missing cases. The data supplier encodes missing as the sentinel value s (e.g., s = 9 for "refused" on a 1-5 scale, or s = 99 for "don't know" on an age variable).
+Suppose the missing code is s (a number like 9 or 99). If the analyst leaves s in the data, the computed mean treats it as a real data value:
 
-If an analyst fails to declare s as missing and instead includes it in a mean calculation:
+```
+x̄_cont = (1/n) · [ Σ R_i · x_i  +  s · Σ(1 − R_i) ]
+```
 
-  X̄_corrupt = (1/(n_obs + N_mis)) · [Σ_{i: M_i=0} x_i + N_mis · s]
+This can be rewritten using p and x̄_true. The sum of observed values is n·p·x̄_true, and the count of missing cases is n·(1−p):
 
-The true mean of observed values is:
+```
+x̄_cont = (1/n) · [ n·p·x̄_true + n·(1−p)·s ]
+        = p · x̄_true + (1−p) · s
+```
 
-  X̄_true = (1/n_obs) · Σ_{i: M_i=0} x_i
+The contaminated mean is a weighted average of the true mean and the sentinel value, with the missing fraction as the weight on s. The **bias** is:
 
-The bias is:
+```
+Bias = x̄_cont − x̄_true
+     = p·x̄_true + (1−p)·s − x̄_true
+     = (1−p)·s − (1−p)·x̄_true
+     = (1−p) · (s − x̄_true)
+```
 
-  Bias = X̄_corrupt - X̄_true
+Reading this formula: the bias equals the missing fraction times the gap between the sentinel code and the true mean. When s > x̄_true (the common case, since sentinel codes are often at the top of a scale), the bias is positive and the contaminated mean is inflated. The bias grows linearly with the proportion missing.
 
-Substituting:
+### Worked numerical example
 
-  X̄_corrupt = (n_obs · X̄_true + N_mis · s) / (n_obs + N_mis)
+Suppose you have a 1-to-5 satisfaction scale with a true mean of 3.0, and 10% of respondents are coded 9 for "refused":
 
-  Bias = (n_obs · X̄_true + N_mis · s) / (n_obs + N_mis) - X̄_true
+```
+x̄_cont = 0.90 · 3.0 + 0.10 · 9
+        = 2.70 + 0.90
+        = 3.60
 
-  Bias = [n_obs · X̄_true + N_mis · s - (n_obs + N_mis) · X̄_true] / (n_obs + N_mis)
+Bias = (1 − 0.90) · (9 − 3.0) = 0.10 · 6 = 0.60
+```
 
-  Bias = [N_mis · s - N_mis · X̄_true] / (n_obs + N_mis)
-
-  Bias = N_mis(s - X̄_true) / (n_obs + N_mis)
-
-Let f_mis = N_mis / (n_obs + N_mis) be the missing fraction. Then:
-
-  Bias = f_mis · (s - X̄_true)
-
-**Reading the formula:**
-
-- If the sentinel s is larger than the true mean (e.g., s = 9 on a 1-5 scale where X̄_true ≈ 3), the bias is positive: the corrupt mean is inflated.
-- The bias grows linearly with the missing fraction f_mis. Even 5% missing with s = 9 and X̄_true = 3 produces a bias of 0.05 × 6 = 0.30 scale points, which on a 5-point scale is substantively non-trivial.
-- The bias is zero only if s = X̄_true (the sentinel happens to equal the true mean, which is never guaranteed) or if f_mis = 0 (no missing data).
+A contaminated mean of 3.60 compared to a true mean of 3.0 is a 20% upward distortion, large enough to reverse substantive conclusions. If 20% of cases are missing rather than 10%, the bias doubles to 1.20, more than an entire scale point. The only safe rule is to declare all sentinel codes as missing before any arithmetic, any regression, or any cross-tabulation.
 
 ### Propagation into regression
 
-If X (with sentinel codes left as valid values) enters a regression as a predictor, the bias in X̄ propagates into bias in β̂. The OLS formula β̂ = (X'X)⁻¹X'y depends on the cross-products of every row of X with the outcome y. Sentinel values in X create spurious covariance between X and y that has nothing to do with the true relationship. There is no general closed-form expression for this bias because it depends on which observations are missing and whether missingness is related to y, but the direction and rough magnitude can be assessed by examining the sentinel value relative to the observed distribution of X.
-
-The only safe rule: declare all sentinel codes as missing before any arithmetic, before any regression, before any cross-tabulation. This is not a preliminary nicety; it is a validity requirement.
+When a contaminated X enters a regression as a predictor, the spurious covariance between X and y (driven entirely by the sentinel values, not by any real relationship) contaminates β̂. The OLS formula β̂ = (X'X)⁻¹X'y depends on cross-products of every row of X with y. Sentinel values in X create artificial variation that has nothing to do with the true relationship. The direction of the resulting bias in β̂ depends on whether missingness is correlated with the outcome, so there is no simple general formula, but the problem is always present and always avoidable by proper recoding.
