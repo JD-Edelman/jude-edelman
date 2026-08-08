@@ -84,8 +84,8 @@ rename pid7           party_id7
 rename ideo5          ideology5
 
 * --- Survey weights ---
-rename weight         wt_post
-rename weight_cumulative wt_cumulative
+rename commonpostweight  wt_post
+rename commonweight      wt_pre
 
 * --- Presidential approval ---
 rename cc20_320a      approve_trump

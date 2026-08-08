@@ -145,6 +145,7 @@ h2 {
   font-size: 0.9rem;
   color: var(--muted);
   line-height: 2;
+  text-align: center;
 }
 
 /* RESEARCH */
