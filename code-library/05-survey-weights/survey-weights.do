@@ -133,7 +133,8 @@ svy: regress imm_restrict education age i.sex i.census_region ideology5 party_id
 estimates store svy_ols
 
 * Post-estimation: weighted summary of variables used in the model
-estat summarize
+* (estat summarize is not supported after svy estimation; use svy: mean instead)
+svy: mean imm_restrict education age ideology5 party_id7
 
 
 *==============================================================================
@@ -234,7 +235,7 @@ estimates store weighted_pweight
 esttab unweighted weighted_pweight, ///
     b(%8.3f) se(%8.3f) ///
     star(* 0.05 ** 0.01 *** 0.001) ///
-    pr2 N ///
+    stats(pr2 N, fmt(%8.3f %8.0f)) ///
     title("Biden Vote Choice: Unweighted vs. Weighted Logit") ///
     mtitles("Unweighted" "Weighted")
 

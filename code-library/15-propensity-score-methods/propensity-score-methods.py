@@ -444,15 +444,19 @@ ps = ces_cs["pscore"].values
 treated_mask = D == 1
 control_mask = D == 0
 
+# X was built from ces_ps; re-transform ces_cs covariates for the AIPW section
+# so the array dimensions match the common-support sample
+X_cs = scaler.transform(ces_cs[covariates].values)
+
 from sklearn.linear_model import LinearRegression
 
 outcome_model_t = LinearRegression()
-outcome_model_t.fit(X[treated_mask], Y[treated_mask])
-mu_1 = outcome_model_t.predict(X)   # predicted Y if everyone were treated
+outcome_model_t.fit(X_cs[treated_mask], Y[treated_mask])
+mu_1 = outcome_model_t.predict(X_cs)   # predicted Y if everyone were treated
 
 outcome_model_c = LinearRegression()
-outcome_model_c.fit(X[control_mask], Y[control_mask])
-mu_0 = outcome_model_c.predict(X)   # predicted Y if everyone were control
+outcome_model_c.fit(X_cs[control_mask], Y[control_mask])
+mu_0 = outcome_model_c.predict(X_cs)   # predicted Y if everyone were control
 
 # AIPW correction terms
 ipw_treated = D * (Y - mu_1) / ps

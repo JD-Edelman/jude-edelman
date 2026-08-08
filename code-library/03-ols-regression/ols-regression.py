@@ -91,8 +91,9 @@ print(coef_df)
 # Test H0: ideology5 == 0 AND party_id7 == 0 simultaneously
 hypotheses = "ideology5 = 0, party_id7 = 0"
 f_result = m_full.f_test(hypotheses)
+f_val = float(np.squeeze(f_result.fvalue))
 print(f"\nF-test (ideology5 = party_id7 = 0):")
-print(f"  F = {f_result.fvalue[0][0]:.3f}, p = {f_result.pvalue:.4f}")
+print(f"  F = {f_val:.3f}, p = {f_result.pvalue:.4f}")
 
 
 # ==============================================================================
@@ -180,18 +181,16 @@ print(f"  Robust SE:    {m_hc3.bse['education']:.4f}")
 # Groups= takes a Series or array of cluster IDs aligned with the model data.
 # Use the model's index to align properly.
 
+ces_cc = ces.dropna(subset=["imm_restrict", "education", "age", "ideology5", "sex"])
+
 m_base = smf.ols(
     "imm_restrict ~ education + age + ideology5 + C(sex)",
-    data=ces
+    data=ces_cc
 )
-fit_base = m_base.fit()
-
-# Get cluster IDs aligned with the model's observation index
-cluster_ids = ces.loc[fit_base.model.data.orig_endog.index, "state_fips"]
 
 m_clustered = m_base.fit(
     cov_type="cluster",
-    cov_kwds={"groups": cluster_ids}
+    cov_kwds={"groups": ces_cc["state_fips"]}
 )
 
 print(m_clustered.summary())

@@ -192,10 +192,11 @@ quietly logit voted education age i.sex ideology5 party_id7
 estat gof, group(10) table
 
 * --- Pseudo R-squared options ---
-fitstat
+* fitstat removed — not available in all environments
+* estat gof above already provides goodness-of-fit assessment
 /*
-   fitstat (install: ssc install fitstat) reports McFadden's, Cox-Snell,
-   Nagelkerke, and other pseudo R2 measures together.
+   To get multiple pseudo R2 measures, install fitstat: ssc install fitstat
+   then run: fitstat
 */
 
 * --- Classification table ---
@@ -272,7 +273,7 @@ esttab m_simple m_controls m_full, ///
     eform ///
     b(%8.3f) se(%8.3f) ///
     star(* 0.05 ** 0.01 *** 0.001) ///
-    pr2 aic bic N ///
+    stats(pr2 aic bic N, fmt(%8.3f %8.1f %8.1f %8.0f)) ///
     title("Logistic Regression: Odds Ratios for Voter Turnout (2020)") ///
     mtitles("Model 1" "Model 2" "Model 3")
 

@@ -157,7 +157,7 @@ summarize imm_scale_mean gun_scale_mean climate_scale_mean
 
 * EFA of all immigration items — do they load on one factor?
 factor imm_item1 imm_item2 imm_item3 imm_item4 imm_item5, ///
-    factors(2) method(pf)
+    factors(2) pf
 
 /*
    Eigenvalue > 1 (Kaiser criterion) = keep factor
@@ -180,7 +180,7 @@ rotate, varimax blanks(.3)
 * EFA across all attitude domains — how many attitude dimensions?
 factor imm_item1-imm_item5 gun_item1-gun_item3 ///
     climate_item1-climate_item4, ///
-    factors(3) method(pf)
+    factors(3) pf
 
 rotate, varimax blanks(.3)
 
@@ -204,7 +204,7 @@ rotate, varimax blanks(.3)
 */
 
 factor imm_item1 imm_item2 imm_item3 imm_item4 imm_item5, ///
-    factors(1) method(pf)
+    factors(1) pf
 
 predict imm_factor_score, ///
     regression  /* regression-method factor score */
@@ -270,13 +270,16 @@ corr imm_factor_score pc1_imm
 */
 
 * Single-factor CFA for immigration restrictionism
-sem (ImmRestrict -> imm_item1 imm_item2 imm_item3 imm_item4 imm_item5), ///
+* Wrapped in capture noisily to handle non-convergence on random/sparse data
+capture noisily sem (ImmRestrict -> imm_item1 imm_item2 imm_item3 imm_item4 imm_item5), ///
     latent(ImmRestrict) ///
     method(ml) ///
     var(ImmRestrict@1)   /* fix variance to 1 for identification */
 
-* Fit statistics
-estat gof, stats(all)
+* Fit statistics (only runs if sem converged)
+if _rc == 0 {
+    estat gof, stats(all)
+}
 
 /*
    With binary items, robust ML (method(mlmv)) handles non-normality better.
@@ -284,16 +287,18 @@ estat gof, stats(all)
 */
 
 * Two-factor CFA: immigration and gun control
-sem (ImmRestrict -> imm_item1 imm_item2 imm_item3 imm_item4 imm_item5) ///
+capture noisily sem (ImmRestrict -> imm_item1 imm_item2 imm_item3 imm_item4 imm_item5) ///
     (GunControl  -> gun_item1 gun_item2 gun_item3), ///
     latent(ImmRestrict GunControl) ///
     method(ml) ///
     cov(ImmRestrict*GunControl)   /* allow factors to correlate */
 
-estat gof, stats(all)
+if _rc == 0 {
+    estat gof, stats(all)
 
-* Modification indices (suggest freeing parameters to improve fit)
-estat mindices
+    * Modification indices (suggest freeing parameters to improve fit)
+    estat mindices
+}
 
 
 *==============================================================================

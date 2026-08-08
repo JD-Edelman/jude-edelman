@@ -324,7 +324,7 @@ tab mentions_decline
 drop state_name state_clean state_upper state_lower state_len has_new ///
      state_corrected state_abbrev5 state_last5 state_fixed state_nospace ///
      first_word respondent_name last_name first_name ///
-     survey_date date_slash date_part1 date_part2 date_part3 ///
+     survey_date date_slash ///
      survey_month survey_day survey_year_str ///
      year_str year_num year_extracted year_regex ///
      has_digit party_str party_encoded state_fips_str ///

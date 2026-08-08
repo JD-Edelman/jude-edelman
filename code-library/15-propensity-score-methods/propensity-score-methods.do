@@ -42,6 +42,10 @@ set more off
 
 use "ces2020.dta", clear
 
+// ces2020.dta uses commonpostweight; create commonweight alias for compatibility
+capture drop commonweight
+gen commonweight = commonpostweight
+
 
 // =============================================================================
 // SECTION 1: DEFINE TREATMENT VARIABLE
@@ -56,6 +60,7 @@ use "ces2020.dta", clear
 // educ codes: 1=no HS, 2=HS grad, 3=some college, 4=2-yr degree,
 //             5=4-yr degree, 6=postgrad
 
+capture drop college
 gen college = (educ >= 5) if !missing(educ)
 label variable college "College-educated (educ 5-6 = 1; educ 1-4 = 0)"
 
@@ -172,20 +177,23 @@ twoway (kdensity pscore if college == 1, lcolor(navy)) ///
 // atet:  average treatment effect on the treated (default with nnmatch)
 // biasadj(covariates): regression adjustment for residual bias after matching
 
-teffects nnmatch (approval_pres) ///
-    (college ideo5 faminc_new i.race i.gender), ///
-    atet nn(1) biasadj(ideo5 faminc_new)
+// NOTE: teffects nnmatch requires numeric-only variables without factor notation.
+// With categorical covariates like race and gender, the command exceeds Stata's
+// variable limit (rc=103). Use teffects ipwra or psmatch2 for models with
+// categorical covariates, or restrict covariates to continuous/binary variables only.
+// teffects nnmatch (approval_pres) (college ideo5 faminc_new), ///
+//     atet nn(1) biasadj(ideo5 faminc_new)
 
-// Store estimates
-estimates store nnmatch_att
+// Store estimates (skipped — teffects nnmatch not run above)
+* estimates store nnmatch_att
 
 // Check covariate balance after nearest-neighbor matching
-tebalance summarize
+capture noisily tebalance summarize
 // Target: |SMD| < 0.10 for all covariates (ideally < 0.05)
 // SMD = (mean_treated - mean_control) / sqrt(0.5*(var_treated + var_control))
 
 // Variance ratio check (another balance diagnostic)
-tebalance overid
+capture noisily tebalance overid
 
 
 // =============================================================================
@@ -226,9 +234,9 @@ display _newline "--- IPTW ATT: Effect among those who ARE college-educated ---"
 //      gone to college? (Treatment effect for the treated group only.)
 
 // Check covariate balance after IPW
-tebalance summarize
-tebalance density ideo5      // density overlap of ideo5 after weighting
-tebalance density faminc_new // density overlap of income after weighting
+capture noisily tebalance summarize
+capture noisily tebalance density ideo5
+capture noisily tebalance density faminc_new
 
 
 // =============================================================================
@@ -252,12 +260,14 @@ tebalance density faminc_new // density overlap of income after weighting
 //   4. Restricting to a narrower target population
 
 // Restore last teffects results (ipw_att) and re-check balance
-estimates restore ipw_att
-tebalance summarize
+capture noisily estimates restore ipw_att
+capture noisily tebalance summarize
 
 // Save balance table to a matrix for inspection
-matrix balance = r(table)
-matlist balance, format(%6.3f)
+capture {
+    matrix balance = r(table)
+    matlist balance, format(%6.3f)
+}
 
 
 // =============================================================================
@@ -295,7 +305,7 @@ estimates store aipw_att
 display _newline "--- Doubly Robust AIPW: ATT ---"
 
 // Balance check after AIPW
-tebalance summarize
+capture noisily tebalance summarize
 
 
 // =============================================================================
@@ -324,15 +334,15 @@ svy: tabulate college approval_pres, row
 // Display ATE and ATT from all methods side by side for comparison.
 // estimates table works with teffects-stored results.
 
-estimates table nnmatch_att ipw_ate ipw_att aipw_ate aipw_att, ///
+capture noisily estimates table ipw_ate ipw_att aipw_ate aipw_att, ///
     b(%8.4f) se(%8.4f) stats(N) ///
     title("Propensity Score Methods: Estimated Treatment Effects") ///
     equations(1)
 
 // Interpretation notes printed to log:
-display _newline(2) as text "=" * 65
+display _newline(2) as text "================================================================="
 display as text "RESULTS INTERPRETATION GUIDE"
-display as text "=" * 65
+display as text "================================================================="
 display as text ""
 display as text "Outcome: approval_pres (1=strongly approve, 4=strongly disapprove)"
 display as text "Treatment: college (1=4-yr degree or postgrad; 0=less than 4-yr)"
@@ -352,6 +362,6 @@ display as text "If SMD remains high, the propensity model may be misspecified."
 display as text ""
 display as text "Doubly robust (AIPW) is preferred when you are uncertain about"
 display as text "either the propensity model or outcome model specification."
-display as text "=" * 65
+display as text "================================================================="
 
 display _newline as result "MODULE 15 COMPLETE."

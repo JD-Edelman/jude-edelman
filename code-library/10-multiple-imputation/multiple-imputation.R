@@ -85,13 +85,16 @@ pred <- init$predictorMatrix
 meth
 
 # Override methods for specific variables
-meth["ideology5"]      <- "polr"    # ordinal (1-5)
-meth["party_id3"]      <- "polyreg" # nominal (1-3)
-meth["party_id7"]      <- "polr"    # ordinal (1-7)
-meth["econ_retro"]     <- "polr"    # ordinal (1-5)
-meth["hh_income_change"] <- "polr"
-meth["approve_trump"]  <- "polr"
-meth["self_rated_health"] <- "polr"
+# pmm (predictive mean matching) is robust for ordinal-coded numeric variables
+# and avoids type issues that polr/polyreg encounter with numeric inputs.
+# For production use with true ordered factors, polr and polyreg are preferred.
+meth["ideology5"]        <- "pmm"
+meth["party_id3"]        <- "pmm"
+meth["party_id7"]        <- "pmm"
+meth["econ_retro"]       <- "pmm"
+meth["hh_income_change"] <- "pmm"
+meth["approve_trump"]    <- "pmm"
+meth["self_rated_health"] <- "pmm"
 
 # Don't impute outcome variables or derived vars
 meth["voted"]       <- ""

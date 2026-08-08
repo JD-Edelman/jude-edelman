@@ -32,7 +32,8 @@ skimr::skim(ces)        # comprehensive univariate summary (install.packages("sk
 missing_summary <- ces |>
   summarise(across(everything(),
                    list(n_miss = ~ sum(is.na(.x)),
-                        pct    = ~ mean(is.na(.x)) * 100))) |>
+                        pct    = ~ mean(is.na(.x)) * 100),
+                   .names = "{.col}__{.fn}")) |>
   pivot_longer(everything(),
                names_to  = c("variable", ".value"),
                names_sep = "__") |>

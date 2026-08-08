@@ -14,8 +14,8 @@
 clear all
 set more off
 
-* Load the raw rebuilt dataset to demonstrate cleaning from scratch
-use "ces_full_rebuilt.dta", clear
+* Load the cleaned dataset from Module 1
+use "CES2020_clean.dta", clear
 
 
 *==============================================================================

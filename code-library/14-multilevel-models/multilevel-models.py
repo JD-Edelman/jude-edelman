@@ -206,9 +206,10 @@ print("\n" + "=" * 65)
 print("5. RANDOM EFFECTS FROM RANDOM INTERCEPT MODEL")
 print("=" * 65)
 
-# Correct extraction — key is "Intercept"
+# Extract the scalar random intercept value from each group's Series
+# (statsmodels returns the key as "Group" for intercept-only random effects)
 state_re = pd.Series(
-    {k: v["Intercept"] for k, v in ri_fit.random_effects.items()},
+    {k: float(v.iloc[0]) for k, v in ri_fit.random_effects.items()},
     name="random_intercept"
 ).sort_values()
 

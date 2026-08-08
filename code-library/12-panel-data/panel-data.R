@@ -98,7 +98,7 @@ m_fe_plm <- plm(
 summary(m_fe_plm)
 
 # Clustered SEs (cluster on individual)
-coeftest(m_fe_plm, vcov = vcovHC(m_fe_plm, type = "HC1", cluster = "group"))
+coeftest(m_fe_plm, vcov = plm::vcovHC(m_fe_plm, type = "HC1", cluster = "group"))
 
 # --- Using fixest (faster, modern alternative) ---
 m_fe_fixest <- feols(
@@ -261,10 +261,13 @@ ggsave("parallel_trends.png", width = 7, height = 5, dpi = 300)
 # SECTION 10: RESULTS TABLE
 # ==============================================================================
 
+# RE model (plm object) doesn't support sandwich cluster SEs via modelsummary;
+# show it separately and include only lm-based models in the joint table.
+tidy(m_re, conf.int = TRUE)
+
 models_panel <- list(
-  "Pooled OLS"      = m_pooled,
-  "Random Effects"  = m_re,
-  "DiD"             = m_did_controls
+  "Pooled OLS" = m_pooled,
+  "DiD"        = m_did_controls
 )
 
 modelsummary(

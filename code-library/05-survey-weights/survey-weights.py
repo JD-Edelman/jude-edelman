@@ -222,9 +222,8 @@ def wt_mean_by_group(data, outcome, group_col, weight_col):
     """Compute weighted mean of outcome within each level of group_col."""
     valid = data[[outcome, group_col, weight_col]].dropna()
     return (
-        valid.groupby(group_col)
-        .apply(lambda g: np.average(g[outcome], weights=g[weight_col]),
-               include_groups=False)
+        valid.groupby(group_col)[[outcome, weight_col]]
+        .apply(lambda g: np.average(g[outcome], weights=g[weight_col]))
         .rename(f"wt_mean_{outcome}")
         .reset_index()
     )

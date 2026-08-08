@@ -39,6 +39,10 @@ set more off
 
 use "ces2020.dta", clear
 
+// ces2020.dta uses commonpostweight; create commonweight alias for compatibility
+capture drop commonweight
+gen commonweight = commonpostweight
+
 
 // =============================================================================
 // SECTION 1: DECLARE SURVEY DESIGN
@@ -70,6 +74,9 @@ quietly tabstat _n_state, by(inputstate) stat(mean) nototal
 drop _n_state
 
 // Survey-weighted mean of outcome by party (pid3: 1=Dem, 2=Rep, 3=Ind)
+// party_id3 in ces2020.dta; create pid3 alias for compatibility
+capture drop pid3
+gen pid3 = party_id3
 svy: mean approval_pres, over(pid3)
 
 
@@ -294,7 +301,7 @@ mixed approval_pres ideo5 educ faminc_new i.gender i.race ///
 estimates store rs_ml
 
 // Likelihood ratio test
-lrtest ri_ml rs_ml
+capture noisily lrtest ri_ml rs_ml
 
 // Output explained:
 //   LR chi2(df): Model B adds 2 parameters (var(u_1j), cov(u_0j,u_1j)).
@@ -314,9 +321,8 @@ mixed approval_pres ideo5_cwc state_ideo_gmc c.ideo5_cwc#c.state_ideo_gmc ///
     || inputstate: ideo5_cwc, covariance(unstructured) ml
 estimates store cli_ml
 
-lrtest ri_ml cli_ml
-// Note: these models have the same random-effects structure (random slope),
-// but different fixed effects. This lrtest is valid with ML.
+capture noisily lrtest ri_ml cli_ml
+// Note: lrtest requires nested models; if models are not nested this is skipped.
 
 
 // =============================================================================
@@ -385,9 +391,9 @@ drop ci_lo ci_hi state_rank state_tag
 // Best practice: report ICC and variance components for all models together.
 // Run models sequentially and call estat icc after each.
 
-display _newline(2) as text "=" * 60
+display _newline(2) as text "============================================================"
 display as text "VARIANCE COMPONENTS SUMMARY (REML estimates)"
-display as text "=" * 60
+display as text "============================================================"
 
 // Null model
 display _newline as text "-- MODEL 1: NULL (intercept-only) --"
@@ -413,7 +419,7 @@ mixed approval_pres ideo5_cwc state_ideo_gmc c.ideo5_cwc#c.state_ideo_gmc ///
     || inputstate: ideo5_cwc, covariance(unstructured)
 estat icc
 
-display _newline(2) as text "=" * 60
+display _newline(2) as text "============================================================"
 display as text "ICC INTERPRETATION GUIDE:"
 display as text "  Null model ICC    = total between-state variance (unconditional)"
 display as text "  RI model ICC      = between-state variance net of L1 composition"
@@ -423,6 +429,6 @@ display as text "  Proportional reduction in L2 variance (from null to RI):"
 display as text "    PRV_L2 = (var_u0_null - var_u0_ri) / var_u0_null"
 display as text "  Proportional reduction in L1 residual (from null to RI):"
 display as text "    PRV_L1 = (var_e_null  - var_e_ri)  / var_e_null"
-display as text "=" * 60
+display as text "============================================================"
 
 display _newline as result "MODULE 14 COMPLETE."

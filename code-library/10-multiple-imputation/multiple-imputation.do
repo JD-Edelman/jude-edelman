@@ -85,7 +85,8 @@ mi register imputed ideology5 party_id7 party_id3 econ_retro ///
 * Register complete variables as regular
 mi register regular caseid age sex education college white_nh ///
     census_region state_fips birth_year wt_post ///
-    voted voted_2020 pres_vote biden_voter dem rep
+    voted voted_2020 pres_vote biden_voter
+mi register passive dem rep   // derived from imputed party_id3
 
 /*
    Note: imm_restrict is derived from multiple imputed attitude items.
@@ -242,7 +243,7 @@ estimates store mi_ols_v2
 esttab cc_ols mi_ols_v2, ///
     b(%8.3f) se(%8.3f) ///
     star(* 0.05 ** 0.01 *** 0.001) ///
-    r2 N ///
+    stats(r2 N, fmt(%8.3f %8.0f)) ///
     title("OLS: Complete-Case vs. Multiple Imputation") ///
     mtitles("Complete Case" "MI (m=20)")
 
@@ -266,7 +267,7 @@ esttab cc_ols mi_ols_v2, ///
 * mi impute chained runs. Shown here at the end for teaching purposes only.
 * Changing a variable's role after imputation is allowed but means the passive
 * recomputation applies only when you call mi passive: going forward.
-mi register passive dem rep
+* passive dem rep already registered at top of section 2
 
 mi passive: replace dem = (party_id3 == 1) if !missing(party_id3)
 mi passive: replace rep = (party_id3 == 2) if !missing(party_id3)

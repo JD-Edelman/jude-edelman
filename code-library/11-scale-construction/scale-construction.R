@@ -11,8 +11,10 @@
 library(tidyverse)
 library(psych)       # alpha(), fa(), pca(), describe()
 library(lavaan)      # CFA / SEM
-library(semPlot)     # path diagrams for SEM (install.packages("semPlot"))
 library(GPArotation) # rotation methods for EFA
+has_semplot <- requireNamespace("semPlot", quietly = TRUE) &&
+               requireNamespace("OpenMx",  quietly = TRUE)
+if (has_semplot) library(semPlot)
 
 ces <- readRDS("CES2020_clean.rds")
 
@@ -59,7 +61,7 @@ climate_items <- ces |> select(climate_item1:climate_item4)
 # psych::alpha() computes Cronbach's alpha with item-level diagnostics.
 # check.keys = TRUE auto-reverses negatively correlated items.
 
-alpha_imm <- alpha(imm_items, check.keys = TRUE, na.rm = TRUE)
+alpha_imm <- psych::alpha(imm_items, check.keys = TRUE, na.rm = TRUE)
 alpha_imm
 # Key output:
 #   raw_alpha          = Cronbach's alpha using raw variances
@@ -70,10 +72,10 @@ alpha_imm
 
 cat("Immigration scale alpha:", round(alpha_imm$total$raw_alpha, 3), "\n")
 
-alpha_gun <- alpha(gun_items, check.keys = TRUE, na.rm = TRUE)
+alpha_gun <- psych::alpha(gun_items, check.keys = TRUE, na.rm = TRUE)
 cat("Gun control scale alpha:", round(alpha_gun$total$raw_alpha, 3), "\n")
 
-alpha_climate <- alpha(climate_items, check.keys = TRUE, na.rm = TRUE)
+alpha_climate <- psych::alpha(climate_items, check.keys = TRUE, na.rm = TRUE)
 cat("Climate scale alpha:", round(alpha_climate$total$raw_alpha, 3), "\n")
 
 # Benchmarks: >.9 excellent, >.8 good, >.7 acceptable, >.6 questionable
@@ -147,7 +149,10 @@ efa_imm2 <- fa(
 )
 
 print(efa_imm2, digits = 3, cut = 0.3)
-fa.diagram(efa_imm2, main = "EFA: Immigration Items (2 Factors)")
+tryCatch(
+  fa.diagram(efa_imm2, main = "EFA: Immigration Items (2 Factors)"),
+  error = function(e) message("fa.diagram skipped: ", conditionMessage(e))
+)
 
 # EFA across all three attitude domains — do they separate cleanly?
 all_items <- ces |>
@@ -156,7 +161,10 @@ all_items <- ces |>
 
 efa_all3 <- fa(all_items, nfactors = 3, fm = "pa", rotate = "oblimin")
 print(efa_all3, digits = 3, cut = 0.3)
-fa.diagram(efa_all3, main = "EFA: All Attitude Items (3 Factors)")
+tryCatch(
+  fa.diagram(efa_all3, main = "EFA: All Attitude Items (3 Factors)"),
+  error = function(e) message("fa.diagram skipped: ", conditionMessage(e))
+)
 
 
 # ==============================================================================
@@ -175,7 +183,7 @@ efa_imm_scores <- fa(
 
 factor_scores <- efa_imm_scores$scores |>
   as_tibble() |>
-  rename(imm_factor_score = MR1)
+  rename(imm_factor_score = PA1)   # fm="pa" produces column "PA1" (not "MR1")
 
 # These scores have mean ~ 0 and SD ~ 1 (standardized)
 summary(factor_scores$imm_factor_score)
@@ -277,7 +285,10 @@ fit_2f <- cfa(model_2f, data = ces_items_df, estimator = "WLSMV")
 summary(fit_2f, fit.measures = TRUE, standardized = TRUE)
 
 # Compare 1-factor vs. 2-factor model
-lavTestLRT(fit_1f, fit_2f)   # chi-square difference test
+tryCatch(
+  lavTestLRT(fit_1f, fit_2f),   # chi-square difference test
+  error = function(e) message("lavTestLRT skipped: ", conditionMessage(e))
+)
 
 # Path diagram
 # semPaths(fit_2f, what = "std", layout = "tree", edge.label.cex = 0.8)

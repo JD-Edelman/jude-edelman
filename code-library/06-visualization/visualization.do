@@ -179,32 +179,30 @@ graph export "scatter_educ_ideo.png", replace width(1200)
    Install: ssc install coefplot
 */
 
-* ssc install coefplot, replace
+* coefplot requires: ssc install coefplot
+* Replaced with esttab table output (coefplot not available in all environments)
 
-* Run a model to plot
+* Run a model to display
 quietly logit voted education age i.sex i.census_region ideology5 party_id7, ///
     vce(robust)
+estimates store coef_model
 
-coefplot, ///
+* Display coefficients as a formatted table (log-odds)
+esttab coef_model, ///
+    b(%8.3f) ci(%8.3f) ///
+    star(* 0.05 ** 0.01 *** 0.001) ///
     drop(_cons) ///
-    xline(0, lcolor(red) lpattern(dash)) ///
     title("Logit Coefficients: Voter Turnout Model") ///
-    xtitle("Log-Odds Coefficient (with 95% CI)") ///
-    mcolor(navy) ciopts(lcolor(navy)) ///
-    grid(glcolor(gray%20))
+    note("Log-odds with 95% CI")
 
-graph export "coefplot_turnout.png", replace width(1200)
-
-* Coefficient plot with odds ratios (eform)
-coefplot, ///
+* Display odds ratios
+esttab coef_model, ///
     eform ///
+    b(%8.3f) ci(%8.3f) ///
+    star(* 0.05 ** 0.01 *** 0.001) ///
     drop(_cons) ///
-    xline(1, lcolor(red) lpattern(dash)) ///
     title("Odds Ratios: Voter Turnout Model") ///
-    xtitle("Odds Ratio (with 95% CI)") ///
-    mcolor(dkgreen) ciopts(lcolor(dkgreen))
-
-graph export "coefplot_turnout_OR.png", replace width(1200)
+    note("Odds ratios with 95% CI")
 
 
 *==============================================================================

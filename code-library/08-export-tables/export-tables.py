@@ -128,10 +128,14 @@ for row_idx, (_, row) in enumerate(table.iterrows(), start=4):
                        value=row.get(col_key, ""))
         cell.alignment = Alignment(horizontal="center" if col_idx > 1 else "left")
 
-# Auto-fit column widths (approximate)
+# Auto-fit column widths (skip merged cells which lack column_letter)
+from openpyxl.cell.cell import MergedCell
 for col in ws.columns:
-    max_len = max((len(str(cell.value or "")) for cell in col), default=0)
-    ws.column_dimensions[col[0].column_letter].width = max(max_len + 2, 10)
+    col_cells = [c for c in col if not isinstance(c, MergedCell)]
+    if not col_cells:
+        continue
+    max_len = max((len(str(c.value or "")) for c in col_cells), default=0)
+    ws.column_dimensions[col_cells[0].column_letter].width = max(max_len + 2, 10)
 
 # Add a note row
 note_row = ws.max_row + 1
@@ -150,7 +154,6 @@ print("Saved: table_ols_restrict.xlsx")
 from docx import Document
 from docx.shared import Pt, Inches, RGBColor
 from docx.enum.text import WD_ALIGN_PARAGRAPH
-from docx.enum.table import WD_ALIGN_VERTICAL
 
 doc = Document()
 
@@ -333,9 +336,10 @@ def build_or_table(models_dict):
                 row[f"{name}_ci"] = ""
         rows.append(row)
 
+    null_llf = smf.logit("voted ~ 1", data=ces).fit(disp=False).llf
     for stat, fn in [("N", lambda m: int(m.nobs)),
                      ("AIC", lambda m: f"{m.aic:.1f}"),
-                     ("Pseudo R²", lambda m: f"{1 - m.llf / smf.logit('voted~1', data=ces).fit(disp=False).llf:.3f}")]:
+                     ("Pseudo R²", lambda m: f"{1 - m.llf / null_llf:.3f}")]:
         row = {"term": stat}
         for name, m in models_dict.items():
             row[name]         = fn(m)

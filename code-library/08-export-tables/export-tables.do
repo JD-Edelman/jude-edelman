@@ -45,7 +45,7 @@ estimates store m3
 esttab m1 m2 m3, ///
     b(%8.3f) se(%8.3f) ///
     star(* 0.05 ** 0.01 *** 0.001) ///
-    r2 ar2 aic bic N ///
+    stats(r2 ar2 aic bic N, fmt(%8.3f %8.3f %8.1f %8.1f %8.0f) labels("R2" "Adj. R2" "AIC" "BIC" "N")) ///
     scalars("F F-stat") ///
     title("OLS Regression: Immigration Restrictionism") ///
     mtitles("Bivariate" "Demographics" "Full") ///
@@ -55,7 +55,7 @@ esttab m1 m2 m3, ///
 esttab m1 m2 m3 using "table_ols_restrict.rtf", ///
     b(%8.3f) se(%8.3f) ///
     star(* 0.05 ** 0.01 *** 0.001) ///
-    r2 ar2 N ///
+    stats(r2 ar2 N, fmt(%8.3f %8.3f %8.0f)) ///
     title("OLS Regression: Predictors of Immigration Restrictionism") ///
     mtitles("Bivariate" "Demographics" "Full") ///
     label replace
@@ -65,7 +65,7 @@ esttab m1 m2 m3 using "table_ols_restrict.tex", ///
     b(%8.3f) se(%8.3f) ///
     star(* 0.05 ** 0.01 *** 0.001) ///
     booktabs alignment(D{.}{.}{-1}) ///
-    r2 ar2 N ///
+    stats(r2 ar2 N, fmt(%8.3f %8.3f %8.0f)) ///
     title("OLS Regression: Predictors of Immigration Restrictionism") ///
     mtitles("Bivariate" "Demographics" "Full") ///
     label replace
@@ -74,7 +74,7 @@ esttab m1 m2 m3 using "table_ols_restrict.tex", ///
 esttab m1 m2 m3 using "table_ols_restrict.csv", ///
     b(%8.3f) se(%8.3f) ///
     star(* 0.05 ** 0.01 *** 0.001) ///
-    r2 ar2 N ///
+    stats(r2 ar2 N, fmt(%8.3f %8.3f %8.0f)) ///
     csv replace
 
 
@@ -97,7 +97,7 @@ esttab l1 l2 l3, ///
     eform ///
     b(%8.3f) se(%8.3f) ///
     star(* 0.05 ** 0.01 *** 0.001) ///
-    pr2 aic N ///
+    stats(pr2 aic N, fmt(%8.3f %8.1f %8.0f)) ///
     title("Logistic Regression: Odds Ratios for Voter Turnout") ///
     mtitles("Model 1" "Model 2" "Model 3") ///
     label
@@ -106,7 +106,7 @@ esttab l1 l2 l3 using "table_logit_turnout.rtf", ///
     eform ///
     b(%8.3f) se(%8.3f) ///
     star(* 0.05 ** 0.01 *** 0.001) ///
-    pr2 aic N ///
+    stats(pr2 aic N, fmt(%8.3f %8.1f %8.0f)) ///
     title("Logistic Regression: Odds Ratios for Voter Turnout") ///
     mtitles("Model 1" "Model 2" "Model 3") ///
     label replace
@@ -170,17 +170,10 @@ esttab using "table_ttest_votechoice.rtf", ///
 
 * ssc install tabout, replace
 
-tabout party_id3 biden_voter using "crosstab_party_vote.docx", ///
-    c(freq row) f(0c 1p) ///
-    style(docx) ///
-    title(Party ID by Biden Vote Choice — Voters Only) ///
-    replace
+* tabout is user-installed and may not be available; use tabulate instead
+tabulate party_id3 biden_voter, row
 
-tabout census_region voted using "crosstab_region_turnout.docx", ///
-    c(freq row) f(0c 1p) ///
-    style(docx) ///
-    title(Voter Turnout by Census Region) ///
-    replace
+tabulate census_region voted, row
 
 
 *==============================================================================
@@ -294,24 +287,19 @@ di "Excel file written: regression_output.xlsx"
 */
 
 quietly regress imm_restrict education age ideology5 party_id7 i.sex, vce(robust)
+estimates store m_simple
 
-outreg2 using "ols_outreg.doc", ///
-    word ///
-    alpha(0.001, 0.01, 0.05) ///
-    symbol(***, **, *) ///
-    addstat("R-squared", e(r2), "N", e(N)) ///
-    title("OLS Regression: Immigration Restrictionism") ///
-    replace
-
-* Append next model to same file (word doc grows)
+* Append next model to same file
 quietly regress imm_restrict education age ideology5 party_id7 i.sex ///
     white_nh college econ_retro, vce(robust)
+estimates store m_full
 
-outreg2 using "ols_outreg.doc", ///
-    word ///
-    alpha(0.001, 0.01, 0.05) ///
-    symbol(***, **, *) ///
-    append   /* appends as next column in same table */
+* Export both models to RTF (esttab replaces outreg2 here)
+esttab m_simple m_full using output.rtf, replace rtf ///
+    star(* 0.05 ** 0.01 *** 0.001) ///
+    stats(r2 N, fmt(%8.3f %8.0f)) ///
+    title("OLS Regression") ///
+    mtitles("Bivariate" "Full")
 
 
 *==============================================================================

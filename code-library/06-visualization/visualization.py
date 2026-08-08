@@ -134,17 +134,22 @@ plt.close()
 fig, axes = plt.subplots(1, 2, figsize=(13, 5))
 
 # Restrictionism by party
-valid = ces.dropna(subset=["imm_restrict", "party_id3"])
+valid = ces.dropna(subset=["imm_restrict", "party_id3"]).copy()
+valid["party_id3"] = valid["party_id3"].astype(int)
 party_order = [1, 2, 3]
 party_names = {1: "Democrat", 2: "Republican", 3: "Independent"}
+party_palette = {1: "steelblue", 2: "firebrick", 3: "darkgreen"}
 
 sns.boxplot(
-    data    = valid,
-    x       = "party_id3",
-    y       = "imm_restrict",
-    order   = party_order,
-    palette = ["steelblue", "firebrick", "darkgreen"],
-    ax      = axes[0],
+    data      = valid,
+    x         = "party_id3",
+    y         = "imm_restrict",
+    order     = party_order,
+    hue       = "party_id3",
+    hue_order = party_order,
+    palette   = party_palette,
+    legend    = False,
+    ax        = axes[0],
 )
 axes[0].set_xticklabels([party_names[p] for p in party_order])
 axes[0].set_xlabel("Party ID")
@@ -152,12 +157,16 @@ axes[0].set_ylabel("Restrictionism (0–5)")
 axes[0].set_title("Immigration Restrictionism by Party")
 
 # Age by voter turnout
+voted_valid = ces.dropna(subset=["age", "voted"]).copy()
+voted_valid["voted"] = voted_valid["voted"].astype(int)
 sns.boxplot(
-    data    = ces.dropna(subset=["age", "voted"]),
-    x       = "voted",
-    y       = "age",
-    palette = ["gray", "navy"],
-    ax      = axes[1],
+    data      = voted_valid,
+    x         = "voted",
+    y         = "age",
+    hue       = "voted",
+    palette   = {0: "gray", 1: "navy"},
+    legend    = False,
+    ax        = axes[1],
 )
 axes[1].set_xticklabels(["Did Not Vote", "Voted"])
 axes[1].set_xlabel("")
@@ -176,7 +185,8 @@ plt.close()
 fig, axes = plt.subplots(1, 2, figsize=(13, 5))
 
 # Age vs. restrictionism
-sample = ces[["age", "imm_restrict"]].dropna().sample(5000, random_state=1)
+_pool = ces[["age", "imm_restrict"]].dropna()
+sample = _pool.sample(min(5000, len(_pool)), random_state=1)
 
 axes[0].scatter(sample["age"], sample["imm_restrict"],
                 alpha=0.1, s=5, color="navy")
@@ -190,7 +200,8 @@ axes[0].set_ylabel("Restrictionism (0–5)")
 axes[0].set_title("Age and Immigration Restrictionism")
 
 # Education vs. ideology (loess-style via seaborn lowess)
-sample2 = ces[["education", "ideology5"]].dropna().sample(5000, random_state=2)
+_pool2 = ces[["education", "ideology5"]].dropna()
+sample2 = _pool2.sample(min(5000, len(_pool2)), random_state=2)
 axes[1].scatter(sample2["education"] + np.random.uniform(-0.2, 0.2, len(sample2)),
                 sample2["ideology5"]  + np.random.uniform(-0.2, 0.2, len(sample2)),
                 alpha=0.05, s=3, color="darkgreen")
@@ -245,19 +256,20 @@ coef_df["label"] = coef_df["term"].map(term_labels).fillna(coef_df["term"])
 coef_df = coef_df.sort_values("coef")
 
 fig, ax = plt.subplots(figsize=(9, 6))
-colors = coef_df["sig"].map({True: "navy", False: "gray"})
 
-ax.errorbar(
-    x    = coef_df["coef"],
-    y    = range(len(coef_df)),
-    xerr = [coef_df["coef"] - coef_df["ci_low"],
-            coef_df["ci_high"] - coef_df["coef"]],
-    fmt       = "o",
-    color     = colors,
-    ecolor    = colors,
-    capsize   = 4,
-    linewidth = 1.5,
-)
+# errorbar doesn't accept per-point color arrays — draw each term separately
+for i, (_, row) in enumerate(coef_df.iterrows()):
+    c = "navy" if row["sig"] else "gray"
+    ax.errorbar(
+        x    = row["coef"],
+        y    = i,
+        xerr = [[row["coef"] - row["ci_low"]], [row["ci_high"] - row["coef"]]],
+        fmt       = "o",
+        color     = c,
+        ecolor    = c,
+        capsize   = 4,
+        linewidth = 1.5,
+    )
 ax.axvline(0, color="gray", linestyle="--", linewidth=1)
 ax.set_yticks(range(len(coef_df)))
 ax.set_yticklabels(coef_df["label"])

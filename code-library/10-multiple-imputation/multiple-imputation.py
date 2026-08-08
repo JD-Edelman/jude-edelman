@@ -62,7 +62,7 @@ complete_vars = [
 # Is missingness on ideology5 related to observed variables? (MAR check)
 m_miss = smf.logit(
     "miss_ideo ~ age + C(sex) + college + white_nh + C(census_region)",
-    data = ces_sub.assign(miss_ideo=ces_sub["ideology5"].isna())
+    data = ces_sub.assign(miss_ideo=ces_sub["ideology5"].isna().astype(int))
 ).fit(disp=False)
 
 print("\nMAR check — predictors of ideology5 missingness:")
@@ -194,7 +194,8 @@ def rubins_rules(results, param):
     # Degrees of freedom (Barnard & Rubin 1999)
     lam   = (1 + 1/m_eff) * b / t_var      # fraction of missing info
     nu_old = (m_eff - 1) / lam**2
-    nu_obs = (1 - lam) * (r.df_resid + 1) / (r.df_resid + 3) * r.df_resid
+    df_resid = results[0].df_resid
+    nu_obs = (1 - lam) * (df_resid + 1) / (df_resid + 3) * df_resid
     df    = 1 / (1/nu_old + 1/nu_obs) if nu_obs > 0 else nu_old
 
     from scipy import stats

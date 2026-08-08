@@ -290,7 +290,7 @@ estimates store m3
 esttab m1 m2 m3, ///
     b(%8.3f) se(%8.3f) ///
     star(* 0.05 ** 0.01 *** 0.001) ///
-    r2 ar2 aic bic N ///
+    stats(r2 ar2 aic bic N, fmt(%8.3f %8.3f %8.1f %8.1f %8.0f)) ///
     title("OLS Regression: Predictors of Immigration Restrictionism") ///
     mtitles("Bivariate" "Demographics" "Full Model")
 

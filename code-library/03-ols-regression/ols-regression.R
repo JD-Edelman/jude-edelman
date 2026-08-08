@@ -16,6 +16,12 @@ library(broom)       # tidy(), glance(), augment() — tidy model output
 
 ces <- readRDS("CES2020_clean.rds")
 
+# Complete-case subset spanning all variables used in the comparison table
+# (Sections 1–3) so modelsummary sees the same N across nested models
+ces_cc <- ces |>
+  tidyr::drop_na(imm_restrict, education, age, sex, census_region,
+                 ideology5, party_id7, college)
+
 
 # ==============================================================================
 # SECTION 1: SIMPLE (BIVARIATE) OLS
@@ -25,7 +31,7 @@ ces <- readRDS("CES2020_clean.rds")
 # R's formula interface: ~ separates outcome from predictors
 # + adds predictors; * adds an interaction AND both main effects
 
-m_simple <- lm(imm_restrict ~ education, data = ces)
+m_simple <- lm(imm_restrict ~ education, data = ces_cc)
 
 summary(m_simple)
 
@@ -50,7 +56,7 @@ glance(m_simple)
 
 m_demog <- lm(
   imm_restrict ~ education + age + factor(sex) + factor(census_region),
-  data = ces
+  data = ces_cc
 )
 
 summary(m_demog)
@@ -64,7 +70,7 @@ tidy(m_demog, conf.int = TRUE)
 m_full <- lm(
   imm_restrict ~ education + age + factor(sex) + factor(census_region) +
     ideology5 + party_id7 + college,
-  data = ces
+  data = ces_cc
 )
 
 summary(m_full)
