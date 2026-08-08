@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Readings &mdash; Jude D. Edelman</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="code-library.css" />
+  <style>
+    .rdg-list {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 0 1.5rem 4rem;
+    }
+    .rdg-entry {
+      border-top: 1px solid var(--border);
+      padding: 2rem 0;
+    }
+    .rdg-citation {
+      font-family: 'EB Garamond', Georgia, serif;
+      font-size: 1.05rem;
+      line-height: 1.6;
+      margin: 0 0 0.5rem;
+    }
+    .rdg-link {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.8rem;
+      color: var(--accent);
+      text-decoration: none;
+      letter-spacing: 0.02em;
+    }
+    .rdg-link:hover { text-decoration: underline; }
+    .rdg-note {
+      margin-top: 0.75rem;
+      font-size: 0.92rem;
+      color: var(--muted);
+      font-style: italic;
+      line-height: 1.65;
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <div class="nav-inner">
+      <a class="nav-name" href="index.html">Jude D. Edelman</a>
+      <ul class="nav-links">
+        <li><a href="index.html#about">About</a></li>
+        <li><a href="influences.html">Influences</a></li>
+        <li><a href="index.html#research">Research</a></li>
+        <li><a href="index.html#cv">CV</a></li>
+        <li><a href="code-library.html">Code Library</a></li>
+        <li><a href="readings.html" style="color: var(--accent);">Readings</a></li>
+        <li><a href="index.html#contact">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main>
+
+    <div class="cl-hero">
+      <h1>Recommended Readings</h1>
+    </div>
+
+    <div id="rdg-lock" style="padding:4rem 0;text-align:center;">
+      <p style="color:var(--muted);font-style:italic;margin-bottom:1.2rem;">This section is private.</p>
+      <a href="#" id="rdg-unlock-btn" style="color:var(--accent);font-family:inherit;font-size:1rem;">Enter access code</a>
+    </div>
+
+    <div id="rdg-body">
+      <div class="rdg-list">
+
+        <div class="rdg-entry">
+          <p class="rdg-citation">Bourdieu, P., &amp; Wacquant, L. J. D. (1992). <em>An Invitation to Reflexive Sociology</em>. University of Chicago Press.</p>
+          <a class="rdg-link" href="#" target="_blank">Link</a>
+          <p class="rdg-note">Pay particular attention to the idea that sociology of sociology is a precursor to good sociology.</p>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <footer>
+    &copy; 2026 Jude D. Edelman
+  </footer>
+
+  <script>
+    (function () {
+      var PW = 'jedel', SK = 'rdg_pw';
+      var lock = document.getElementById('rdg-lock');
+      var body = document.getElementById('rdg-body');
+      function unlock() {
+        lock.style.display = 'none';
+        body.style.display = '';
+        sessionStorage.setItem(SK, PW);
+      }
+      if (sessionStorage.getItem(SK) === PW) {
+        unlock();
+      } else {
+        body.style.display = 'none';
+        document.getElementById('rdg-unlock-btn').addEventListener('click', function (e) {
+          e.preventDefault();
+          var pw = prompt('Access code:');
+          if (pw === PW) unlock();
+        });
+      }
+    }());
+  </script>
+
+</body>
+</html>
