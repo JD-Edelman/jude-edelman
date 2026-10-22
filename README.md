@@ -2,4 +2,7 @@
 
 Live at: https://jd-edelman.github.io/jude-edelman/
 
-A minimal academic personal site built with plain HTML and CSS. No frameworks, no dependencies, no build step. If you want to use this as a template, clone the repo and swap out the text in `index.html`.
+my personal site built with plain HTML and CSS. If you want to use this as a template, clone the repo and swap out the text in `index.html`.
+
+
+Also, there are certain tabs hidden currently. You can find the password in the Repo, and that is perfectly fine with me. 
